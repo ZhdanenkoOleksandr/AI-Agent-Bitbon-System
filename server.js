@@ -21,18 +21,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin2026';
 
 // ── MIDDLEWARE ────────────────────────────────────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'",
-        "https://cdn.jsdelivr.net", "https://api.anthropic.com",
-        "https://fonts.googleapis.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https://api.anthropic.com"],
-      imgSrc: ["'self'", "data:", "blob:"]
-    }
-  }
+  contentSecurityPolicy: false
 }));
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
