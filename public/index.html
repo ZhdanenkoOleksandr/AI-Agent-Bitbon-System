@@ -28,11 +28,9 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .close-btn:hover{color:var(--text)}
 
 /* LEVEL SCREEN */
-@keyframes fadeOut{from{opacity:1;pointer-events:auto}to{opacity:0;pointer-events:none}}
-@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0.3}}
-.level-screen{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:18px;opacity:1;transition:opacity 0.4s ease-in-out;pointer-events:auto}
-.level-screen.hidden{opacity:0;pointer-events:none}
+.level-screen{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:18px}
+.level-screen.hidden{display:none !important}
 .level-logo{font-size:40px;animation:slideDown 0.5s ease-out}
 .level-title{font-size:20px;font-weight:700;text-align:center;line-height:1.4;animation:slideDown 0.5s ease-out 0.1s both}
 .level-sub{font-size:13px;color:var(--text2);text-align:center;max-width:420px;line-height:1.6;animation:slideDown 0.5s ease-out 0.2s both}
@@ -647,33 +645,32 @@ function getBotLabel() {
 // ═══ LEVEL SELECTION ═══
 function setLevel(level) {
   userMode = level;
-  const levelScreen = document.getElementById('level-screen');
 
-  // Add fade-out class to trigger animation
-  levelScreen.classList.add('hidden');
+  // Hide level screen IMMEDIATELY
+  document.getElementById('level-screen').classList.add('hidden');
 
-  // After animation completes, perform actions
-  setTimeout(() => {
-    if (level === 'partner') {
-      openRegister();
-      userLevel = 'expert';
-      updateSuggestionsBar('business');
-    } else if (level === 'business') {
-      userLevel = 'intermediate';
-      updateSuggestionsBar('business');
-      addMessage('bot', 'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.', null, false);
-    } else {
-      userLevel = 'beginner';
-      updateSuggestionsBar('user');
-      addMessage('bot', 'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.', null, false);
-    }
-    loadKnowledgeBase();
-  }, 200); // Half of 0.4s transition time
+  // Set user level and update badge
+  if (level === 'partner') {
+    userLevel = 'expert';
+    openRegister();
+    updateSuggestionsBar('business');
+  } else if (level === 'business') {
+    userLevel = 'intermediate';
+    updateSuggestionsBar('business');
+    addMessage('bot', 'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.', null, false);
+  } else {
+    userLevel = 'beginner';
+    updateSuggestionsBar('user');
+    addMessage('bot', 'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.', null, false);
+  }
 
-  // Update badge immediately
+  // Update badge
   var badge = document.getElementById('level-badge');
   badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
   badge.style.display = 'inline-flex';
+
+  // Load knowledge base
+  loadKnowledgeBase();
 }
 
 function updateSuggestionsBar(mode) {
