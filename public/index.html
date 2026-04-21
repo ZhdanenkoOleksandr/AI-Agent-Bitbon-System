@@ -28,13 +28,17 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .close-btn:hover{color:var(--text)}
 
 /* LEVEL SCREEN */
-.level-screen{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:18px}
-.level-logo{font-size:40px}
-.level-title{font-size:20px;font-weight:700;text-align:center;line-height:1.4}
-.level-sub{font-size:13px;color:var(--text2);text-align:center;max-width:420px;line-height:1.6}
-.level-cards{display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px}
+@keyframes fadeOut{from{opacity:1;pointer-events:auto}to{opacity:0;pointer-events:none}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.level-screen{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:18px;opacity:1;transition:opacity 0.4s ease-in-out;pointer-events:auto}
+.level-screen.hidden{opacity:0;pointer-events:none}
+.level-logo{font-size:40px;animation:slideDown 0.5s ease-out}
+.level-title{font-size:20px;font-weight:700;text-align:center;line-height:1.4;animation:slideDown 0.5s ease-out 0.1s both}
+.level-sub{font-size:13px;color:var(--text2);text-align:center;max-width:420px;line-height:1.6;animation:slideDown 0.5s ease-out 0.2s both}
+.level-cards{display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;animation:slideDown 0.5s ease-out 0.3s both}
 .level-card{padding:15px 20px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);cursor:pointer;transition:all 0.2s;text-align:left;font-family:'Onest',sans-serif;display:flex;align-items:center;gap:14px;color:var(--text)}
 .level-card:hover{border-color:var(--accent);background:rgba(59,130,246,0.08);transform:translateX(4px)}
+.level-card:active{transform:scale(0.98)}
 .level-icon{font-size:24px;flex-shrink:0}
 .level-card-title{font-size:14px;font-weight:600;margin-bottom:2px}
 .level-card-desc{font-size:12px;color:var(--text2);line-height:1.4}
@@ -96,7 +100,8 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .cross-ref-item:hover{background:rgba(139,92,246,0.2);border-color:var(--purple)}
 
 /* ── LAYOUT ──────────────────────────────────────────────── */
-.app{display:flex;flex:1;overflow:hidden}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.app{display:flex;flex:1;overflow:hidden;opacity:0;animation:fadeIn 0.4s ease-in-out 0.2s forwards}
 
 /* SIDEBAR */
 .sidebar{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width 0.3s ease}
@@ -642,26 +647,33 @@ function getBotLabel() {
 // ═══ LEVEL SELECTION ═══
 function setLevel(level) {
   userMode = level;
-  if (level === 'partner') {
-    document.getElementById('level-screen').style.display = 'none';
-    openRegister();
-    userLevel = 'expert';
-    updateSuggestionsBar('business');
-  } else if (level === 'business') {
-    userLevel = 'intermediate';
-    document.getElementById('level-screen').style.display = 'none';
-    updateSuggestionsBar('business');
-    addMessage('bot', 'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.', null, false);
-  } else {
-    userLevel = 'beginner';
-    document.getElementById('level-screen').style.display = 'none';
-    updateSuggestionsBar('user');
-    addMessage('bot', 'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.', null, false);
-  }
+  const levelScreen = document.getElementById('level-screen');
+
+  // Add fade-out class to trigger animation
+  levelScreen.classList.add('hidden');
+
+  // After animation completes, perform actions
+  setTimeout(() => {
+    if (level === 'partner') {
+      openRegister();
+      userLevel = 'expert';
+      updateSuggestionsBar('business');
+    } else if (level === 'business') {
+      userLevel = 'intermediate';
+      updateSuggestionsBar('business');
+      addMessage('bot', 'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.', null, false);
+    } else {
+      userLevel = 'beginner';
+      updateSuggestionsBar('user');
+      addMessage('bot', 'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.', null, false);
+    }
+    loadKnowledgeBase();
+  }, 200); // Half of 0.4s transition time
+
+  // Update badge immediately
   var badge = document.getElementById('level-badge');
   badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
   badge.style.display = 'inline-flex';
-  loadKnowledgeBase();
 }
 
 function updateSuggestionsBar(mode) {
