@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes">
 <title>Bitbon AI — Агент Системы Bitbon</title>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
@@ -288,12 +288,261 @@ textarea::placeholder{color:var(--text3)}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(99,179,237,0.2);border-radius:4px}
-@media(max-width:768px){
-  .sidebar{display:none}
-  .plan-grid{grid-template-columns:1fr}
-  .welcome-panels{grid-template-columns:1fr}
-  .form-row{grid-template-columns:1fr}
-  .cabinet-stats{grid-template-columns:1fr}
+/* ═══ MOBILE FIRST — 480px и меньше (смартфоны) ═══ */
+@media(max-width:480px){
+  :root{--radius:12px;--radius-sm:8px}
+  body{height:100vh;height:100dvh}
+
+  /* LEVEL SCREEN MOBILE */
+  .level-screen{padding:20px 16px;gap:12px}
+  .level-logo{font-size:32px}
+  .level-title{font-size:18px;line-height:1.3}
+  .level-sub{font-size:12px;max-width:100%;line-height:1.5}
+  .level-cards{max-width:100%;gap:8px}
+  .level-card{padding:12px 16px;gap:12px;border-radius:var(--radius);min-height:44px}
+  .level-icon{font-size:20px}
+  .level-card-title{font-size:13px}
+  .level-card-desc{font-size:11px}
+  .level-note{font-size:13px;max-width:100%;padding:12px}
+
+  /* HEADER MOBILE */
+  .header{padding:10px 12px;gap:8px;min-height:44px}
+  .avatar{width:32px;height:32px;font-size:13px}
+  .header-info h1{font-size:12px}
+  .header-info p{font-size:10px}
+  .header-btn{height:36px;padding:0 8px;font-size:10px;gap:3px;flex-shrink:0}
+  .level-badge{font-size:10px;padding:2px 7px}
+  .req-counter{font-size:10px;padding:2px 7px}
+  .sidebar-toggle{width:36px;height:36px;font-size:16px}
+
+  /* SIDEBAR MOBILE — выдвижная, НЕ скрывается */
+  .sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;height:100dvh;z-index:1000;transform:translateX(-100%);transition:transform 0.3s ease}
+  .sidebar.visible{transform:translateX(0)}
+  .sidebar::after{content:'';position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:-1}
+
+  /* SUGGESTIONS MOBILE — горизонтальный скролл */
+  .suggestions{padding:8px 12px;gap:6px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+  .suggestions::-webkit-scrollbar{height:3px}
+  .suggestions::-webkit-scrollbar-thumb{background:rgba(99,179,237,0.3);border-radius:2px}
+  .suggestion-btn{flex-shrink:0;font-size:10px;padding:4px 10px;min-height:32px}
+
+  /* CHAT AREA MOBILE */
+  .chat{padding:12px;gap:12px}
+  .welcome{padding:16px 12px}
+  .welcome-icon{font-size:32px;margin-bottom:8px}
+  .welcome-title{font-size:15px;margin-bottom:6px}
+  .welcome-sub{font-size:12px;line-height:1.5;max-width:100%}
+  .welcome-panels{grid-template-columns:1fr;max-width:100%;gap:10px;margin-top:12px}
+  .welcome-panel{padding:12px;border-radius:var(--radius)}
+  .welcome-panel-title{font-size:12px;margin-bottom:8px}
+  .welcome-panel-list li{font-size:11px;padding:4px 0}
+
+  /* INPUT AREA MOBILE */
+  .input-area{padding:10px 12px;min-height:auto}
+  .input-row{gap:8px}
+  textarea{font-size:13px;padding:10px 12px;border-radius:var(--radius-sm);min-height:40px;max-height:80px}
+  .send-btn{width:38px;height:38px;flex-shrink:0}
+  .send-btn svg{width:13px;height:13px}
+  .input-hint{font-size:10px;margin-top:6px;line-height:1.3}
+
+  /* MESSAGES MOBILE */
+  .msg{gap:8px}
+  .msg-body{max-width:90%}
+  .msg-avatar{width:28px;height:28px;font-size:12px}
+  .msg-bubble{padding:10px 12px;font-size:13px;line-height:1.5;border-radius:10px}
+  .msg-name{font-size:10px;padding:0 4px}
+
+  /* FORM FIELDS MOBILE */
+  .form-group{margin-bottom:12px}
+  .form-label{font-size:11px;margin-bottom:4px}
+  .form-input{padding:10px 12px;font-size:13px;border-radius:var(--radius-sm);min-height:40px}
+  .form-btn{padding:12px;font-size:13px;min-height:44px;margin-top:6px}
+  .form-row{grid-template-columns:1fr;gap:8px}
+
+  /* MODAL MOBILE — почти полноэкранные */
+  .overlay{padding:12px;background:rgba(0,0,0,0.9)}
+  .modal{border-radius:16px;padding:20px;max-width:100%;max-height:92dvh;width:auto}
+  .modal-title{font-size:16px}
+  .modal-sub{font-size:12px;margin-bottom:16px;line-height:1.5}
+  .close-btn{top:12px;right:12px;font-size:24px;padding:2px}
+
+  /* PLAN GRID MOBILE */
+  .plan-grid{grid-template-columns:1fr;gap:10px;margin-bottom:16px}
+  .plan-card{padding:14px;border-radius:var(--radius)}
+  .plan-icon{font-size:24px;margin-bottom:6px}
+  .plan-name{font-size:13px}
+  .plan-price{font-size:16px}
+  .plan-requests{font-size:11px}
+  .plan-features li{font-size:10px;padding:2px 0}
+  .plan-badge{font-size:9px;padding:1px 8px;top:-8px}
+
+  /* CABINET STATS MOBILE */
+  .cabinet-stats{grid-template-columns:1fr;gap:8px;margin-bottom:12px}
+  .stat-box{padding:12px;border-radius:var(--radius-sm)}
+  .stat-val{font-size:20px}
+  .stat-label{font-size:10px;margin-top:2px}
+
+  /* TABS MOBILE */
+  .tab-row{margin-bottom:16px;border-radius:var(--radius-sm)}
+  .tab-btn{padding:10px 8px;font-size:11px;min-height:40px}
+
+  /* CROSS-REFS MOBILE */
+  .cross-refs{margin-top:10px;padding:10px;border-radius:var(--radius-sm)}
+  .cross-refs-title{font-size:10px;margin-bottom:6px}
+  .cross-ref-item{font-size:11px;padding:3px 8px;margin:2px 2px 2px 0}
+
+  /* EXAMPLE/COMPARE/DIAGRAM MOBILE */
+  .example-block{margin-top:10px;padding:10px 12px;border-radius:var(--radius-sm);border-left:3px solid var(--gold)}
+  .example-label{font-size:9px}
+  .example-text{font-size:12px;line-height:1.5}
+  .compare-block{gap:6px}
+  .compare-col{padding:8px 10px;border-radius:var(--radius-sm)}
+  .compare-label{font-size:9px}
+  .compare-text{font-size:11px}
+  .diagram-container{margin:10px 0;padding:12px 10px 10px;border-radius:var(--radius-sm);overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .mermaid svg{max-width:100%;height:auto}
+
+  /* ACTION BUTTONS MOBILE */
+  .action-btn{font-size:11px;padding:4px 10px;min-height:32px;border-radius:var(--radius-sm)}
+  .msg-actions{gap:6px;flex-wrap:wrap}
+
+  /* FOLLOWUPS MOBILE */
+  .followups{margin-top:10px;padding-top:10px}
+  .followups-title{font-size:10px;margin-bottom:6px}
+  .followup-btn{font-size:12px;padding:10px 12px;border-radius:var(--radius-sm);min-height:40px}
+
+  /* WIZARD MOBILE */
+  .wizard-question{padding:12px 14px;margin-bottom:3px;border-radius:var(--radius-sm)}
+  .wizard-q-label{font-size:9px;margin-bottom:5px}
+  .wizard-q-text{font-size:13px;line-height:1.5}
+
+  /* EXPAND BUTTON MOBILE */
+  .expand-btn{font-size:11px;padding:4px 10px;border-radius:var(--radius-sm);min-height:32px}
+}
+
+/* ═══ TABLET — 481px до 768px ═══ */
+@media(min-width:481px) and (max-width:768px){
+  :root{--radius:14px;--radius-sm:9px}
+
+  .level-screen{padding:28px 20px;gap:16px}
+  .level-logo{font-size:36px}
+  .level-title{font-size:19px}
+  .level-sub{font-size:12px;max-width:100%}
+  .level-cards{max-width:100%}
+  .level-card{padding:13px 18px;min-height:44px}
+  .level-icon{font-size:22px}
+  .level-note{font-size:14px;max-width:100%}
+
+  .header{padding:11px 16px;min-height:44px}
+  .avatar{width:32px;height:32px}
+  .header-info h1{font-size:12px}
+  .header-btn{height:36px;font-size:11px}
+
+  .sidebar{display:none !important}
+
+  .suggestions{padding:8px 16px;gap:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  .suggestion-btn{flex-shrink:0;font-size:11px;padding:6px 12px;min-height:36px}
+
+  .chat{padding:14px}
+  .welcome-icon{font-size:36px}
+  .welcome-title{font-size:16px}
+  .welcome-panels{grid-template-columns:1fr;gap:11px}
+
+  .input-area{padding:11px 16px}
+  textarea{font-size:13px;padding:10px 12px;min-height:40px}
+  .send-btn{width:38px;height:38px}
+  .input-hint{font-size:11px}
+
+  .overlay{padding:14px}
+  .modal{padding:24px;border-radius:16px;max-width:100%}
+
+  .plan-grid{grid-template-columns:1fr;gap:11px}
+  .cabinet-stats{grid-template-columns:1fr;gap:9px}
+  .form-row{grid-template-columns:1fr;gap:9px}
+}
+
+/* ═══ SMALL DESKTOP — 769px+ (вернуть нормальные стили) ═══ */
+@media(min-width:769px){
+  /* sidebar остается видимым */
+  .sidebar{display:flex !important}
+
+  /* suggestions остаются в flex-wrap режиме */
+  .suggestions{flex-wrap:wrap;overflow:visible}
+  .suggestion-btn{flex-shrink:1;font-size:11px;white-space:nowrap}
+}
+
+/* ═══ SAFE AREA & NOTCH SUPPORT (iPhone) ═══ */
+@supports(padding: max(0px)) {
+  .input-area{
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+  @media(max-width:480px){
+    .header{padding-top: max(10px, env(safe-area-inset-top))}
+    .input-area{padding-bottom: max(10px, env(safe-area-inset-bottom))}
+  }
+}
+
+/* ═══ LANDSCAPE ORIENTATION (мобильные) ═══ */
+@media(max-height:500px) and (max-width:768px){
+  .level-screen{padding:16px 12px;gap:10px}
+  .level-logo{font-size:24px}
+  .level-title{font-size:16px}
+  .header{padding:8px 12px;min-height:40px}
+  .chat{padding:8px}
+  .input-area{padding:8px 12px}
+  textarea{min-height:36px}
+  .welcome-panels{display:none}
+}
+
+/* ═══ FOCUS STATE (сенсорные устройства) ═══ */
+@media(hover: none) and (pointer: coarse){
+  /* Убрать :hover на сенсорных устройствах */
+  .level-card:hover{transform:none;background:var(--surface2)}
+  .level-card:active{transform:scale(0.98)}
+
+  .suggestion-btn:hover{background:var(--surface2);border-color:var(--border2);color:var(--text2)}
+  .suggestion-btn:active{transform:scale(0.95)}
+
+  .action-btn:hover{background:var(--surface2)}
+  .action-btn:active{transform:scale(0.95)}
+
+  /* Улучшить focus на touch */
+  button:focus-visible, input:focus-visible, textarea:focus-visible{
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Увеличить сенсорные зоны */
+  .form-input, textarea, .form-btn, button{
+    min-height: 44px;
+    font-size: 16px; /* Избежать zoom на iOS */
+  }
+}
+
+/* ═══ ВЫСОКИЕ ДИСПЛЕИ (iPhone X и выше) ═══ */
+@media(min-height:812px) and (max-width:480px){
+  /* Добавить немного свободного места */
+  .level-screen{gap:14px}
+  .chat{padding:14px}
+}
+
+/* ═══ PERFORMANCE & OPTIMIZATIONS ═══ */
+@media(max-width:480px){
+  /* Reduce animation complexity on mobile */
+  @media(prefers-reduced-motion: reduce){
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Плавный скролл на мобильных */
+  .chat, .sidebar-content, .modal {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 </style>
 </head>
@@ -943,7 +1192,16 @@ function buildSystemPrompt() {
 }
 
 // ═══ SIDEBAR ═══
-function toggleSidebar() { sidebarOpen = !sidebarOpen; document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen); }
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  const sidebar = document.getElementById('sidebar');
+  // На мобильных: класс 'visible', на десктопе: класс 'collapsed'
+  if (window.innerWidth <= 768) {
+    sidebar.classList.toggle('visible', sidebarOpen);
+  } else {
+    sidebar.classList.toggle('collapsed', !sidebarOpen);
+  }
+}
 
 function updateSidebar(text) {
   var lower = text.toLowerCase(), updated = false;
@@ -1263,6 +1521,55 @@ async function sendMessage() {
   isLoading = false; document.getElementById('send-btn').disabled = false;
   document.getElementById('input').focus();
 }
+
+// ═══ MOBILE EVENT HANDLERS ═══
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.getElementById('sidebar');
+  const app = document.querySelector('.app');
+
+  // Закрытие сайдбара при клике вне его на мобильных
+  if (window.innerWidth <= 768) {
+    document.addEventListener('click', function(e) {
+      if (sidebarOpen && !sidebar.contains(e.target) && !e.target.closest('.sidebar-toggle')) {
+        sidebarOpen = false;
+        sidebar.classList.remove('visible');
+      }
+    });
+  }
+
+  // Обработка ресайза (переключение между мобильной и десктопной версией)
+  let resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile && sidebarOpen) {
+        // На мобильных сайдбар выдвижной
+        sidebar.classList.add('visible');
+      } else if (!isMobile) {
+        // На десктопе сайдбар всегда видимый
+        sidebar.classList.remove('visible');
+        if (sidebarOpen) sidebar.classList.remove('collapsed');
+      }
+    }, 250);
+  });
+
+  // Инициализация правильного класса сайдбара при загрузке
+  if (window.innerWidth <= 768) {
+    sidebar.classList.remove('visible');
+  } else {
+    sidebar.classList.remove('visible');
+    sidebar.classList.remove('collapsed');
+  }
+});
+
+// Обработка ориентации экрана
+window.addEventListener('orientationchange', function() {
+  setTimeout(function() {
+    // Убедиться, что высота правильная
+    document.body.style.height = window.innerHeight + 'px';
+  }, 100);
+});
 </script>
 </body>
 </html>
