@@ -644,10 +644,20 @@ function getBotLabel() {
 
 // ═══ LEVEL SELECTION ═══
 function setLevel(level) {
+  console.log('🔵 setLevel() called with:', level);
   userMode = level;
 
+  const screenElement = document.getElementById('level-screen');
+  console.log('🟢 Found element:', screenElement);
+
+  if (!screenElement) {
+    console.error('❌ ERROR: level-screen element not found!');
+    return;
+  }
+
   // Hide level screen IMMEDIATELY
-  document.getElementById('level-screen').classList.add('hidden');
+  screenElement.classList.add('hidden');
+  console.log('🟡 Added hidden class. Current style:', screenElement.style.display);
 
   // Set user level and update badge
   if (level === 'partner') {
