@@ -1,0 +1,370 @@
+{
+  "version": "1.0.0",
+  "description": "Шаблоны для создания демо-метаресурсов",
+  "templates": {
+    "product": {
+      "id": "tmpl_product",
+      "name": "Товар",
+      "icon": "📦",
+      "description": "Физический товар (оборудование, материалы, продукция)",
+      "fields": [
+        {
+          "id": "name",
+          "label": "Название товара",
+          "type": "text",
+          "required": true,
+          "placeholder": "Например: Промышленный станок XYZ-3000",
+          "help": "Полное название товара"
+        },
+        {
+          "id": "category",
+          "label": "Категория",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Оборудование",
+            "Материалы",
+            "Электроника",
+            "Транспорт",
+            "Недвижимость",
+            "Другое"
+          ]
+        },
+        {
+          "id": "description",
+          "label": "Описание",
+          "type": "textarea",
+          "required": true,
+          "placeholder": "Подробное описание товара, характеристики, состояние...",
+          "help": "Чем подробнее, тем выше доверие покупателей"
+        },
+        {
+          "id": "price",
+          "label": "Стоимость (BITBON)",
+          "type": "number",
+          "required": true,
+          "min": 1,
+          "placeholder": "1000",
+          "help": "Рыночная стоимость в токенах BITBON"
+        },
+        {
+          "id": "quantity",
+          "label": "Количество единиц",
+          "type": "number",
+          "required": true,
+          "min": 1,
+          "default": 1
+        },
+        {
+          "id": "location",
+          "label": "Местонахождение",
+          "type": "text",
+          "required": false,
+          "placeholder": "Киев, Украина"
+        },
+        {
+          "id": "images",
+          "label": "Фотографии",
+          "type": "file",
+          "required": false,
+          "accept": "image/*",
+          "multiple": true,
+          "max": 5
+        }
+      ],
+      "benefits": [
+        "Быстрая продажа через экосистему Bitbon",
+        "Верификация подлинности товара",
+        "Защита от мошенничества",
+        "Доступ к глобальному рынку"
+      ]
+    },
+    "service": {
+      "id": "tmpl_service",
+      "name": "Услуга",
+      "icon": "🛠️",
+      "description": "Профессиональная услуга (консалтинг, разработка, обслуживание)",
+      "fields": [
+        {
+          "id": "name",
+          "label": "Название услуги",
+          "type": "text",
+          "required": true,
+          "placeholder": "Например: Разработка веб-приложения"
+        },
+        {
+          "id": "category",
+          "label": "Категория",
+          "type": "select",
+          "required": true,
+          "options": [
+            "IT & Разработка",
+            "Консалтинг",
+            "Маркетинг",
+            "Дизайн",
+            "Образование",
+            "Финансы",
+            "Юридические услуги",
+            "Другое"
+          ]
+        },
+        {
+          "id": "description",
+          "label": "Что входит в услугу",
+          "type": "textarea",
+          "required": true,
+          "placeholder": "• Анализ требований\n• Разработка архитектуры\n• Программирование\n• Тестирование\n• Запуск"
+        },
+        {
+          "id": "price",
+          "label": "Стоимость (BITBON)",
+          "type": "number",
+          "required": true,
+          "min": 1,
+          "placeholder": "5000"
+        },
+        {
+          "id": "duration",
+          "label": "Срок выполнения",
+          "type": "text",
+          "required": true,
+          "placeholder": "30 дней"
+        },
+        {
+          "id": "deliverables",
+          "label": "Результаты работы",
+          "type": "textarea",
+          "required": true,
+          "placeholder": "• Готовое веб-приложение\n• Исходный код\n• Документация\n• Обучение команды"
+        }
+      ],
+      "benefits": [
+        "Предоплата в токенах BITBON",
+        "Прозрачные условия сотрудничества",
+        "Автоматическое выполнение договоров",
+        "Репутация подтверждается системой"
+      ]
+    },
+    "real_estate": {
+      "id": "tmpl_real_estate",
+      "name": "Недвижимость",
+      "icon": "🏢",
+      "description": "Коммерческая или жилая недвижимость",
+      "fields": [
+        {
+          "id": "name",
+          "label": "Название объекта",
+          "type": "text",
+          "required": true,
+          "placeholder": "Например: Офисное помещение 150м² в центре"
+        },
+        {
+          "id": "type",
+          "label": "Тип недвижимости",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Офис",
+            "Склад",
+            "Торговая площадь",
+            "Квартира",
+            "Дом",
+            "Земельный участок"
+          ]
+        },
+        {
+          "id": "area",
+          "label": "Площадь (м²)",
+          "type": "number",
+          "required": true,
+          "min": 1
+        },
+        {
+          "id": "address",
+          "label": "Адрес",
+          "type": "text",
+          "required": true,
+          "placeholder": "ул. Крещатик, 1, Киев"
+        },
+        {
+          "id": "price",
+          "label": "Стоимость (BITBON)",
+          "type": "number",
+          "required": true,
+          "min": 1
+        },
+        {
+          "id": "description",
+          "label": "Описание",
+          "type": "textarea",
+          "required": true,
+          "placeholder": "Состояние, особенности, инфраструктура..."
+        },
+        {
+          "id": "ownership",
+          "label": "Документы на собственность",
+          "type": "file",
+          "required": true,
+          "accept": ".pdf",
+          "help": "Сканы документов подтверждающих права"
+        }
+      ],
+      "benefits": [
+        "Дробное владение (токенизация)",
+        "Быстрая ликвидность",
+        "Прозрачная история сделок",
+        "Минимизация посредников"
+      ]
+    },
+    "intellectual_property": {
+      "id": "tmpl_ip",
+      "name": "Интеллектуальная собственность",
+      "icon": "💡",
+      "description": "Патенты, авторские права, лицензии",
+      "fields": [
+        {
+          "id": "name",
+          "label": "Название",
+          "type": "text",
+          "required": true,
+          "placeholder": "Патент на технологию X"
+        },
+        {
+          "id": "type",
+          "label": "Тип ИС",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Патент",
+            "Авторское право",
+            "Торговая марка",
+            "Ноу-хау",
+            "Лицензия"
+          ]
+        },
+        {
+          "id": "description",
+          "label": "Описание",
+          "type": "textarea",
+          "required": true
+        },
+        {
+          "id": "price",
+          "label": "Стоимость лицензии (BITBON)",
+          "type": "number",
+          "required": true
+        },
+        {
+          "id": "exclusivity",
+          "label": "Эксклюзивность",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Эксклюзивная лицензия",
+            "Неэксклюзивная лицензия",
+            "Полная передача прав"
+          ]
+        }
+      ],
+      "benefits": [
+        "Защита прав через блокчейн",
+        "Автоматическое отслеживание использования",
+        "Роялти в токенах BITBON",
+        "Глобальная доступность"
+      ]
+    }
+  },
+  "demo_examples": {
+    "product_example": {
+      "template": "tmpl_product",
+      "data": {
+        "name": "Промышленный 3D принтер ProMaker X500",
+        "category": "Оборудование",
+        "description": "Профессиональный 3D принтер для производства. Характеристики:\n• Область печати: 500x500x500мм\n• Точность: 0.05мм\n• Материалы: PLA, ABS, Nylon, Carbon\n• Состояние: Новый, с гарантией 2 года",
+        "price": 15000,
+        "quantity": 5,
+        "location": "Киев, Украина"
+      }
+    },
+    "service_example": {
+      "template": "tmpl_service",
+      "data": {
+        "name": "Консалтинг по внедрению Web 4.0",
+        "category": "Консалтинг",
+        "description": "Комплексная программа перехода компании в экосистему Web 4.0:\n• Анализ текущих процессов\n• Разработка стратегии токенизации\n• Создание первых метаресурсов\n• Обучение команды\n• Сопровождение 3 месяца",
+        "price": 25000,
+        "duration": "60 дней",
+        "deliverables": "• Стратегия цифровизации\n• 3-5 созданных метаресурсов\n• Обученная команда\n• Интеграция с Системой Bitbon"
+      }
+    }
+  },
+  "creation_flow": {
+    "steps": [
+      {
+        "step": 1,
+        "title": "Выбор типа актива",
+        "description": "Определите что вы хотите токенизировать",
+        "action": "select_template"
+      },
+      {
+        "step": 2,
+        "title": "Заполнение информации",
+        "description": "Опишите ваш актив максимально подробно",
+        "action": "fill_form"
+      },
+      {
+        "step": 3,
+        "title": "Оценка стоимости",
+        "description": "Укажите рыночную стоимость в BITBON",
+        "action": "set_price"
+      },
+      {
+        "step": 4,
+        "title": "Предпросмотр",
+        "description": "Проверьте как выглядит ваш метаресурс",
+        "action": "preview"
+      },
+      {
+        "step": 5,
+        "title": "Создание ДЕМО",
+        "description": "Сгенерируйте тестовую версию для изучения",
+        "action": "create_demo"
+      }
+    ]
+  },
+  "business_benefits": {
+    "title": "Зачем бизнесу создавать метаресурсы?",
+    "benefits": [
+      {
+        "icon": "🌐",
+        "title": "Новые рынки",
+        "description": "Доступ к экосистеме Bitbon с доверенными партнерами по всему миру"
+      },
+      {
+        "icon": "💰",
+        "title": "Ликвидность",
+        "description": "Быстрая продажа активов через прозрачные механизмы обмена"
+      },
+      {
+        "icon": "🔒",
+        "title": "Защита",
+        "description": "Верификация прав собственности через блокчейн технологии"
+      },
+      {
+        "icon": "📊",
+        "title": "Прозрачность",
+        "description": "Полная история сделок повышает доверие клиентов"
+      },
+      {
+        "icon": "🚀",
+        "title": "Инновации",
+        "description": "Участие в новой экономике Web 4.0"
+      },
+      {
+        "icon": "🤝",
+        "title": "Партнерства",
+        "description": "Автоматический поиск покупателей и партнеров в системе"
+      }
+    ]
+  }
+}

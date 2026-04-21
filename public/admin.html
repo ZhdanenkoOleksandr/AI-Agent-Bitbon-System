@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitbon Admin — Управление партнёрами</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0d12;--surface:#111520;--surface2:#181e2e;--border:rgba(99,179,237,0.12);--border2:rgba(99,179,237,0.25);--accent:#3b82f6;--accent2:#60a5fa;--green:#10b981;--gold:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--radius:12px}
+body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px;max-width:400px;width:100%;text-align:center}
+.login-box h1{font-size:20px;margin-bottom:8px}
+.login-box p{font-size:13px;color:var(--text2);margin-bottom:24px}
+.login-box input{width:100%;padding:12px 16px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Onest',sans-serif;font-size:14px;outline:none;margin-bottom:12px}
+.login-box input:focus{border-color:var(--accent)}
+.login-box button{width:100%;padding:12px;border-radius:var(--radius);border:none;background:var(--accent);color:#fff;font-family:'Onest',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.login-box button:hover{background:var(--accent2)}
+.login-error{color:var(--red);font-size:13px;margin-top:8px}
+
+.admin{display:none;padding:20px;max-width:1200px;margin:0 auto}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.admin-header h1{font-size:20px;display:flex;align-items:center;gap:10px}
+.admin-header button{padding:8px 16px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-family:'Onest',sans-serif;cursor:pointer}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center}
+.stat-card .val{font-size:28px;font-weight:700;color:var(--accent2)}
+.stat-card .label{font-size:12px;color:var(--text3);margin-top:4px}
+
+.section{margin-bottom:32px}
+.section-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title .badge{font-size:12px;padding:2px 8px;border-radius:20px;background:rgba(59,130,246,0.15);color:var(--accent2)}
+
+table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
+th{background:var(--surface2);color:var(--text2);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px}
+td{color:var(--text)}
+tr:hover td{background:rgba(59,130,246,0.03)}
+
+.status{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block}
+.status.active{background:rgba(16,185,129,0.15);color:var(--green)}
+.status.pending{background:rgba(245,158,11,0.15);color:var(--gold)}
+.status.suspended{background:rgba(239,68,68,0.15);color:var(--red)}
+
+.btn-sm{padding:6px 12px;border-radius:8px;border:none;font-family:'Onest',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-activate{background:var(--green);color:#fff}
+.btn-activate:hover{opacity:0.9}
+.btn-confirm{background:var(--gold);color:#000}
+.btn-confirm:hover{opacity:0.9}
+.btn-suspend{background:var(--red);color:#fff}
+.btn-suspend:hover{opacity:0.9}
+.btn-view{background:var(--surface2);color:var(--accent2);border:1px solid var(--border2)}
+
+.activate-form{display:none;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:20px;margin-top:12px}
+.activate-form label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500}
+.activate-form select,.activate-form input{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Onest',sans-serif;font-size:13px;margin-bottom:10px;outline:none}
+.activate-form select:focus,.activate-form input:focus{border-color:var(--accent)}
+.result-msg{padding:10px;border-radius:8px;font-size:13px;margin-top:8px;line-height:1.5}
+.result-msg.success{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green)}
+.result-msg.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red)}
+
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <h1>🔐 Admin Panel</h1>
+    <p>Bitbon Partner System — управление партнёрами и оплатами</p>
+    <input type="password" id="admin-pass" placeholder="Пароль администратора" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button onclick="adminLogin()">Войти</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin" id="admin-panel">
+  <div class="admin-header">
+    <h1>⚡ Bitbon Admin</h1>
+    <button onclick="adminLogout()">Выйти</button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <!-- Partners -->
+  <div class="section">
+    <div class="section-title">👥 Партнёры <span class="badge" id="partners-count">0</span></div>
+    <table>
+      <thead><tr><th>Имя</th><th>Email</th><th>Telegram</th><th>Статус</th><th>Пакет</th><th>Запросов</th><th>Действия</th></tr></thead>
+      <tbody id="partners-table"><tr><td colspan="7" class="empty">Загрузка...</td></tr></tbody>
+    </table>
+    <div class="activate-form" id="activate-form">
+      <h3 style="font-size:14px;margin-bottom:12px">Активация API ключа</h3>
+      <label>ID Партнёра</label>
+      <input id="act-partner-id" readonly>
+      <label>Имя</label>
+      <input id="act-partner-name" readonly>
+      <label>Пакет</label>
+      <select id="act-package">
+        <option value="starter">🌱 Стартер (100 запросов, 10 BB)</option>
+        <option value="pro" selected>📖 Про (500 запросов, 50 BB)</option>
+        <option value="expert">🚀 Эксперт (безлимит, 150 BB)</option>
+      </select>
+      <button class="btn-sm btn-activate" onclick="activatePartner()" style="width:100%;padding:10px">⚡ Активировать API ключ</button>
+      <div id="activate-result"></div>
+    </div>
+  </div>
+
+  <!-- Payments -->
+  <div class="section">
+    <div class="section-title">💳 Платежи <span class="badge" id="payments-count">0</span></div>
+    <table>
+      <thead><tr><th>Партнёр</th><th>Сумма BB</th><th>TX Hash</th><th>Пакет</th><th>Статус</th><th>Дата</th><th>Действия</th></tr></thead>
+      <tbody id="payments-table"><tr><td colspan="7" class="empty">Нет платежей</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Metaresources -->
+  <div class="section">
+    <div class="section-title">🏗️ Метаресурсы (База знаний) <span class="badge" id="meta-count">0</span></div>
+    <table>
+      <thead><tr><th>Название</th><th>Отрасль</th><th>Связи</th><th>Партнёр</th><th>Создан</th></tr></thead>
+      <tbody id="meta-table"><tr><td colspan="5" class="empty">Нет метаресурсов</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let adminToken = localStorage.getItem('admin_token') || null;
+
+// Auto-login
+if (adminToken) {
+  checkToken();
+}
+
+async function adminLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  try {
+    const resp = await fetch(API + '/api/admin/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({password: pass})
+    });
+    const data = await resp.json();
+    if (data.success) {
+      adminToken = data.token;
+      localStorage.setItem('admin_token', adminToken);
+      showAdmin();
+    } else {
+      document.getElementById('login-error').textContent = 'Неверный пароль';
+    }
+  } catch(e) {
+    document.getElementById('login-error').textContent = 'Ошибка соединения';
+  }
+}
+
+function adminLogout() {
+  adminToken = null;
+  localStorage.removeItem('admin_token');
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('login-wrap').style.display = 'flex';
+}
+
+async function checkToken() {
+  try {
+    const resp = await fetch(API + '/api/admin/stats', {
+      headers: {'Authorization': 'Bearer ' + adminToken}
+    });
+    if (resp.ok) {
+      showAdmin();
+    } else {
+      adminLogout();
+    }
+  } catch(e) {
+    adminLogout();
+  }
+}
+
+async function showAdmin() {
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+  await loadStats();
+  await loadPartners();
+  await loadPayments();
+  await loadMetaresources();
+}
+
+function authHeaders() {
+  return {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken};
+}
+
+async function loadStats() {
+  try {
+    const resp = await fetch(API + '/api/admin/stats', {headers: authHeaders()});
+    const data = await resp.json();
+    document.getElementById('stats-grid').innerHTML =
+      '<div class="stat-card"><div class="val">' + data.totalPartners + '</div><div class="label">Партнёров</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.activePartners + '</div><div class="label">Активных</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.pendingPartners + '</div><div class="label">Ожидают</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.totalPayments + '</div><div class="label">Платежей</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.totalMetaresources + '</div><div class="label">Метаресурсов</div></div>' +
+      '<div class="stat-card"><div class="val">' + data.totalRequests + '</div><div class="label">Запросов</div></div>';
+  } catch(e) {}
+}
+
+async function loadPartners() {
+  try {
+    const resp = await fetch(API + '/api/admin/partners', {headers: authHeaders()});
+    const data = await resp.json();
+    const tbody = document.getElementById('partners-table');
+    document.getElementById('partners-count').textContent = data.partners.length;
+
+    if (!data.partners.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">Нет партнёров</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.partners.map(p => {
+      const statusClass = p.status === 'active' ? 'active' : p.status.includes('pending') ? 'pending' : 'suspended';
+      const statusText = p.status === 'active' ? 'Активен' : p.status === 'pending_payment' ? 'Ожидает оплаты' : p.status === 'pending_review' ? 'На проверке' : p.status;
+      const limitText = p.requestsLimit === null ? '—' : (p.requestsLimit === Infinity || p.requestsLimit > 99999 ? '∞' : p.requestsUsed + '/' + p.requestsLimit);
+      const actions = p.status !== 'active'
+        ? '<button class="btn-sm btn-activate" onclick="showActivateForm(\'' + p.id + '\', \'' + p.fullName + '\')">⚡ Активировать</button>'
+        : '<button class="btn-sm btn-suspend" onclick="suspendPartner(\'' + p.id + '\')">⏸️ Стоп</button>';
+      return '<tr>' +
+        '<td><strong>' + p.fullName + '</strong></td>' +
+        '<td>' + p.email + '</td>' +
+        '<td>' + (p.telegram || '—') + '</td>' +
+        '<td><span class="status ' + statusClass + '">' + statusText + '</span></td>' +
+        '<td>' + (p.packageType || '—') + '</td>' +
+        '<td>' + limitText + '</td>' +
+        '<td>' + actions + '</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {}
+}
+
+function showActivateForm(partnerId, partnerName) {
+  document.getElementById('activate-form').style.display = 'block';
+  document.getElementById('act-partner-id').value = partnerId;
+  document.getElementById('act-partner-name').value = partnerName;
+  document.getElementById('activate-result').innerHTML = '';
+}
+
+async function activatePartner() {
+  const partnerId = document.getElementById('act-partner-id').value;
+  const packageType = document.getElementById('act-package').value;
+  const result = document.getElementById('activate-result');
+
+  try {
+    const resp = await fetch(API + '/api/admin/activate', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({partnerId, packageType})
+    });
+    const data = await resp.json();
+    if (data.success) {
+      result.innerHTML = '<div class="result-msg success">✅ ' + data.message +
+        '<br><br><strong>API Key:</strong> <code style="background:var(--surface2);padding:2px 8px;border-radius:4px;font-size:12px;word-break:break-all">' + data.apiKey + '</code>' +
+        '<br><strong>Пакет:</strong> ' + data.package +
+        '<br><strong>Лимит:</strong> ' + data.requestsLimit +
+        '<br><strong>До:</strong> ' + new Date(data.expiresAt).toLocaleDateString('ru') +
+        '<br><br>⚠️ API ключ показан один раз. Передайте его партнёру.</div>';
+      await loadPartners();
+      await loadStats();
+    } else {
+      result.innerHTML = '<div class="result-msg error">❌ ' + (data.error || 'Ошибка') + '</div>';
+    }
+  } catch(e) {
+    result.innerHTML = '<div class="result-msg error">❌ Ошибка соединения</div>';
+  }
+}
+
+async function suspendPartner(partnerId) {
+  if (!confirm('Приостановить партнёра?')) return;
+  try {
+    await fetch(API + '/api/admin/deactivate', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({partnerId})
+    });
+    await loadPartners();
+    await loadStats();
+  } catch(e) {}
+}
+
+async function loadPayments() {
+  try {
+    const resp = await fetch(API + '/api/admin/payments', {headers: authHeaders()});
+    const data = await resp.json();
+    const tbody = document.getElementById('payments-table');
+    document.getElementById('payments-count').textContent = data.payments.length;
+
+    if (!data.payments.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">Нет платежей</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.payments.map(p => {
+      const statusClass = p.status === 'confirmed' ? 'active' : 'pending';
+      const actions = p.status === 'pending_review'
+        ? '<button class="btn-sm btn-confirm" onclick="confirmPayment(\'' + p.id + '\')">✅ Подтвердить</button>'
+        : '<span style="color:var(--green);font-size:12px">Подтверждён</span>';
+      return '<tr>' +
+        '<td>' + (p.partnerName || p.partnerId) + '</td>' +
+        '<td><strong>' + p.amountBB + ' BB</strong></td>' +
+        '<td style="font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis">' + p.txHash + '</td>' +
+        '<td>' + p.packageType + '</td>' +
+        '<td><span class="status ' + statusClass + '">' + (p.status === 'confirmed' ? 'OK' : 'Проверка') + '</span></td>' +
+        '<td style="font-size:12px">' + new Date(p.submittedAt).toLocaleString('ru') + '</td>' +
+        '<td>' + actions + '</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {}
+}
+
+async function confirmPayment(paymentId) {
+  try {
+    await fetch(API + '/api/admin/confirm-payment', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({paymentId})
+    });
+    await loadPayments();
+    await loadStats();
+  } catch(e) {}
+}
+
+async function loadMetaresources() {
+  try {
+    const resp = await fetch(API + '/api/admin/metaresources', {headers: authHeaders()});
+    const data = await resp.json();
+    const tbody = document.getElementById('meta-table');
+    document.getElementById('meta-count').textContent = data.metaresources.length;
+
+    if (!data.metaresources.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Нет метаресурсов в базе знаний</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.metaresources.map(m => {
+      const crossRefs = (m.crossReferences || []).map(cr => cr.name).join(', ') || '—';
+      return '<tr>' +
+        '<td><strong style="color:var(--purple)">' + m.name + '</strong><br><span style="font-size:11px;color:var(--text3)">' + (m.tagline || '') + '</span></td>' +
+        '<td>' + (m.industry || m.businessType || '—') + '</td>' +
+        '<td style="font-size:12px;max-width:200px">' + crossRefs + '</td>' +
+        '<td style="font-size:12px">' + (m.partnerId || '—') + '</td>' +
+        '<td style="font-size:12px">' + new Date(m.createdAt).toLocaleDateString('ru') + '</td>' +
+        '</tr>';
+    }).join('');
+  } catch(e) {}
+}
+
+// Auto-refresh every 30s
+setInterval(() => {
+  if (adminToken && document.getElementById('admin-panel').style.display !== 'none') {
+    loadStats();
+    loadPartners();
+    loadPayments();
+    loadMetaresources();
+  }
+}, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitbon AI — Агент Системы Bitbon</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0d12;--surface:#111520;--surface2:#181e2e;--surface3:#1e2640;
+  --border:rgba(99,179,237,0.12);--border2:rgba(99,179,237,0.25);
+  --accent:#3b82f6;--accent2:#60a5fa;--green:#10b981;--gold:#f59e0b;--gold2:#fbbf24;
+  --purple:#8b5cf6;--red:#ef4444;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --user-bg:#1e3a5f;--bot-bg:#131b2e;--radius:16px;--radius-sm:10px;
+}
+body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── OVERLAYS ────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
+.overlay.hidden{display:none}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:32px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.modal-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:24px}
+.close-btn{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px;line-height:1}
+.close-btn:hover{color:var(--text)}
+
+/* LEVEL SCREEN */
+.level-screen{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:18px}
+.level-logo{font-size:40px}
+.level-title{font-size:20px;font-weight:700;text-align:center;line-height:1.4}
+.level-sub{font-size:13px;color:var(--text2);text-align:center;max-width:420px;line-height:1.6}
+.level-cards{display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px}
+.level-card{padding:15px 20px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);cursor:pointer;transition:all 0.2s;text-align:left;font-family:'Onest',sans-serif;display:flex;align-items:center;gap:14px;color:var(--text)}
+.level-card:hover{border-color:var(--accent);background:rgba(59,130,246,0.08);transform:translateX(4px)}
+.level-icon{font-size:24px;flex-shrink:0}
+.level-card-title{font-size:14px;font-weight:600;margin-bottom:2px}
+.level-card-desc{font-size:12px;color:var(--text2);line-height:1.4}
+.level-divider{width:100%;max-width:420px;border:none;border-top:1px solid var(--border);margin:4px 0}
+.level-note{font-size:11px;color:var(--text3);text-align:center;max-width:380px}
+
+/* TABS */
+.tab-row{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden}
+.tab-btn{flex:1;padding:10px;text-align:center;font-family:'Onest',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;background:var(--surface2);color:var(--text2)}
+.tab-btn.active{background:var(--accent);color:#fff}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* FORM FIELDS */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500}
+.form-input{width:100%;padding:10px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Onest',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s}
+.form-input:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text3)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-btn{width:100%;padding:12px;border-radius:var(--radius-sm);border:none;font-family:'Onest',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:8px}
+.form-btn.primary{background:var(--accent);color:#fff}
+.form-btn.primary:hover{background:var(--accent2)}
+.form-btn.gold{background:var(--gold);color:#000}
+.form-btn.gold:hover{background:var(--gold2)}
+.form-hint{font-size:11px;color:var(--text3);margin-top:4px}
+.form-success{padding:14px;border-radius:var(--radius-sm);background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);font-size:13px;margin-top:10px;line-height:1.5}
+.form-error{padding:14px;border-radius:var(--radius-sm);background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);font-size:13px;margin-top:10px}
+
+/* PLAN GRID */
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.plan-card{border:1px solid var(--border2);border-radius:var(--radius);padding:18px 14px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
+.plan-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.plan-card.active{border-color:var(--accent);background:rgba(59,130,246,0.08)}
+.plan-card.popular{border-color:var(--gold)}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap}
+.plan-icon{font-size:26px;margin-bottom:6px}
+.plan-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.plan-price{font-size:18px;font-weight:700;color:var(--accent2);margin-bottom:2px}
+.plan-price span{font-size:11px;color:var(--text2);font-weight:400}
+.plan-requests{font-size:12px;color:var(--text2);margin-bottom:10px}
+.plan-features{list-style:none;text-align:left}
+.plan-features li{font-size:11px;color:var(--text2);padding:2px 0;display:flex;gap:5px;line-height:1.4}
+.plan-features li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+
+/* CABINET STATS */
+.cabinet-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center}
+.stat-val{font-size:22px;font-weight:700;color:var(--accent2)}
+.stat-label{font-size:11px;color:var(--text3);margin-top:2px}
+.requests-bar-wrap{background:var(--surface2);border-radius:8px;height:8px;margin:10px 0 4px;overflow:hidden}
+.requests-bar{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--green),var(--accent));transition:width 0.5s}
+.requests-bar.warn{background:linear-gradient(90deg,var(--gold),var(--red))}
+
+/* CROSS-REFERENCES */
+.cross-refs{margin-top:12px;padding:12px;border-radius:var(--radius-sm);background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2)}
+.cross-refs-title{font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px}
+.cross-ref-item{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:4px 10px;border-radius:20px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:#c4b5fd;margin:2px 4px 2px 0;cursor:pointer;transition:all 0.2s}
+.cross-ref-item:hover{background:rgba(139,92,246,0.2);border-color:var(--purple)}
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+.app{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width 0.3s ease}
+.sidebar.collapsed{width:0}
+.sidebar-header{padding:13px 14px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0}
+.sidebar-content{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:16px}
+.section-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;font-weight:600}
+
+/* Knowledge base entries in sidebar */
+.kb-entry{padding:9px 11px;border-radius:var(--radius-sm);background:var(--surface2);margin-bottom:5px;cursor:pointer;border:1px solid transparent;transition:all 0.2s}
+.kb-entry:hover{border-color:var(--border2);background:var(--surface3)}
+.kb-entry-name{font-size:12px;font-weight:600;color:var(--purple);margin-bottom:2px}
+.kb-entry-ind{font-size:11px;color:var(--text2)}
+
+.mini-requests{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:4px}
+.mini-plan-name{font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:4px}
+.mini-count{font-size:11px;color:var(--text2);margin-bottom:6px}
+.progress-bar-wrap{background:var(--surface3);border-radius:8px;height:5px;margin-bottom:4px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:8px;transition:width 0.5s;width:0%}
+.progress-text{font-size:11px;color:var(--text3);margin-bottom:8px}
+.topics-wrap{display:flex;flex-wrap:wrap;gap:4px}
+.topic-pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:var(--green);cursor:pointer;transition:all 0.2s}
+.topic-pill:hover{background:rgba(16,185,129,0.2)}
+.pill-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+.glossary-item{padding:9px 11px;border-radius:var(--radius-sm);background:var(--surface2);margin-bottom:5px;cursor:pointer;border:1px solid transparent;transition:all 0.2s}
+.glossary-item:hover{border-color:var(--border2);background:var(--surface3)}
+.glossary-term{font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:2px}
+.glossary-def{font-size:11px;color:var(--text2);line-height:1.4}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* HEADER */
+.header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.header-info h1{font-size:13px;font-weight:600}
+.header-info p{font-size:11px;color:var(--text2)}
+.header-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.level-badge{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(99,179,237,0.1);border:1px solid rgba(99,179,237,0.25);color:#93c5fd}
+.header-btn{height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'Onest',sans-serif;font-size:11px;display:flex;align-items:center;gap:5px;transition:all 0.2s;white-space:nowrap}
+.header-btn:hover{border-color:var(--accent);color:var(--accent2)}
+.header-btn.cabinet-btn:hover{border-color:var(--gold);color:var(--gold2)}
+.header-btn.meta-btn{border-color:rgba(139,92,246,0.4);color:var(--purple)}
+.header-btn.meta-btn:hover{border-color:var(--purple);background:rgba(139,92,246,0.1)}
+.sidebar-toggle{width:30px;height:30px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.sidebar-toggle:hover{border-color:var(--accent);color:var(--accent2)}
+.req-counter{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:var(--green)}
+.req-counter.warn{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:var(--red)}
+
+/* SUGGESTIONS */
+.suggestions{padding:9px 18px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+.suggestion-btn{font-family:'Onest',sans-serif;font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.suggestion-btn:hover{border-color:var(--accent);color:var(--accent2);background:rgba(59,130,246,0.08)}
+.suggestion-btn.meta-suggest{border-color:rgba(139,92,246,0.3);color:var(--purple)}
+.suggestion-btn.meta-suggest:hover{border-color:var(--purple);background:rgba(139,92,246,0.1)}
+.suggestion-btn.biz-suggest{border-color:rgba(245,158,11,0.3);color:var(--gold)}
+.suggestion-btn.biz-suggest:hover{border-color:var(--gold);background:rgba(245,158,11,0.1)}
+
+/* CHAT */
+.chat{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px;display:flex;flex-direction:column;gap:18px;scroll-behavior:smooth;min-height:0}
+.welcome{text-align:center;padding:28px 20px}
+.welcome-icon{font-size:38px;margin-bottom:12px}
+.welcome-title{font-size:17px;font-weight:600;margin-bottom:7px}
+.welcome-sub{font-size:13px;color:var(--text2);line-height:1.6;max-width:400px;margin:0 auto}
+
+/* ── WELCOME PANELS ──────────────────────────────────────── */
+.welcome-panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:600px;margin:16px auto 0}
+.welcome-panel{padding:16px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface2);text-align:left;cursor:default}
+.welcome-panel-title{font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.welcome-panel-title.user-title{color:var(--accent2)}
+.welcome-panel-title.biz-title{color:var(--gold)}
+.welcome-panel-list{list-style:none;padding:0}
+.welcome-panel-list li{font-size:12px;color:var(--text2);padding:3px 0;display:flex;gap:5px;line-height:1.4;cursor:pointer;transition:color 0.2s}
+.welcome-panel-list li:hover{color:var(--text)}
+.welcome-panel-list li::before{flex-shrink:0;font-weight:700}
+.welcome-panel.user-panel li::before{content:'→';color:var(--accent)}
+.welcome-panel.biz-panel li::before{content:'→';color:var(--gold)}
+
+/* MESSAGES */
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg.user{flex-direction:row-reverse}
+.msg-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:var(--surface2);border:1px solid var(--border2)}
+.msg.bot .msg-avatar{background:linear-gradient(135deg,#1e3a5f,#3b82f6)}
+.msg-body{max-width:82%;display:flex;flex-direction:column;gap:4px}
+.msg.user .msg-body{align-items:flex-end}
+.msg-name{font-size:11px;color:var(--text3);padding:0 4px}
+.msg-bubble{padding:13px 16px;border-radius:var(--radius);font-size:14px;line-height:1.7;background:var(--bot-bg);border:1px solid var(--border)}
+.msg.user .msg-bubble{background:var(--user-bg);border-color:rgba(59,130,246,0.3)}
+.msg-bubble p{margin-bottom:7px}
+.msg-bubble p:last-child{margin-bottom:0}
+.msg-bubble strong{color:var(--accent2)}
+
+/* EXPAND */
+.expand-btn{display:inline-flex;align-items:center;gap:5px;margin-top:9px;font-family:'Onest',sans-serif;font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);background:rgba(59,130,246,0.06);color:var(--accent2);cursor:pointer;transition:all 0.2s}
+.expand-btn:hover{border-color:var(--accent);background:rgba(59,130,246,0.12)}
+.expand-btn .arr{transition:transform 0.2s;display:inline-block}
+.expand-btn.open .arr{transform:rotate(180deg)}
+.full-text{display:none}
+.full-text.visible{display:block;margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
+
+/* EXAMPLE, COMPARE, META-DEMO */
+.example-block{margin-top:11px;padding:11px 14px;border-radius:var(--radius-sm);background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-left:3px solid var(--gold)}
+.example-label{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.example-text{font-size:13px;line-height:1.6}
+.compare-block{margin-top:11px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.compare-col{padding:10px 12px;border-radius:var(--radius-sm)}
+.compare-col.before{background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2)}
+.compare-col.after{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2)}
+.compare-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.compare-col.before .compare-label{color:var(--red)}
+.compare-col.after .compare-label{color:var(--green)}
+.compare-text{font-size:12px;color:var(--text2);line-height:1.5}
+
+.meta-demo{border:1px solid rgba(139,92,246,0.4);border-radius:var(--radius);overflow:hidden;margin-top:4px}
+.meta-demo-header{background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(59,130,246,0.2));padding:16px 18px;border-bottom:1px solid rgba(139,92,246,0.3)}
+.meta-demo-title{font-size:16px;font-weight:700;color:#c4b5fd;margin-bottom:4px}
+.meta-demo-sub{font-size:12px;color:var(--text2)}
+.meta-demo-body{padding:16px 18px}
+.meta-section{margin-bottom:16px}
+.meta-section:last-child{margin-bottom:0}
+.meta-section-title{font-size:12px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.meta-section-content{font-size:13px;color:var(--text);line-height:1.6}
+.meta-roles{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.meta-role-tag{font-size:12px;padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2)}
+.meta-tokens{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.meta-token{font-size:12px;padding:4px 10px;border-radius:8px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:#c4b5fd}
+.meta-philosophy{margin-top:12px;padding:12px 14px;border-radius:var(--radius-sm);background:rgba(59,130,246,0.06);border-left:3px solid var(--accent);font-size:13px;color:var(--text2);line-height:1.6;font-style:italic}
+.meta-cta{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.meta-cta-btn{padding:9px 16px;border-radius:var(--radius-sm);font-family:'Onest',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:none}
+.meta-cta-btn.primary{background:var(--purple);color:#fff}
+.meta-cta-btn.primary:hover{background:#7c3aed}
+.meta-cta-btn.secondary{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+.meta-cta-btn.secondary:hover{border-color:var(--accent);color:var(--accent2)}
+
+.diagram-container{margin:11px 0;padding:16px 12px 12px;background:#0a0d12;border:1px solid var(--border2);border-radius:var(--radius);position:relative;overflow-x:auto}
+.diagram-label{position:absolute;top:-8px;left:14px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);background:var(--bot-bg);padding:0 8px;font-weight:600}
+.mermaid{display:flex;justify-content:center;align-items:center;min-height:60px}
+.mermaid svg{max-width:100%;height:auto}
+.mermaid text,.mermaid .label,.mermaid .nodeLabel,.mermaid span{fill:#fff!important;color:#fff!important}
+.mermaid .node rect,.mermaid .node circle,.mermaid .node ellipse{fill:#1e3a5f!important;stroke:#3b82f6!important}
+.mermaid .edgePath .path{stroke:#60a5fa!important}
+.mermaid .arrowheadPath{fill:#60a5fa!important}
+
+.msg-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.action-btn{font-family:'Onest',sans-serif;font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px}
+.action-btn.rephrase:hover{border-color:var(--gold);color:var(--gold2);background:rgba(245,158,11,0.08)}
+.action-btn.simpler:hover{border-color:var(--green);color:var(--green);background:rgba(16,185,129,0.08)}
+
+.followups{margin-top:11px;padding-top:11px;border-top:1px solid var(--border)}
+.followups-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;font-weight:600}
+.followups-list{display:flex;flex-direction:column;gap:5px}
+.followup-btn{font-family:'Onest',sans-serif;font-size:13px;padding:8px 13px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:rgba(59,130,246,0.04);color:var(--text);cursor:pointer;transition:all 0.2s;text-align:left;line-height:1.4}
+.followup-btn:hover{border-color:var(--accent);background:rgba(59,130,246,0.1);color:var(--accent2);transform:translateX(2px)}
+.followup-btn::before{content:'→ ';color:var(--accent);font-weight:600}
+
+.wizard-question{background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.3);border-radius:var(--radius);padding:14px 16px;margin-bottom:4px}
+.wizard-q-label{font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.wizard-q-text{font-size:14px;line-height:1.6}
+.wizard-progress{display:flex;gap:4px;margin-top:10px}
+.wizard-dot{width:8px;height:8px;border-radius:50%;background:var(--border2)}
+.wizard-dot.done{background:var(--purple)}
+.wizard-dot.active{background:var(--accent2)}
+
+.limit-banner{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);padding:14px 16px;text-align:center}
+.limit-banner-title{font-size:14px;font-weight:600;color:var(--red);margin-bottom:6px}
+.limit-banner-sub{font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5}
+.upgrade-btn{padding:9px 20px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;font-family:'Onest',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s}
+.upgrade-btn:hover{background:var(--accent2)}
+
+.typing{display:flex;gap:4px;padding:5px 0}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--accent2);animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:0.2s}
+.typing span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-6px);opacity:1}}
+
+.input-area{padding:13px 18px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.input-row{display:flex;gap:9px;align-items:flex-end}
+textarea{flex:1;font-family:'Onest',sans-serif;font-size:14px;padding:11px 15px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);resize:none;outline:none;line-height:1.5;max-height:120px;transition:border-color 0.2s}
+textarea:focus{border-color:var(--accent)}
+textarea::placeholder{color:var(--text3)}
+.send-btn{width:42px;height:42px;border-radius:50%;background:var(--accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0}
+.send-btn:hover{background:var(--accent2);transform:scale(1.05)}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.input-hint{font-size:11px;color:var(--text3);margin-top:6px;text-align:center}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(99,179,237,0.2);border-radius:4px}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .plan-grid{grid-template-columns:1fr}
+  .welcome-panels{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .cabinet-stats{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ LEVEL SCREEN ═══ -->
+<div class="level-screen" id="level-screen">
+  <div class="level-logo">⚡</div>
+  <div class="level-title">AI Агент Системы Bitbon</div>
+  <div class="level-sub">Выберите кто вы — агент адаптирует глубину, терминологию и примеры</div>
+  <div class="level-cards">
+    <button class="level-card" onclick="setLevel('user')">
+      <span class="level-icon">👤</span>
+      <div><div class="level-card-title">Я пользователь</div><div class="level-card-desc">Хочу узнать о Bitbon, Web 4.0 и возможностях системы</div></div>
+    </button>
+    <button class="level-card" onclick="setLevel('business')">
+      <span class="level-icon">💼</span>
+      <div><div class="level-card-title">Я представляю бизнес</div><div class="level-card-desc">Хочу создать Метаресурс, подключить бизнес к Web 4.0</div></div>
+    </button>
+    <hr class="level-divider">
+    <button class="level-card" onclick="setLevel('partner')">
+      <span class="level-icon">🤝</span>
+      <div><div class="level-card-title">Стать Партнёром</div><div class="level-card-desc">Зарегистрироваться, получить API и зарабатывать с Bitbon</div></div>
+    </button>
+  </div>
+  <div class="level-note">Партнёры Системы Bitbon получают API-доступ к AI агенту для своих клиентов</div>
+</div>
+
+<!-- ═══ REGISTER PARTNER OVERLAY ═══ -->
+<div class="overlay hidden" id="register-overlay">
+  <div class="modal" style="max-width:480px">
+    <button class="close-btn" onclick="closeRegister()">×</button>
+    <div class="modal-title">🤝 Регистрация Партнёра</div>
+    <div class="modal-sub">Заполните данные для регистрации. После оплаты Bitbon администратор активирует ваш API ключ.</div>
+    <div id="register-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Имя *</label>
+          <input class="form-input" id="reg-first" placeholder="Ваше имя">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Фамилия *</label>
+          <input class="form-input" id="reg-last" placeholder="Ваша фамилия">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input class="form-input" id="reg-email" type="email" placeholder="partner@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telegram *</label>
+        <input class="form-input" id="reg-telegram" placeholder="@username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Телефон</label>
+        <input class="form-input" id="reg-phone" type="tel" placeholder="+380...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bitbon кошелёк (для оплаты)</label>
+        <input class="form-input" id="reg-wallet" placeholder="Адрес кошелька">
+      </div>
+
+      <div style="margin:16px 0 12px;font-size:13px;font-weight:600;color:var(--text)">Выберите пакет:</div>
+      <div class="plan-grid" id="reg-plans">
+        <div class="plan-card" data-pkg="starter" onclick="selectRegPlan('starter')">
+          <div class="plan-icon">🌱</div>
+          <div class="plan-name">Стартер</div>
+          <div class="plan-price">10 BB <span>/мес</span></div>
+          <div class="plan-requests">100 запросов</div>
+          <ul class="plan-features"><li>AI агент для клиентов</li><li>3 метаресурса</li><li>Базовая поддержка</li></ul>
+        </div>
+        <div class="plan-card popular" data-pkg="pro" onclick="selectRegPlan('pro')">
+          <div class="plan-badge">🔥 Популярный</div>
+          <div class="plan-icon">📖</div>
+          <div class="plan-name">Про</div>
+          <div class="plan-price">50 BB <span>/мес</span></div>
+          <div class="plan-requests">500 запросов</div>
+          <ul class="plan-features"><li>Всё из Стартер</li><li>15 метаресурсов</li><li>Приоритет</li></ul>
+        </div>
+        <div class="plan-card" data-pkg="expert" onclick="selectRegPlan('expert')">
+          <div class="plan-icon">🚀</div>
+          <div class="plan-name">Эксперт</div>
+          <div class="plan-price">150 BB <span>/мес</span></div>
+          <div class="plan-requests">Безлимит</div>
+          <ul class="plan-features"><li>Всё из Про</li><li>∞ метаресурсов</li><li>White-label</li></ul>
+        </div>
+      </div>
+
+      <button class="form-btn primary" onclick="submitRegistration()">Зарегистрироваться</button>
+      <div id="reg-result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CABINET OVERLAY ═══ -->
+<div class="overlay hidden" id="cabinet-overlay">
+  <div class="modal" style="max-width:620px">
+    <button class="close-btn" onclick="closeCabinet()">×</button>
+    <div class="modal-title">🏛️ Кабинет партнёра</div>
+    <div class="modal-sub" id="cab-partner-name">Управление подпиской и API</div>
+
+    <!-- Tabs: User / Business -->
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchCabTab('info')">📊 Статистика</button>
+      <button class="tab-btn" onclick="switchCabTab('payment')">💳 Оплата</button>
+      <button class="tab-btn" onclick="switchCabTab('plans')">📦 Пакеты</button>
+    </div>
+
+    <div class="tab-content active" id="cab-tab-info">
+      <div class="cabinet-stats">
+        <div class="stat-box"><div class="stat-val" id="cab-used">0</div><div class="stat-label">Запросов</div></div>
+        <div class="stat-box"><div class="stat-val" id="cab-remain">—</div><div class="stat-label">Осталось</div></div>
+        <div class="stat-box"><div class="stat-val" id="cab-meta">0</div><div class="stat-label">Метаресурсов</div></div>
+      </div>
+      <div class="requests-bar-wrap"><div class="requests-bar" id="cab-bar" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px" id="cab-plan-label">Пакет не выбран</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6" id="cab-status-info"></div>
+    </div>
+
+    <div class="tab-content" id="cab-tab-payment">
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+        Для активации API ключа отправьте Bitbon на кошелёк системы и укажите хэш транзакции. Администратор подтвердит оплату и активирует доступ.
+      </div>
+      <div class="form-group">
+        <label class="form-label">ID партнёра</label>
+        <input class="form-input" id="pay-partner-id" placeholder="prt_xxxx">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Хэш транзакции (TX)</label>
+        <input class="form-input" id="pay-tx" placeholder="0x...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Сумма (BB)</label>
+        <input class="form-input" id="pay-amount" type="number" placeholder="50">
+      </div>
+      <button class="form-btn gold" onclick="submitPayment()">💳 Отправить на проверку</button>
+      <div id="pay-result"></div>
+    </div>
+
+    <div class="tab-content" id="cab-tab-plans">
+      <div class="plan-grid">
+        <div class="plan-card" onclick="selectPlan('starter')">
+          <div class="plan-icon">🌱</div><div class="plan-name">Стартер</div>
+          <div class="plan-price">10 BB <span>/мес</span></div><div class="plan-requests">100 запросов</div>
+          <ul class="plan-features"><li>AI агент</li><li>3 метаресурса</li><li>Базовая поддержка</li></ul>
+        </div>
+        <div class="plan-card popular" onclick="selectPlan('pro')">
+          <div class="plan-badge">🔥 Популярный</div>
+          <div class="plan-icon">📖</div><div class="plan-name">Про</div>
+          <div class="plan-price">50 BB <span>/мес</span></div><div class="plan-requests">500 запросов</div>
+          <ul class="plan-features"><li>15 метаресурсов</li><li>Приоритет</li><li>Кросс-ссылки</li></ul>
+        </div>
+        <div class="plan-card" onclick="selectPlan('expert')">
+          <div class="plan-icon">🚀</div><div class="plan-name">Эксперт</div>
+          <div class="plan-price">150 BB <span>/мес</span></div><div class="plan-requests">Безлимит</div>
+          <ul class="plan-features"><li>∞ метаресурсов</li><li>White-label</li><li>Приоритетная поддержка</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">📊 Панель знаний</div>
+    <div class="sidebar-content">
+      <div>
+        <div class="section-label">Подписка</div>
+        <div class="mini-requests">
+          <div class="mini-plan-name" id="mini-plan">Демо режим</div>
+          <div class="mini-count" id="mini-count">— запросов</div>
+          <div class="progress-bar-wrap"><div class="progress-bar" id="mini-bar"></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label">📚 База знаний (Метаресурсы)</div>
+        <div id="kb-list"><div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">Метаресурсы появятся по мере создания</div></div>
+      </div>
+      <div>
+        <div class="section-label">Прогресс</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+        <div class="progress-text" id="progress-text">Изучено 0 из 14 тем</div>
+        <div class="topics-wrap" id="topics-wrap"></div>
+      </div>
+      <div>
+        <div class="section-label">📖 Глоссарий</div>
+        <div id="glossary-list"><div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">Термины появятся по мере диалога</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="header">
+      <div class="header-left">
+        <div class="avatar">⚡</div>
+        <div class="header-info">
+          <h1 id="agent-name">AI Agent · Система Bitbon</h1>
+          <p id="agent-sub">Партнёр Система Bitbon</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <span class="level-badge" id="level-badge" style="display:none"></span>
+        <span class="req-counter" id="req-counter" style="display:none"></span>
+        <button class="header-btn meta-btn" onclick="startMetaWizard()">🏗️ Метаресурс</button>
+        <button class="header-btn cabinet-btn" onclick="openCabinet()">🏛️ Кабинет</button>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+      </div>
+    </div>
+
+    <div class="suggestions" id="suggestions-bar"></div>
+
+    <div class="chat" id="chat">
+      <div class="welcome" id="welcome-block">
+        <div class="welcome-icon">⚡</div>
+        <div class="welcome-title">Система Bitbon — AI Агент</div>
+        <div class="welcome-sub">Задавайте вопросы о Bitbon, Web 4.0 и АУРА. Или нажмите 🏗️ Метаресурс чтобы создать демо вашего бизнеса.</div>
+        <!-- Separate panels for user and business -->
+        <div class="welcome-panels">
+          <div class="welcome-panel user-panel">
+            <div class="welcome-panel-title user-title">👤 Для пользователей</div>
+            <ul class="welcome-panel-list">
+              <li onclick="ask('Что такое Система Bitbon простыми словами?')">Что такое Bitbon?</li>
+              <li onclick="ask('Что такое АУРА и как она работает?')">Как работает АУРА?</li>
+              <li onclick="ask('Чем Web 4.0 отличается от Web 3.0?')">Web 4.0 vs Web 3.0</li>
+              <li onclick="ask('Что такое цифровая репутация в Bitbon?')">Цифровая репутация</li>
+            </ul>
+          </div>
+          <div class="welcome-panel biz-panel">
+            <div class="welcome-panel-title biz-title">💼 Для бизнеса</div>
+            <ul class="welcome-panel-list">
+              <li onclick="ask('Как подключить бизнес к Системе Bitbon?')">Подключить бизнес</li>
+              <li onclick="startMetaWizard()">🏗️ Создать Метаресурс</li>
+              <li onclick="ask('Как стать партнёром Bitbon и зарабатывать?')">Стать партнёром</li>
+              <li onclick="ask('Покажи примеры метаресурсов из базы знаний')">Примеры метаресурсов</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <textarea id="input" placeholder="Задайте вопрос о Bitbon, Web 4.0 или создайте Метаресурс..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+      <div class="input-hint" id="input-hint">🏗️ Метаресурс — демо вашего бизнеса · 🏛️ Кабинет — управление API</div>
+    </div>
+  </div>
+</div>
+
+<script>
+mermaid.initialize({startOnLoad:false,theme:'base',themeVariables:{primaryColor:'#1e3a5f',primaryTextColor:'#ffffff',primaryBorderColor:'#3b82f6',lineColor:'#60a5fa',background:'#0a0d12',mainBkg:'#1e3a5f',nodeBorder:'#3b82f6',defaultLinkColor:'#60a5fa',titleColor:'#fbbf24',fontFamily:'Onest,sans-serif',fontSize:'14px'},flowchart:{curve:'basis',padding:20,htmlLabels:false},securityLevel:'loose'});
+
+// ═══ CONFIGURATION ═══
+const API_BASE = window.location.origin;
+
+// ═══ SYSTEM PROMPTS ═══
+const SYSTEM_PROMPT = `Ты — AI агент Системы Bitbon. Уверенный ментор. Фразы: "Смотрите...", "Понимаете в чём дело...", "Это принципиально важно..."
+Блокчейн — 5% системы. Bitbon vs "криптототализатор".
+
+ФИЛОСОФИЯ: Человекоцентричность. Суверенная идентичность. Программный код порождает право. Аурократия. Доверие как фундамент. Цифровая репутация как актив.
+
+КОНЦЕПЦИИ:
+- Bitbon: ПО, ключ активации, 100 млн единиц, дефляционная модель
+- АУРА (AURA): репутационный капитал. Уровни: личностный, социальный, общественный
+- SP (Splay, Спла): метрика активности для обмена без налоговых последствий
+- Метаресурс: цифровой сервис в системе (ресторан, магазин, ферма) без программирования
+- Метаактив: управление правами на реальные ценности
+- Web 4.0: блокчейн + ИИ для реального сектора
+- iO (Бонни): локальный ИИ, цифровой Firewall
+- Базовая ставка: связь с нацвалютами
+
+ДВА ПУТИ:
+ПУТЬ 1 — ЛИЧНЫЙ: Образование (АПЭ/DBH) → Роль → Деятельность. Продукты: Golden Ticket 475bb, DBH ~$1000, Genesis от 500bb, IB-модули.
+ПУТЬ 2 — БИЗНЕС: Подключается через сервисы → адаптирует процессы → Web 4.0. Инструменты: Метаресурс, Bonpay, АгроБон, Projectbon, Assetbon.
+
+ФОРМАТ — СТРОГО С ТЕГАМИ:
+[BRIEF]1-2 предложения — суть[/BRIEF]
+[FULL]Развёрнутый ответ 3-5 абзацев с **жирными** терминами[/FULL]
+[EXAMPLE]Жизненный пример 2-4 предложения[/EXAMPLE]
+[COMPARE]BEFORE: без Bitbon\nAFTER: с Bitbon[/COMPARE]
+[MERMAID]код mermaid до 7 узлов (если нужна схема)[/MERMAID]
+[FOLLOWUPS]Вопрос 1\nВопрос 2\nВопрос 3[/FOLLOWUPS]
+Русский язык.`;
+
+const META_PROMPT = 'Ты — эксперт по Системе Bitbon. Создай ДЕМО-структуру Метаресурса.\n\nИспользуй КОНКРЕТНЫЕ термины именно этого бизнеса.\n\nОтветь ТОЛЬКО чистым JSON. Первый символ { последний }.\n\n{\n  "name": "Название",\n  "tagline": "Девиз",\n  "atmosphere": "Атмосфера 2-3 предложения",\n  "difference": "Отличие от офлайн 1-2 предложения",\n  "roles": [\n    {"name": "Создатель", "desc": "..."},\n    {"name": "Резидент", "desc": "..."},\n    {"name": "Партнёр", "desc": "..."},\n    {"name": "Инвестор", "desc": "..."}\n  ],\n  "tokens": [\n    {"name": "Токен 1", "desc": "..."},\n    {"name": "Токен 2", "desc": "..."},\n    {"name": "Токен 3", "desc": "..."}\n  ],\n  "economics": "Доход 3-4 предложения",\n  "interaction": "АУРА, LINK 3-4 предложения",\n  "activities": ["Активность 1", "Активность 2", "Активность 3", "Активность 4"],\n  "mission": "Миссия 2-3 предложения",\n  "uniqueness": "Уникальность 1-2 предложения",\n  "metaphor": "Метафора..."\n}';
+
+const WIZARD_QUESTIONS = [
+  {q:'Расскажите о вашем бизнесе или идее — что это, чем занимаетесь?', hint:'Например: шиномонтаж, ресторан, фитнес-клуб, онлайн-школа...'},
+  {q:'Кто ваша целевая аудитория?', hint:'Возраст, интересы, потребности, география...'},
+  {q:'Какие основные услуги или продукты вы предоставляете?', hint:'Перечислите 3-5 ключевых предложений...'},
+  {q:'Как вы зарабатываете? Какая модель дохода?', hint:'Разовые оплаты, подписка, аренда, комиссия...'},
+  {q:'Есть ли сообщество, партнёры или особая атмосфера?', hint:'Постоянные клиенты, партнёрства, корпоративный дух...'}
+];
+
+// ═══ STATE ═══
+const PLANS = {
+  starter: {name:'🌱 Стартер', requests:100, meta:3},
+  pro: {name:'📖 Про', requests:500, meta:15},
+  expert: {name:'🚀 Эксперт', requests:Infinity, meta:Infinity}
+};
+
+let history=[], isLoading=false, userLevel=null, userMode=null;
+let explainedConcepts=[], sidebarOpen=true, diagramCounter=0;
+let currentPlan=null, usedRequests=0, usedMeta=0;
+let wizardMode=false, wizardStep=0, wizardAnswers=[];
+let partnerInfo=null; // {id, firstName, lastName, fullName}
+let knowledgeBaseCache=[]; // cached created metaresources
+
+// ═══ GLOSSARY ═══
+const GLOSSARY_DATA={
+  'Bitbon':'ПО — ключ активации. 100 млн единиц, дефляционная модель.',
+  'АУРА':'Репутационный капитал. Три уровня: личностный, социальный, общественный.',
+  'SP (Splay)':'Метрика активности для равноценного обмена.',
+  'Метаресурс':'Цифровой сервис в системе без программирования.',
+  'Метаактив':'Управление правами на реальные ценности.',
+  'Web 4.0':'Блокчейн + ИИ для реального сектора.',
+  'iO':'Локальный ИИ. Цифровой Firewall.',
+  'DBH':'Digital Business Hub — образование, 3 мес, ~$1000.',
+  'АПЭ':'Академия платформенной экономики — профессии Web 4.0.',
+  'Genesis':'Ускоряет SP от +100% до +500%. От 500 Bitbon.',
+  'Golden Ticket':'Безлимитный доступ к АПЭ на 3 года. 475 Bitbon.',
+  'Bonpay':'Платёжный интерфейс. Комиссия 0.1–1.3%.',
+  'АгроБон':'Агромаркетплейс. Эскроу для фермеров.',
+  'Аурократия':'Вес голоса от репутации (АУРА), не от капитала.'
+};
+const TOTAL_TOPICS = Object.keys(GLOSSARY_DATA).length;
+
+// ═══ PARTNER NAME ═══
+function getAgentName() {
+  if (partnerInfo && partnerInfo.fullName) {
+    return partnerInfo.fullName + ' · Партнёр Система Bitbon';
+  }
+  return 'AI Agent · Система Bitbon';
+}
+
+function getBotLabel() {
+  if (partnerInfo && partnerInfo.fullName) {
+    return partnerInfo.fullName + ' · AI Agent';
+  }
+  return 'AI Agent · Система Bitbon';
+}
+
+// ═══ LEVEL SELECTION ═══
+function setLevel(level) {
+  userMode = level;
+  if (level === 'partner') {
+    document.getElementById('level-screen').style.display = 'none';
+    openRegister();
+    userLevel = 'expert';
+    updateSuggestionsBar('business');
+  } else if (level === 'business') {
+    userLevel = 'intermediate';
+    document.getElementById('level-screen').style.display = 'none';
+    updateSuggestionsBar('business');
+    addMessage('bot', 'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.', null, false);
+  } else {
+    userLevel = 'beginner';
+    document.getElementById('level-screen').style.display = 'none';
+    updateSuggestionsBar('user');
+    addMessage('bot', 'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.', null, false);
+  }
+  var badge = document.getElementById('level-badge');
+  badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
+  badge.style.display = 'inline-flex';
+  loadKnowledgeBase();
+}
+
+function updateSuggestionsBar(mode) {
+  var bar = document.getElementById('suggestions-bar');
+  if (mode === 'business') {
+    bar.innerHTML =
+      '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">🏗️ Создать Метаресурс</button>' +
+      '<button class="suggestion-btn biz-suggest" onclick="ask(\'Как подключить бизнес к Bitbon?\')">Подключить бизнес</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'Покажи примеры метаресурсов из базы знаний\')">Примеры из базы</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'Как работает Bonpay для бизнеса?\')">Bonpay</button>' +
+      '<button class="suggestion-btn biz-suggest" onclick="ask(\'Как стать партнёром?\')">Стать партнёром</button>';
+  } else {
+    bar.innerHTML =
+      '<button class="suggestion-btn" onclick="ask(\'Что такое Система Bitbon простыми словами?\')">Что такое Bitbon?</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'Что такое АУРА?\')">АУРА</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'Чем Web 4.0 отличается от Web 3.0?\')">Web 4.0 vs 3.0</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'В чём отличие Bitbon от криптовалют?\')">Bitbon ≠ крипто</button>' +
+      '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">🏗️ Метаресурс</button>';
+  }
+}
+
+// ═══ REGISTRATION ═══
+let selectedRegPlan = 'pro';
+
+function openRegister() {
+  document.getElementById('register-overlay').classList.remove('hidden');
+}
+function closeRegister() {
+  document.getElementById('register-overlay').classList.add('hidden');
+  if (!userLevel) {
+    document.getElementById('level-screen').style.display = '';
+  }
+}
+
+function selectRegPlan(pkg) {
+  selectedRegPlan = pkg;
+  document.querySelectorAll('#reg-plans .plan-card').forEach(c => c.classList.remove('active'));
+  document.querySelector(`#reg-plans .plan-card[data-pkg="${pkg}"]`).classList.add('active');
+}
+
+async function submitRegistration() {
+  var first = document.getElementById('reg-first').value.trim();
+  var last = document.getElementById('reg-last').value.trim();
+  var email = document.getElementById('reg-email').value.trim();
+  var tg = document.getElementById('reg-telegram').value.trim();
+  var phone = document.getElementById('reg-phone').value.trim();
+  var wallet = document.getElementById('reg-wallet').value.trim();
+  var result = document.getElementById('reg-result');
+
+  if (!first || !last || !email || !tg) {
+    result.innerHTML = '<div class="form-error">Заполните все обязательные поля (Имя, Фамилия, Email, Telegram)</div>';
+    return;
+  }
+
+  try {
+    var resp = await fetch(API_BASE + '/api/partner/register', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({firstName: first, lastName: last, email, telegram: tg, phone, walletAddress: wallet})
+    });
+    var data = await resp.json();
+    if (data.success) {
+      partnerInfo = {id: data.partnerId, firstName: first, lastName: last, fullName: data.fullName};
+      document.getElementById('agent-name').textContent = getAgentName();
+      document.getElementById('agent-sub').textContent = 'Партнёр Система Bitbon';
+      result.innerHTML = '<div class="form-success">✅ ' + data.message +
+        '<br><br><strong>Ваш ID:</strong> ' + data.partnerId +
+        '<br><strong>Пакет:</strong> ' + selectedRegPlan +
+        '<br><br>Отправьте Bitbon на кошелёк системы и укажите TX хэш в разделе «Оплата» вашего Кабинета.</div>';
+      setTimeout(() => {
+        closeRegister();
+        document.getElementById('level-screen').style.display = 'none';
+        updateSuggestionsBar('business');
+        addMessage('bot', `Добро пожаловать, ${first}! Вы зарегистрированы как партнёр.\n\n**Следующий шаг:** откройте 🏛️ Кабинет → Оплата, отправьте Bitbon и укажите TX хэш. После подтверждения администратором ваш API ключ будет активирован.\n\nА пока вы можете изучить систему и создать демо-метаресурс.`, null, false);
+      }, 3000);
+    } else {
+      result.innerHTML = '<div class="form-error">❌ ' + (data.error || 'Ошибка регистрации') + '</div>';
+    }
+  } catch(e) {
+    result.innerHTML = '<div class="form-error">❌ Ошибка соединения с сервером</div>';
+  }
+}
+
+// ═══ PAYMENT ═══
+async function submitPayment() {
+  var pid = document.getElementById('pay-partner-id').value.trim();
+  var tx = document.getElementById('pay-tx').value.trim();
+  var amt = document.getElementById('pay-amount').value.trim();
+  var result = document.getElementById('pay-result');
+
+  if (!pid || !tx) {
+    result.innerHTML = '<div class="form-error">Укажите ID партнёра и хэш транзакции</div>';
+    return;
+  }
+
+  try {
+    var resp = await fetch(API_BASE + '/api/partner/payment', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({partnerId: pid, txHash: tx, amountBB: parseFloat(amt) || 0, packageType: selectedRegPlan || 'pro'})
+    });
+    var data = await resp.json();
+    if (data.success) {
+      result.innerHTML = '<div class="form-success">✅ ' + data.message + '</div>';
+    } else {
+      result.innerHTML = '<div class="form-error">❌ ' + (data.error || 'Ошибка') + '</div>';
+    }
+  } catch(e) {
+    result.innerHTML = '<div class="form-error">❌ Ошибка соединения</div>';
+  }
+}
+
+// ═══ CABINET ═══
+function openCabinet() {
+  updateCabinetStats();
+  document.getElementById('cabinet-overlay').classList.remove('hidden');
+  if (partnerInfo) {
+    document.getElementById('cab-partner-name').textContent = partnerInfo.fullName + ' · Партнёр Система Bitbon';
+    document.getElementById('pay-partner-id').value = partnerInfo.id || '';
+  }
+}
+function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
+
+function switchCabTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['info','payment','plans'][i] === tab));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', ['info','payment','plans'][i] === tab));
+}
+
+function selectPlan(plan) {
+  currentPlan = plan;
+  usedRequests = 0;
+  usedMeta = 0;
+  updateCabinetStats();
+  updateRequestUI();
+}
+
+function updateCabinetStats() {
+  if (!currentPlan) {
+    document.getElementById('cab-plan-label').textContent = 'Демо режим — зарегистрируйтесь для полного доступа';
+    return;
+  }
+  var p = PLANS[currentPlan];
+  var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
+  document.getElementById('cab-used').textContent = usedRequests;
+  document.getElementById('cab-remain').textContent = remain;
+  document.getElementById('cab-meta').textContent = usedMeta;
+  document.getElementById('cab-plan-label').textContent = 'Пакет: ' + p.name;
+  var pct = p.requests === Infinity ? 20 : Math.round((usedRequests / p.requests) * 100);
+  var bar = document.getElementById('cab-bar');
+  bar.style.width = pct + '%';
+  bar.className = 'requests-bar' + (pct > 80 ? ' warn' : '');
+}
+
+function updateRequestUI() {
+  if (!currentPlan) return;
+  var p = PLANS[currentPlan];
+  var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
+  var counter = document.getElementById('req-counter');
+  counter.textContent = remain + ' зап.';
+  counter.style.display = 'inline-flex';
+  counter.className = 'req-counter' + (p.requests !== Infinity && (p.requests - usedRequests) <= 3 ? ' warn' : '');
+  document.getElementById('mini-plan').textContent = p.name;
+  document.getElementById('mini-count').textContent = (p.requests === Infinity ? 'Безлимит' : (p.requests - usedRequests) + ' из ' + p.requests);
+  document.getElementById('mini-bar').style.width = (p.requests === Infinity ? 30 : Math.round((usedRequests / p.requests) * 100)) + '%';
+}
+
+function canSendRequest() {
+  if (!currentPlan) return true;
+  var p = PLANS[currentPlan];
+  return p.requests === Infinity || usedRequests < p.requests;
+}
+
+function canCreateMeta() {
+  if (!currentPlan) return usedMeta < 2; // demo: 2 free
+  var p = PLANS[currentPlan];
+  return p.meta === Infinity || usedMeta < p.meta;
+}
+
+// ═══ KNOWLEDGE BASE ═══
+async function loadKnowledgeBase() {
+  try {
+    var resp = await fetch(API_BASE + '/api/metaresource/knowledge');
+    var data = await resp.json();
+    knowledgeBaseCache = data.metaresources || [];
+    updateKBSidebar();
+  } catch(e) {
+    console.log('KB load skipped (server may not be running)');
+  }
+}
+
+function updateKBSidebar() {
+  var list = document.getElementById('kb-list');
+  if (!knowledgeBaseCache.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">Метаресурсы появятся по мере создания</div>';
+    return;
+  }
+  list.innerHTML = '';
+  knowledgeBaseCache.forEach(function(m) {
+    var div = document.createElement('div');
+    div.className = 'kb-entry';
+    div.innerHTML = '<div class="kb-entry-name">⚡ ' + m.name + '</div><div class="kb-entry-ind">' + (m.industry || m.businessType || '') + (m.crossReferences?.length ? ' · 🔗' + m.crossReferences.length : '') + '</div>';
+    div.onclick = function() { ask('Расскажи о метаресурсе "' + m.name + '" из базы знаний'); };
+    list.appendChild(div);
+  });
+}
+
+async function saveMetaToKnowledgeBase(meta, wizAnswers) {
+  try {
+    var resp = await fetch(API_BASE + '/api/metaresource/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        metaresource: meta,
+        businessType: wizAnswers[0]?.a || '',
+        partnerId: partnerInfo?.id || 'anonymous',
+        wizardAnswers: wizAnswers
+      })
+    });
+    var data = await resp.json();
+    if (data.success) {
+      knowledgeBaseCache.push({
+        id: data.metaresourceId,
+        name: meta.name,
+        tagline: meta.tagline,
+        industry: data.relatedIndustries?.[0] || '',
+        crossReferences: data.crossReferences || []
+      });
+      updateKBSidebar();
+      return data;
+    }
+  } catch(e) {
+    console.log('Save to KB skipped:', e.message);
+  }
+  return null;
+}
+
+function buildKBContext() {
+  if (!knowledgeBaseCache.length) return '';
+  var ctx = '\n\nБАЗА ЗНАНИЙ МЕТАРЕСУРСОВ (используй как примеры и для кросс-ссылок):\n';
+  knowledgeBaseCache.forEach(function(m) {
+    ctx += '- ' + m.name + ' (' + (m.industry || '') + ')';
+    if (m.crossReferences?.length) {
+      ctx += ' — связано с: ' + m.crossReferences.join(', ');
+    }
+    ctx += '\n';
+  });
+  ctx += '\nКогда создаёшь новый метаресурс — упоминай существующие из базы как потенциальных партнёров и смежные бизнесы.';
+  return ctx;
+}
+
+// ═══ SYSTEM PROMPT BUILDER ═══
+function buildSystemPrompt() {
+  var p = SYSTEM_PROMPT;
+  if (userLevel === 'beginner') p += '\n\nУРОВЕНЬ: НОВИЧОК. Аналогии из быта. Тон тёплый.';
+  else if (userLevel === 'intermediate') p += '\n\nУРОВЕНЬ: ИЗУЧАЮЩИЙ. Термины с расшифровкой.';
+  else p += '\n\nУРОВЕНЬ: ЭКСПЕРТ. Все термины. Точные цифры.';
+  if (explainedConcepts.length) p += '\n\nУЖЕ ОБЪЯСНЕНО:\n' + explainedConcepts.map(c => '- ' + c).join('\n');
+  p += buildKBContext();
+  return p;
+}
+
+// ═══ SIDEBAR ═══
+function toggleSidebar() { sidebarOpen = !sidebarOpen; document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen); }
+
+function updateSidebar(text) {
+  var lower = text.toLowerCase(), updated = false;
+  Object.keys(GLOSSARY_DATA).forEach(function(term) {
+    if (lower.indexOf(term.toLowerCase()) !== -1 && explainedConcepts.indexOf(term) === -1) {
+      explainedConcepts.push(term); updated = true;
+    }
+  });
+  if (!updated) return;
+  var pct = Math.round((explainedConcepts.length / TOTAL_TOPICS) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = 'Изучено ' + explainedConcepts.length + ' из ' + TOTAL_TOPICS + ' тем';
+  var wrap = document.getElementById('topics-wrap'); wrap.innerHTML = '';
+  explainedConcepts.forEach(function(t) {
+    var pill = document.createElement('span'); pill.className = 'topic-pill';
+    pill.innerHTML = '<span class="pill-dot"></span>' + t;
+    pill.onclick = function() { ask('Расскажи подробнее о ' + t); };
+    wrap.appendChild(pill);
+  });
+  var gl = document.getElementById('glossary-list'); gl.innerHTML = '';
+  explainedConcepts.forEach(function(t) {
+    if (!GLOSSARY_DATA[t]) return;
+    var item = document.createElement('div'); item.className = 'glossary-item';
+    item.innerHTML = '<div class="glossary-term">' + t + '</div><div class="glossary-def">' + GLOSSARY_DATA[t] + '</div>';
+    item.onclick = function() { ask('Объясни: ' + t); };
+    gl.appendChild(item);
+  });
+}
+
+// ═══ META WIZARD ═══
+function startMetaWizard() {
+  if (!canCreateMeta()) {
+    addMessage('bot', null, null, false, true);
+    return;
+  }
+  wizardMode = true; wizardStep = 0; wizardAnswers = [];
+  document.getElementById('input-hint').textContent = '🏗️ Мастер Метаресурса — отвечайте на вопросы';
+  addWizardQuestion();
+}
+
+function addWizardQuestion() {
+  var q = WIZARD_QUESTIONS[wizardStep];
+  var chat = document.getElementById('chat');
+  var div = document.createElement('div'); div.className = 'msg bot';
+  var dots = '';
+  for (var i = 0; i < WIZARD_QUESTIONS.length; i++) {
+    dots += '<div class="wizard-dot' + (i < wizardStep ? ' done' : i === wizardStep ? ' active' : '') + '"></div>';
+  }
+  div.innerHTML = '<div class="msg-avatar">🏗️</div>' +
+    '<div class="msg-body"><div class="msg-name">Мастер Метаресурса · шаг ' + (wizardStep + 1) + '/' + WIZARD_QUESTIONS.length + '</div>' +
+    '<div class="msg-bubble"><div class="wizard-question">' +
+    '<div class="wizard-q-label">Вопрос ' + (wizardStep + 1) + '</div>' +
+    '<div class="wizard-q-text">' + q.q + '</div>' +
+    (q.hint ? '<div style="font-size:12px;color:var(--text3);margin-top:6px">' + q.hint + '</div>' : '') +
+    '<div class="wizard-progress">' + dots + '</div>' +
+    '</div></div></div>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function processWizardAnswer(answer) {
+  wizardAnswers.push({q: WIZARD_QUESTIONS[wizardStep].q, a: answer});
+  wizardStep++;
+  if (wizardStep < WIZARD_QUESTIONS.length) {
+    addWizardQuestion();
+  } else {
+    wizardMode = false;
+    generateMetaResource();
+  }
+}
+
+async function generateMetaResource() {
+  showTyping();
+  var context = 'Ответы о бизнесе:\n\n';
+  wizardAnswers.forEach(function(qa, i) {
+    context += (i + 1) + '. ' + qa.q + '\nОтвет: ' + qa.a + '\n\n';
+  });
+
+  // Add KB context for cross-referencing
+  if (knowledgeBaseCache.length) {
+    context += '\n\nУже созданные метаресурсы в базе знаний (упоминай их как партнёров и смежные бизнесы):\n';
+    knowledgeBaseCache.forEach(function(m) {
+      context += '- ' + m.name + ' (' + (m.industry || '') + ')\n';
+    });
+  }
+
+  var raw = '';
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({model: 'claude-sonnet-4-20250514', max_tokens: 2000, system: META_PROMPT, messages: [{role: 'user', content: context}]})
+    });
+    var data = await response.json();
+    if (data.error) throw new Error(data.error.message);
+    raw = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    removeTyping();
+    if (!raw) throw new Error('Пустой ответ');
+
+    var fb = raw.indexOf('{'), lb = raw.lastIndexOf('}');
+    if (fb === -1 || lb === -1) throw new Error('JSON не найден');
+    var meta = JSON.parse(raw.substring(fb, lb + 1));
+
+    usedMeta++;
+    if (currentPlan) usedRequests++;
+    updateRequestUI();
+    updateCabinetStats();
+
+    // SAVE to knowledge base
+    var kbResult = await saveMetaToKnowledgeBase(meta, wizardAnswers);
+
+    renderMetaDemo(meta, kbResult);
+  } catch(e) {
+    removeTyping();
+    addMessage('bot', 'Ошибка: ' + e.message, null, false);
+  }
+  document.getElementById('input-hint').textContent = '🏗️ Метаресурс — демо вашего бизнеса · 🏛️ Кабинет — управление API';
+}
+
+function renderMetaDemo(meta, kbResult) {
+  var chat = document.getElementById('chat');
+  var div = document.createElement('div'); div.className = 'msg bot';
+
+  var rolesHtml = (meta.roles || []).map(r => '<div class="meta-role-tag" title="' + (r.desc || '') + '">' + r.name + '</div>').join('');
+  var tokensHtml = (meta.tokens || []).map(t => '<div class="meta-token" title="' + (t.desc || '') + '">' + t.name + '</div>').join('');
+  var activitiesHtml = (meta.activities || []).map(a => '<li style="font-size:13px;color:var(--text2);padding:3px 0;display:flex;gap:6px"><span style="color:var(--purple)">•</span>' + a + '</li>').join('');
+
+  // Cross-references block
+  var crossHtml = '';
+  if (kbResult && kbResult.crossReferences && kbResult.crossReferences.length) {
+    crossHtml = '<div class="cross-refs"><div class="cross-refs-title">🔗 Связанные метаресурсы из базы знаний</div>';
+    kbResult.crossReferences.forEach(function(cr) {
+      crossHtml += '<span class="cross-ref-item" onclick="ask(\'Как метаресурс ' + cr.name.replace(/'/g, '') + ' может взаимодействовать с ' + meta.name.replace(/'/g, '') + '?\')">' + cr.name + ' (' + (cr.relation || cr.industry || '') + ')</span>';
+    });
+    crossHtml += '</div>';
+  }
+
+  var kbNote = kbResult ? '<div style="font-size:11px;color:var(--green);margin-top:8px">✅ Сохранено в базу знаний · ' + kbResult.totalInKnowledgeBase + ' метаресурсов</div>' : '';
+
+  div.innerHTML = '<div class="msg-avatar">🏗️</div>' +
+    '<div class="msg-body" style="max-width:90%"><div class="msg-name">Мастер Метаресурса · ДЕМО готово</div>' +
+    '<div class="meta-demo">' +
+      '<div class="meta-demo-header">' +
+        '<div class="meta-demo-title">⚡ ' + meta.name + '</div>' +
+        '<div class="meta-demo-sub">' + (meta.tagline || '') + '</div>' +
+      '</div>' +
+      '<div class="meta-demo-body">' +
+        '<div class="meta-section"><div class="meta-section-title">🌟 Идея и атмосфера</div><div class="meta-section-content">' + (meta.atmosphere || '') + '<br><br><em style="color:var(--text2);font-size:13px">' + (meta.difference || '') + '</em></div></div>' +
+        '<div class="meta-section"><div class="meta-section-title">👥 Роли</div><div class="meta-roles">' + rolesHtml + '</div></div>' +
+        '<div class="meta-section"><div class="meta-section-title">🪙 Токены</div><div class="meta-tokens">' + tokensHtml + '</div><div class="meta-section-content" style="margin-top:10px;font-size:13px;color:var(--text2)">' + (meta.economics || '') + '</div></div>' +
+        '<div class="meta-section"><div class="meta-section-title">🔗 АУРА</div><div class="meta-section-content" style="font-size:13px;color:var(--text2)">' + (meta.interaction || '') + '</div></div>' +
+        '<div class="meta-section"><div class="meta-section-title">📅 Активности</div><ul style="list-style:none;padding:0">' + activitiesHtml + '</ul></div>' +
+        '<div class="meta-section"><div class="meta-section-title">🎯 Миссия</div><div class="meta-section-content" style="font-size:13px;color:var(--text2)">' + (meta.mission || '') + '<br><br>' + (meta.uniqueness || '') + '</div></div>' +
+        '<div class="meta-philosophy">' + (meta.metaphor || '') + '</div>' +
+        crossHtml +
+        kbNote +
+        '<div class="meta-cta">' +
+          '<button class="meta-cta-btn primary" onclick="ask(\'Как запустить метаресурс ' + (meta.name || '').replace(/'/g, '') + ' в Системе Bitbon?\')">🚀 Как запустить?</button>' +
+          '<button class="meta-cta-btn secondary" onclick="startMetaWizard()">🔄 Создать другой</button>' +
+          '<button class="meta-cta-btn secondary" onclick="ask(\'Какие партнёрства возможны для ' + (meta.name || '').replace(/'/g, '') + '?\')">🤝 Партнёрства</button>' +
+        '</div>' +
+      '</div>' +
+    '</div></div>';
+
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+// ═══ FORMAT ═══
+function md(t) { return t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>'); }
+
+function formatResponse(raw) {
+  var brief = (raw.match(/\[BRIEF\]([\s\S]*?)\[\/BRIEF\]/) || [])[1] || '';
+  var full = (raw.match(/\[FULL\]([\s\S]*?)\[\/FULL\]/) || [])[1] || '';
+  var example = (raw.match(/\[EXAMPLE\]([\s\S]*?)\[\/EXAMPLE\]/) || [])[1] || '';
+  var compareRaw = (raw.match(/\[COMPARE\]([\s\S]*?)\[\/COMPARE\]/) || [])[1] || '';
+  var mermaidRaw = (raw.match(/\[MERMAID\]([\s\S]*?)\[\/MERMAID\]/) || [])[1] || '';
+  var fuRaw = (raw.match(/\[FOLLOWUPS\]([\s\S]*?)\[\/FOLLOWUPS\]/) || [])[1] || '';
+  var html = '';
+  if (brief.trim()) html += '<div><p>' + md(brief.trim()) + '</p></div>';
+  if (full.trim()) {
+    var uid = 'e' + Date.now();
+    html += '<button class="expand-btn" id="btn-' + uid + '" onclick="toggleExpand(\'' + uid + '\')"><span>Подробнее</span> <span class="arr">▾</span></button>';
+    html += '<div class="full-text" id="full-' + uid + '"><p>' + md(full.trim()) + '</p>';
+    if (mermaidRaw.trim()) {
+      var dId = 'd' + Date.now() + (diagramCounter++);
+      html += '<div class="diagram-container"><div class="diagram-label">Схема</div><div class="mermaid" id="' + dId + '">' + mermaidRaw.trim() + '</div></div>';
+      (function(id, code) { setTimeout(function() { renderMermaid(id, code); }, 300); })(dId, mermaidRaw.trim());
+    }
+    if (example.trim()) html += '<div class="example-block"><div class="example-label">💡 Пример</div><div class="example-text">' + md(example.trim()) + '</div></div>';
+    if (compareRaw.trim()) {
+      var bm = compareRaw.match(/BEFORE:\s*([\s\S]*?)(?=AFTER:|$)/);
+      var am = compareRaw.match(/AFTER:\s*([\s\S]*?)$/);
+      if (bm && am) html += '<div class="compare-block"><div class="compare-col before"><div class="compare-label">❌ Без Bitbon</div><div class="compare-text">' + md(bm[1].trim()) + '</div></div><div class="compare-col after"><div class="compare-label">✅ С Bitbon</div><div class="compare-text">' + md(am[1].trim()) + '</div></div></div>';
+    }
+    html += '</div>';
+  }
+  if (fuRaw.trim()) {
+    var qs = fuRaw.trim().split('\n').map(q => q.trim()).filter(Boolean);
+    if (qs.length) {
+      html += '<div class="followups"><div class="followups-title">Продолжить тему</div><div class="followups-list">';
+      qs.forEach(function(q) {
+        html += '<button class="followup-btn" onclick="ask(\'' + q.replace(/'/g, "\\'") + '\')">' + q + '?</button>';
+      });
+      html += '</div></div>';
+    }
+  }
+  return html || '<p>' + md(raw) + '</p>';
+}
+
+function toggleExpand(uid) {
+  var f = document.getElementById('full-' + uid), b = document.getElementById('btn-' + uid);
+  var open = f.classList.contains('visible');
+  f.classList.toggle('visible', !open);
+  b.classList.toggle('open', !open);
+  b.querySelector('span').textContent = open ? 'Подробнее' : 'Свернуть';
+}
+
+function renderMermaid(id, code) {
+  var el = document.getElementById(id);
+  if (!el || el.hasAttribute('data-processed')) return;
+  try { mermaid.render('svg-' + id, code).then(r => { el.innerHTML = r.svg; el.setAttribute('data-processed', 'true'); }).catch(() => { el.innerHTML = '<div style="color:#ef4444;font-size:12px;padding:8px">Ошибка схемы</div>'; }); } catch(e) {}
+}
+
+// ═══ MESSAGES ═══
+function addMessage(role, text, actionsHtml, useFormat, showLimit) {
+  var chat = document.getElementById('chat');
+  // Remove welcome on first message
+  var wb = document.getElementById('welcome-block');
+  if (wb) wb.remove();
+
+  var div = document.createElement('div'); div.className = 'msg ' + role;
+  var isBot = role === 'bot';
+  var bubble = '';
+  if (showLimit) {
+    bubble = '<div class="limit-banner"><div class="limit-banner-title">⚡ Лимит исчерпан</div><div class="limit-banner-sub">Обновите подписку чтобы продолжить.</div><button class="upgrade-btn" onclick="openCabinet()">🏛️ Обновить</button></div>';
+  } else if (useFormat && isBot) {
+    bubble = formatResponse(text);
+  } else {
+    bubble = '<p>' + md(text || '') + '</p>';
+  }
+  div.innerHTML = '<div class="msg-avatar">' + (isBot ? '⚡' : '👤') + '</div>' +
+    '<div class="msg-body">' +
+    '<div class="msg-name">' + (isBot ? getBotLabel() : 'Вы') + '</div>' +
+    '<div class="msg-bubble">' + bubble + '</div>' +
+    (actionsHtml || '') +
+    '</div>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function buildActions(q) {
+  var esc = q.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  return '<div class="msg-actions">' +
+    '<button class="action-btn rephrase" onclick="rephrase(\'' + esc + '\')">🔄 Иначе</button>' +
+    '<button class="action-btn simpler" onclick="simpler(\'' + esc + '\')">✂️ Проще</button>' +
+    '</div>';
+}
+
+function rephrase(q) { sendDirect('Объясни "' + q + '" другими словами'); }
+function simpler(q) { sendDirect('Объясни "' + q + '" максимально просто'); }
+function sendDirect(t) { document.getElementById('input').value = t; sendMessage(); }
+
+function showTyping() {
+  var chat = document.getElementById('chat');
+  var div = document.createElement('div'); div.className = 'msg bot'; div.id = 'typing';
+  div.innerHTML = '<div class="msg-avatar">⚡</div><div class="msg-body"><div class="msg-name">' + getBotLabel() + '</div><div class="typing"><span></span><span></span><span></span></div></div>';
+  chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
+}
+function removeTyping() { var t = document.getElementById('typing'); if (t) t.remove(); }
+function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+function ask(q) { document.getElementById('input').value = q; sendMessage(); }
+
+// ═══ SEND MESSAGE ═══
+async function sendMessage() {
+  var input = document.getElementById('input');
+  var text = input.value.trim();
+  if (!text || isLoading) return;
+
+  if (wizardMode) {
+    addMessage('user', text, null, false);
+    input.value = ''; input.style.height = 'auto';
+    processWizardAnswer(text);
+    return;
+  }
+
+  if (currentPlan && !canSendRequest()) {
+    addMessage('bot', null, null, false, true);
+    return;
+  }
+
+  var question = text;
+  input.value = ''; input.style.height = 'auto';
+  isLoading = true; document.getElementById('send-btn').disabled = true;
+  addMessage('user', text, null, false);
+  history.push({role: 'user', content: text});
+  showTyping();
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({model: 'claude-sonnet-4-20250514', max_tokens: 1500, system: buildSystemPrompt(), messages: history})
+    });
+    var data = await response.json();
+    var reply = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : 'Не удалось получить ответ.';
+    removeTyping();
+    addMessage('bot', reply, buildActions(question), true);
+    history.push({role: 'assistant', content: reply});
+    updateSidebar(reply);
+    usedRequests++;
+    if (currentPlan) { updateRequestUI(); updateCabinetStats(); }
+    if (history.length > 14) history = history.slice(-14);
+  } catch(err) {
+    removeTyping();
+    addMessage('bot', 'Ошибка при обращении к API. Попробуйте ещё раз.', null, false);
+  }
+  isLoading = false; document.getElementById('send-btn').disabled = false;
+  document.getElementById('input').focus();
+}
+</script>
+</body>
+</html>
