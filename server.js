@@ -862,4 +862,13 @@ app.listen(PORT, () => {
   telegramBot = initBot(DB, persistData, generatePartnerId);
 });
 
+// ── Graceful shutdown — save DB before exit ───────────────────────────
+function shutdown(signal) {
+  console.log(`\n${signal} received — saving data and shutting down...`);
+  persistData();
+  process.exit(0);
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT',  () => shutdown('SIGINT'));
+
 module.exports = app;

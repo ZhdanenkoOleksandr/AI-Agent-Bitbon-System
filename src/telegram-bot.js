@@ -65,7 +65,22 @@ function initBot(db, persistData, generatePartnerId) {
     // Найти приглашение по токену
     const partner = Object.values(db.partners).find(p => p.inviteToken === token);
     if (!partner) {
-      bot.sendMessage(chatId, '❌ Ссылка недействительна или устарела.');
+      bot.sendMessage(chatId,
+        `❌ *Ссылка устарела или недействительна.*\n\n` +
+        `Возможные причины:\n` +
+        `• Ссылка была создана давно и сервер перезапустился\n` +
+        `• Ссылка уже была использована\n\n` +
+        `📌 *Что делать:* попросите менеджера создать новое приглашение в кабинете (кнопка 🤝 Партнёр).`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    // Если уже зарегистрирован — не начинать заново
+    if (partner.status !== 'invited') {
+      bot.sendMessage(chatId,
+        `ℹ️ Вы уже зарегистрированы!\n\nИспользуйте /status для проверки статуса.`
+      );
       return;
     }
 
