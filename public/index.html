@@ -73,6 +73,21 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .form-btn.primary:hover{background:var(--accent2)}
 .form-btn.gold{background:var(--gold);color:#000}
 .form-btn.gold:hover{background:var(--gold2)}
+
+/* FANCY GRADIENT BUTTONS */
+.fancy-btn{position:relative;padding:14px 24px;border:none;border-radius:var(--radius-sm);font-family:'Onest',sans-serif;font-size:14px;font-weight:600;cursor:pointer;overflow:hidden;transition:all 0.3s ease;margin-top:8px;display:inline-flex;align-items:center;gap:8px}
+.fancy-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);transition:left 0.5s;animation:shimmer 2s infinite}
+.fancy-btn:hover::before{left:100%}
+@keyframes shimmer{0%{left:-100%}100%{left:100%}}
+@keyframes glow{0%,100%{box-shadow:0 0 10px rgba(59,130,246,0.5)}50%{box-shadow:0 0 20px rgba(59,130,246,0.8)}}
+@keyframes glowGold{0%,100%{box-shadow:0 0 10px rgba(245,158,11,0.5)}50%{box-shadow:0 0 20px rgba(245,158,11,0.8)}}
+
+.fancy-btn.economy{background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;animation:glow 2s ease-in-out infinite}
+.fancy-btn.economy:hover{transform:translateY(-2px);background:linear-gradient(135deg,#60a5fa,#a78bfa)}
+
+.fancy-btn.brand{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#000;animation:glowGold 2s ease-in-out infinite}
+.fancy-btn.brand:hover{transform:translateY(-2px);background:linear-gradient(135deg,#fbbf24,#fcd34d)}
+
 .form-hint{font-size:11px;color:var(--text3);margin-top:4px}
 .form-success{padding:14px;border-radius:var(--radius-sm);background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);font-size:13px;margin-top:10px;line-height:1.5}
 .form-error{padding:14px;border-radius:var(--radius-sm);background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);font-size:13px;margin-top:10px}
@@ -773,9 +788,9 @@ textarea::placeholder{color:var(--text3)}
       <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
         Подробнее о экономической модели можно узнать через AI агента, задав вопросы о структуре Bitbon и потенциале инвестиций.
       </div>
-      <div style="display:flex;gap:12px">
-        <button class="form-btn primary" onclick="ask('Расскажи подробнее об экономической модели Bitbon и Viking Economy')">📚 Узнать больше</button>
-        <button class="form-btn gold" onclick="window.open('https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app','_blank')">🔗 Открыть калькулятор</button>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="fancy-btn economy" onclick="ask('Расскажи подробнее об экономической модели Bitbon и Viking Economy')">📚 Узнать больше</button>
+        <button class="fancy-btn economy" onclick="window.open('https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app','_blank')">🔗 Открыть калькулятор</button>
       </div>
     </div>
 
@@ -799,9 +814,9 @@ textarea::placeholder{color:var(--text3)}
       <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
         Сильный личный бренд в Bitbon — ключ к успеху. Инвестируйте в развитие своего профиля и привлекайте партнёров с вашей сетью.
       </div>
-      <div style="display:flex;gap:12px">
-        <button class="form-btn primary" onclick="ask('Как развивать личный бренд и АУРА в Системе Bitbon?')">🚀 Развивать бренд</button>
-        <button class="form-btn gold" onclick="window.open('https://parner.vercel.app/ru','_blank')">🔗 Мой профиль</button>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="fancy-btn brand" onclick="ask('Как развивать личный бренд и АУРА в Системе Bitbon?')">🚀 Развивать бренд</button>
+        <button class="fancy-btn brand" onclick="window.open('https://parner.vercel.app/ru','_blank')">🔗 Мой профиль</button>
       </div>
     </div>
   </div>
