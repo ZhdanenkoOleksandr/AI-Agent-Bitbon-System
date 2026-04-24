@@ -913,12 +913,12 @@ textarea::placeholder{color:var(--text3)}
       <div class="header-right">
         <span class="level-badge" id="level-badge" style="display:none"></span>
         <span class="req-counter" id="req-counter" style="display:none"></span>
-        <button class="header-btn" onclick="window.location.href='https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app'" title="Viking Economy калькулятор">📈 Экономика</button>
-        <button class="header-btn" onclick="window.location.href='https://parner.vercel.app/ru'" title="Личный бренд партнёра">👤 Бренд</button>
-        <button class="header-btn" onclick="openShareClient()" title="Поделиться с клиентом" style="border-color:rgba(16,185,129,0.4);color:var(--green)">👤 Клиент</button>
-        <button class="header-btn" onclick="openRegister()" title="Зарегистрировать партнёра" style="border-color:rgba(139,92,246,0.4);color:var(--purple)">🤝 Партнёр</button>
-        <button class="header-btn meta-btn" onclick="startMetaWizard()">🏗️ Метаресурс</button>
-        <button class="header-btn cabinet-btn" onclick="openCabinet()">🏛️ Кабинет</button>
+        <button id="hbtn-economy" class="header-btn" onclick="window.location.href='https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app'" title="Viking Economy калькулятор">📈 Экономика</button>
+        <button id="hbtn-brand" class="header-btn" onclick="window.location.href='https://parner.vercel.app/ru'" title="Личный бренд партнёра">👤 Бренд</button>
+        <button id="hbtn-client" class="header-btn" onclick="openShareClient()" title="Поделиться с клиентом" style="border-color:rgba(16,185,129,0.4);color:var(--green)">👤 Клиент</button>
+        <button id="hbtn-partner" class="header-btn" onclick="openRegister()" title="Зарегистрировать партнёра" style="border-color:rgba(139,92,246,0.4);color:var(--purple)">🤝 Партнёр</button>
+        <button id="hbtn-meta" class="header-btn meta-btn" onclick="startMetaWizard()">🏗️ Метаресурс</button>
+        <button id="hbtn-cabinet" class="header-btn cabinet-btn" onclick="openCabinet()">🏛️ Кабинет</button>
         <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
       </div>
@@ -1181,6 +1181,9 @@ function setLevel(level) {
   badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
   badge.style.display = 'inline-flex';
 
+  // Update header buttons visibility
+  updateHeaderButtons(level);
+
   // Load knowledge base
   loadKnowledgeBase();
 }
@@ -1198,6 +1201,25 @@ function openModeSwitch() {
 function closeModeSwitch() {
   const overlay = document.getElementById('mode-switch-overlay');
   if (overlay) overlay.classList.add('hidden');
+}
+
+// ── Показать/скрыть кнопки хедера в зависимости от режима ─────────────
+function updateHeaderButtons(mode) {
+  // user:    только req-counter. Убрать: клиент, партнёр, метаресурс, кабинет, экономика, бренд
+  // business: убрать: клиент, партнёр, кабинет. Оставить: метаресурс, экономика, бренд
+  // partner:  все кнопки
+  var show = {
+    'hbtn-economy': mode === 'business' || mode === 'partner',
+    'hbtn-brand':   mode === 'partner',
+    'hbtn-client':  mode === 'partner',
+    'hbtn-partner': mode === 'partner',
+    'hbtn-meta':    mode === 'business' || mode === 'partner',
+    'hbtn-cabinet': mode === 'partner'
+  };
+  Object.keys(show).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = show[id] ? '' : 'none';
+  });
 }
 
 function switchLevel(level) {
@@ -1230,6 +1252,9 @@ function switchLevel(level) {
   var badge = document.getElementById('level-badge');
   badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
   badge.style.display = 'inline-flex';
+
+  // Update header buttons visibility
+  updateHeaderButtons(level);
 
   // Close modal
   closeModeSwitch();
