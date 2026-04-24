@@ -17,6 +17,11 @@ const path = require('path');
 // Anthropic API (using fetch - no SDK needed)
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
+// Debug: Log API key status
+console.log('🔑 API Configuration:');
+console.log('   ANTHROPIC_API_KEY:', ANTHROPIC_API_KEY ? '✓ Configured' : '❌ NOT SET');
+console.log('   Environment:', process.env.NODE_ENV || 'development');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'bitbon-secret-change-in-production-' + Date.now();
@@ -656,7 +661,9 @@ app.post('/api/chat', async (req, res) => {
     }
 
     if (!ANTHROPIC_API_KEY) {
-      return res.status(503).json({ error: 'API key not configured' });
+      console.error('❌ ANTHROPIC_API_KEY not configured!');
+      console.error('   process.env.ANTHROPIC_API_KEY:', process.env.ANTHROPIC_API_KEY);
+      return res.status(503).json({ error: 'API key not configured on server' });
     }
 
     // Call Anthropic API
