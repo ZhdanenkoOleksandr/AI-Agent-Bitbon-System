@@ -766,8 +766,8 @@ textarea::placeholder{color:var(--text3)}
       <button class="tab-btn" onclick="switchCabTab('payment')">💳 Оплата</button>
       <button class="tab-btn" onclick="switchCabTab('plans')">📦 Пакеты</button>
       <button class="tab-btn" onclick="switchCabTab('economy')">📈 Экономика</button>
-      <button class="tab-btn" onclick="switchCabTab('brand')">👤 Бренд</button>
-      <button class="tab-btn" onclick="switchCabTab('tools')">🛠️ Партнёры</button>
+      <button class="tab-btn" onclick="switchCabTab('brand')">🤝 Партнёры</button>
+      <button class="tab-btn" onclick="switchCabTab('tools')">👤 Бренд</button>
     </div>
 
     <div class="tab-content active" id="cab-tab-info">
@@ -918,13 +918,24 @@ textarea::placeholder{color:var(--text3)}
           </label>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
           <div>
             <div style="font-size:13px;font-weight:500;color:var(--text)">👤 Личный бренд</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px">Страница профиля партнёра</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="setting-show-brand" onchange="saveClientSettings()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text)">🏗️ Метаресурс</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Создание метаресурса бизнеса</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-show-meta" onchange="saveClientSettings()">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -1308,7 +1319,7 @@ function updateHeaderButtons(mode) {
     'hbtn-brand':   mode === 'partner' || (mode === 'business' && s.showBrand)   || (mode === 'user' && s.showBrand),
     'hbtn-client':  false,
     'hbtn-partner': false,
-    'hbtn-meta':    mode === 'partner',
+    'hbtn-meta':    mode === 'partner' || ((mode === 'business' || mode === 'user') && s.showMeta),
     'hbtn-cabinet': mode === 'partner'
   };
   Object.keys(show).forEach(function(id) {
@@ -1606,18 +1617,22 @@ function cabOpenInviteLink() {
 function loadClientSettings() {
   var showEconomy = localStorage.getItem('setting-show-economy') === 'true';
   var showBrand   = localStorage.getItem('setting-show-brand')   === 'true';
+  var showMeta    = localStorage.getItem('setting-show-meta')    === 'true';
   var elE = document.getElementById('setting-show-economy');
   var elB = document.getElementById('setting-show-brand');
+  var elM = document.getElementById('setting-show-meta');
   if (elE) elE.checked = showEconomy;
   if (elB) elB.checked = showBrand;
-  return { showEconomy, showBrand };
+  if (elM) elM.checked = showMeta;
+  return { showEconomy, showBrand, showMeta };
 }
 function saveClientSettings() {
   var showEconomy = document.getElementById('setting-show-economy').checked;
   var showBrand   = document.getElementById('setting-show-brand').checked;
+  var showMeta    = document.getElementById('setting-show-meta').checked;
   localStorage.setItem('setting-show-economy', showEconomy);
   localStorage.setItem('setting-show-brand',   showBrand);
-  // Применить немедленно если текущий режим не partner
+  localStorage.setItem('setting-show-meta',    showMeta);
   if (userMode !== 'partner') updateHeaderButtons(userMode);
 }
 
