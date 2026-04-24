@@ -1343,17 +1343,10 @@ async function submitRegistration() {
     var data = await resp.json();
     if (data.success) {
       result.innerHTML = '';
-
-      if (data.inviteLink) {
-        // Показать блок с ссылкой
-        currentInviteLink = data.inviteLink;
-        document.getElementById('invite-link-text').textContent = data.inviteLink;
-        document.getElementById('invite-block').style.display = 'block';
-      } else {
-        // Бот не настроен — показать ID
-        result.innerHTML = '<div class="form-success">✅ ' + data.message +
-          '<br><br><strong>ID:</strong> ' + data.partnerId + '</div>';
-      }
+      var link = data.inviteLink || ('https://t.me/' + (data.botUsername || 'CandidatesZhdanenko_bot') + '?start=' + data.inviteToken);
+      currentInviteLink = link;
+      document.getElementById('invite-link-text').textContent = link;
+      document.getElementById('invite-block').style.display = 'block';
     } else {
       result.innerHTML = '<div class="form-error">❌ ' + (data.error || 'Ошибка') + '</div>';
     }
