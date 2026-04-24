@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes">
+<title>Личный бренд партнёра — Развитие и управление профилем в Bitbon</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0d12;--surface:#111520;--surface2:#181e2e;--surface3:#1e2640;
+  --border:rgba(99,179,237,0.12);--border2:rgba(99,179,237,0.25);
+  --accent:#3b82f6;--accent2:#60a5fa;--green:#10b981;--gold:#f59e0b;--gold2:#fbbf24;
+  --purple:#8b5cf6;--red:#ef4444;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --radius:16px;--radius-sm:10px;
+}
+body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.header{border-bottom:1px solid var(--border2);padding:16px 0;margin-bottom:32px}
+.header h1{font-size:32px;font-weight:700;margin-bottom:8px;color:var(--accent2)}
+.header p{color:var(--text2);font-size:16px}
+.nav{display:flex;gap:24px;margin-bottom:32px;border-bottom:1px solid var(--border2);padding-bottom:16px}
+.nav a{text-decoration:none;color:var(--text2);font-weight:600;font-size:14px;padding-bottom:8px;border-bottom:3px solid transparent;transition:all 0.2s}
+.nav a:hover{color:var(--accent2);border-bottom-color:var(--accent)}
+.nav a.active{color:var(--accent2);border-bottom-color:var(--accent)}
+.section{margin-bottom:48px}
+.section-title{font-size:24px;font-weight:700;margin-bottom:16px;color:var(--accent2)}
+.section-subtitle{font-size:16px;color:var(--text2);margin-bottom:12px}
+.card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;margin-bottom:16px;transition:all 0.2s}
+.card:hover{border-color:var(--accent);background:rgba(59,130,246,0.08)}
+.card h3{color:var(--accent2);margin-bottom:8px;font-size:18px}
+.card p{color:var(--text2);line-height:1.6}
+.list{list-style:none;padding:0}
+.list li{padding:12px 0;color:var(--text2);border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+.list li:last-child{border-bottom:none}
+.list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:2px}
+.btn{display:inline-block;padding:12px 24px;border-radius:var(--radius-sm);background:var(--accent);color:#fff;text-decoration:none;font-weight:600;transition:all 0.2s;border:none;cursor:pointer;font-family:'Onest',sans-serif;font-size:14px}
+.btn:hover{background:var(--accent2);transform:translateY(-2px)}
+.btn-secondary{background:var(--surface2);color:var(--accent);border:1px solid var(--accent)}
+.btn-secondary:hover{background:rgba(59,130,246,0.1)}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:20px 0}
+.step-card{border-left:4px solid var(--accent);padding-left:16px;margin-bottom:20px}
+.step-card h3{color:var(--accent2);margin-bottom:8px}
+.step-card p{color:var(--text2)}
+.footer{border-top:1px solid var(--border2);padding:24px 0;margin-top:48px;text-align:center;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>👤 Личный бренд партнёра</h1>
+    <p>Развитие и управление профессиональной идентичности в Системе Bitbon</p>
+  </div>
+
+  <div class="nav">
+    <a href="index.html">AI Агент</a>
+    <a href="economy.html">📈 Bitbon Viking Economy</a>
+    <a href="brand.html" class="active">👤 Личный бренд</a>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🎯 Что такое личный бренд в Bitbon?</div>
+    <div class="card">
+      <p>Личный бренд партнёра — это ваша профессиональная идентичность в Системе Bitbon. Это совокупность вашего профиля, репутации, портфолио и взаимосвязей, которая определяет, насколько успешным вы будете в экосистеме.</p>
+      <p style="margin-top:16px">Сильный личный бренд привлекает клиентов, партнёров и инвесторов. Это вложение в будущее вашего бизнеса.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">⭐ Компоненты личного бренда</div>
+    <div class="feature-grid">
+      <div class="card">
+        <h3>📝 Профиль партнёра</h3>
+        <p>Ваша визитная карточка в экосистеме. Содержит информацию о вас, вашем бизнесе, опыте и специализации. Это первое впечатление для потенциальных клиентов.</p>
+      </div>
+      <div class="card">
+        <h3>🏆 АУРА рейтинг</h3>
+        <p>Ваш репутационный капитал. АУРА растёт с каждым успешным проектом, рекомендацией и положительным отзывом. Это показатель доверия к вам в сообществе.</p>
+      </div>
+      <div class="card">
+        <h3>🎓 Сертификация</h3>
+        <p>Признание ваших компетенций. Сертификаты показывают, что вы прошли обучение, сдали экзамены и подтверждаете свой уровень профессионализма.</p>
+      </div>
+      <div class="card">
+        <h3>💼 Портфолио метаресурсов</h3>
+        <p>Демонстрация ваших готовых решений. Каждый метаресурс — это пример вашей работы, который помогает клиентам понять вашу специализацию.</p>
+      </div>
+      <div class="card">
+        <h3>🤝 Сетевой эффект</h3>
+        <p>Ваша сеть партнёров и клиентов. Чем больше людей связано с вами, тем сильнее ваше влияние в экосистеме и тем больше возможностей для роста.</p>
+      </div>
+      <div class="card">
+        <h3>📊 Статистика успеха</h3>
+        <p>Ваши метрики: количество клиентов, объём транзакций, уровень удовлетворённости. Это доказательство вашей эффективности.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🚀 Как развивать личный бренд</div>
+    <div class="step-card">
+      <h3>Шаг 1: Создайте полный профиль</h3>
+      <p>Заполните все детали вашего профиля: фото, описание, опыт, достижения, специализацию. Это ваша основа.</p>
+    </div>
+    <div class="step-card">
+      <h3>Шаг 2: Запустите первые метаресурсы</h3>
+      <p>Создайте несколько метаресурсов, которые демонстрируют вашу экспертизу. Начните с малого и пусть каждый проект будет качественным.</p>
+    </div>
+    <div class="step-card">
+      <h3>Шаг 3: Набирайте клиентов</h3>
+      <p>Привлекайте первых клиентов через AI агента, рекомендации и маркетинг. Каждый успешный клиент повышает вашу репутацию.</p>
+    </div>
+    <div class="step-card">
+      <h3>Шаг 4: Собирайте рекомендации и отзывы</h3>
+      <p>Просите у удовлетворённых клиентов рекомендации и отзывы. Это укрепляет вашу АУРА и доверие к вам.</p>
+    </div>
+    <div class="step-card">
+      <h3>Шаг 5: Развивайте сетевые связи</h3>
+      <p>Сотрудничайте с другими партнёрами, делитесь знаниями, создавайте коалиции. Сеть — это ваша сила.</p>
+    </div>
+    <div class="step-card">
+      <h3>Шаг 6: Получайте сертификации</h3>
+      <p>Проходите обучение и получайте сертификаты, которые подтверждают вашу экспертизу. Это повышает доверие клиентов.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">💡 Почему личный бренд важен</div>
+    <div class="card">
+      <h3>Привлечение клиентов</h3>
+      <p>Люди предпочитают работать с теми, кому они доверяют. Сильный бренд привлекает клиентов без активного маркетинга.</p>
+    </div>
+    <div class="card">
+      <h3>Командообразование</h3>
+      <p>Партнёры хотят работать с лидерами и экспертами. Сильный бренд помогает привлечь лучших людей в вашу команду.</p>
+    </div>
+    <div class="card">
+      <h3>Инвестиционная привлекательность</h3>
+      <p>Инвесторы инвестируют в людей с сильным брендом. Ваша репутация — это залог успеха вашего бизнеса.</p>
+    </div>
+    <div class="card">
+      <h3>Устойчивость к конкуренции</h3>
+      <p>Когда у вас есть сильный бренд, конкуренты не могут вас легко вытеснить. Вы становитесь лидером рынка.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🎯 Стратегия долгосрочного развития бренда</div>
+    <div class="card">
+      <h3>Год 1: Укрепление позиций</h3>
+      <ul class="list">
+        <li>Создать и протестировать 3-5 метаресурсов</li>
+        <li>Набрать первых 10-20 клиентов</li>
+        <li>Получить АУРА рейтинг 50+</li>
+        <li>Собрать портфолио успешных проектов</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Год 2: Расширение влияния</h3>
+      <ul class="list">
+        <li>Развить 10+ метаресурсов</li>
+        <li>Привлечь 50-100 клиентов</li>
+        <li>Получить АУРА рейтинг 200+</li>
+        <li>Начать строить партнёрскую сеть</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Год 3+: Лидерство в нише</h3>
+      <ul class="list">
+        <li>Стать экспертом в вашей области</li>
+        <li>Иметь 500+ активных клиентов</li>
+        <li>Получить статус лидера с АУРА 500+</li>
+        <li>Создавать трансформационные решения</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section" style="text-align:center">
+    <a href="index.html" class="btn">← Вернуться в AI Агент</a>
+  </div>
+
+  <div class="footer">
+    <p>Сильный личный бренд — ключ к успеху в Системе Bitbon</p>
+    <p>© 2026 Система Bitbon</p>
+  </div>
+</div>
+</body>
+</html>
