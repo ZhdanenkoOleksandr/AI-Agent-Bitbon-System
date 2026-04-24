@@ -14,6 +14,9 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
 
+// Anthropic API (using fetch - no SDK needed)
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'bitbon-secret-change-in-production-' + Date.now();
@@ -643,6 +646,79 @@ function describeRelation(indA, indB) {
 // ══════════════════════════════════════════════════════════════════════
 // API QUERY ENDPOINT (for partner clients)
 // ══════════════════════════════════════════════════════════════════════
+// CHAT API — Proxy to Anthropic API (free access for all users)
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { question, messages, systemPrompt, userLevel, userMode } = req.body;
+
+    if (!question || !messages || !systemPrompt) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!ANTHROPIC_API_KEY) {
+      return res.status(503).json({ error: 'API key not configured' });
+    }
+
+    // Call Anthropic API
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: messages
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Anthropic API error:', data);
+      return res.status(response.status).json({ error: data.error?.message || 'API Error' });
+    }
+
+    const reply = data.content && data.content[0] && data.content[0].text
+      ? data.content[0].text
+      : 'Не удалось получить ответ.';
+
+    // Log request
+    DB.requestsLog.push({
+      id: 'req_' + Date.now(),
+      type: 'demo',
+      userMode: userMode,
+      userLevel: userLevel,
+      question: question,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ reply, success: true });
+  } catch (err) {
+    console.error('Chat endpoint error:', err);
+    res.status(500).json({ error: 'Server error: ' + err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// DEMO MODE — Free access without API key (for all users/partners)
+app.post('/api/demo/query', (req, res) => {
+  const { question } = req.body;
+  if (!question) return res.status(400).json({ error: 'Missing question' });
+
+  // Log request (no partner tracking)
+  DB.requestsLog.push({
+    id: 'req_' + Date.now(),
+    type: 'demo',
+    question,
+    timestamp: new Date().toISOString()
+  });
+
+  res.json({ message: 'Demo query logged, agent processing...' });
+});
 
 app.post('/api/query', (req, res) => {
   const apiKeyRaw = req.headers['x-api-key'];
