@@ -79,7 +79,7 @@ function saveJSON(filename, data) {
 }
 
 // Load initial knowledge base
-let knowledgeBase = loadJSON('knowledge_base.json') || { categories: {}, meta: {} };
+let knowledgeBase = loadJSON('knowledge_base_v2.0.json') || { categories: {}, meta: {} };
 let metaresourceTemplates = loadJSON('metaresource_templates.json') || { templates: {} };
 
 // Load created metaresources from disk (persistence)
