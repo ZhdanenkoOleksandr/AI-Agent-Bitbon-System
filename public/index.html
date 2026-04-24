@@ -27,6 +27,16 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .close-btn{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px;line-height:1}
 .close-btn:hover{color:var(--text)}
 
+/* MODE SWITCH */
+.mode-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--surface2);cursor:pointer;transition:all 0.2s;text-align:left;font-family:'Onest',sans-serif;border:none;color:var(--text);width:100%}
+.mode-card:hover{border-color:var(--accent);background:rgba(59,130,246,0.08);transform:translateX(4px)}
+.mode-card:active{transform:scale(0.98)}
+.mode-card.active{border-color:var(--accent);background:rgba(59,130,246,0.12)}
+.mode-emoji{font-size:24px;flex-shrink:0}
+.mode-info{flex:1;min-width:0}
+.mode-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.mode-desc{font-size:11px;color:var(--text2);line-height:1.4}
+
 /* LEVEL SCREEN */
 @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0.3}}
 .level-screen{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:18px}
@@ -376,6 +386,12 @@ textarea::placeholder{color:var(--text3)}
   .plan-features li{font-size:10px;padding:2px 0}
   .plan-badge{font-size:9px;padding:1px 8px;top:-8px}
 
+  /* MODE CARD MOBILE */
+  .mode-card{padding:12px;border-radius:var(--radius);min-height:44px}
+  .mode-emoji{font-size:22px}
+  .mode-title{font-size:12px}
+  .mode-desc{font-size:10px}
+
   /* CABINET STATS MOBILE */
   .cabinet-stats{grid-template-columns:1fr;gap:8px;margin-bottom:12px}
   .stat-box{padding:12px;border-radius:var(--radius-sm)}
@@ -637,6 +653,38 @@ textarea::placeholder{color:var(--text3)}
   </div>
 </div>
 
+<!-- ═══ MODE SWITCH OVERLAY ═══ -->
+<div class="overlay hidden" id="mode-switch-overlay">
+  <div class="modal" style="max-width:480px">
+    <button class="close-btn" onclick="closeModeSwitch()">×</button>
+    <div class="modal-title">🔄 Переключить режим</div>
+    <div class="modal-sub">Выберите, кем вы хотите общаться с агентом. Ваш прогресс сохранится.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+      <button class="mode-card" onclick="switchLevel('user')" id="mode-btn-user">
+        <div class="mode-emoji">👤</div>
+        <div class="mode-info">
+          <div class="mode-title">Я пользователь</div>
+          <div class="mode-desc">Узнать о Bitbon и Web 4.0</div>
+        </div>
+      </button>
+      <button class="mode-card" onclick="switchLevel('business')" id="mode-btn-business">
+        <div class="mode-emoji">💼</div>
+        <div class="mode-info">
+          <div class="mode-title">Я представляю бизнес</div>
+          <div class="mode-desc">Создать Метаресурс, подключить к Web 4.0</div>
+        </div>
+      </button>
+      <button class="mode-card" onclick="switchLevel('partner')" id="mode-btn-partner">
+        <div class="mode-emoji">🤝</div>
+        <div class="mode-info">
+          <div class="mode-title">Стать Партнёром</div>
+          <div class="mode-desc">Зарегистрироваться, получить API</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ CABINET OVERLAY ═══ -->
 <div class="overlay hidden" id="cabinet-overlay">
   <div class="modal" style="max-width:620px">
@@ -751,6 +799,7 @@ textarea::placeholder{color:var(--text3)}
         <span class="req-counter" id="req-counter" style="display:none"></span>
         <button class="header-btn meta-btn" onclick="startMetaWizard()">🏗️ Метаресурс</button>
         <button class="header-btn cabinet-btn" onclick="openCabinet()">🏛️ Кабинет</button>
+        <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
       </div>
     </div>
@@ -927,6 +976,59 @@ function setLevel(level) {
   var badge = document.getElementById('level-badge');
   badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
   badge.style.display = 'inline-flex';
+
+  // Load knowledge base
+  loadKnowledgeBase();
+}
+
+// ═══ MODE SWITCHING (без скрытия level-screen) ═══
+function openModeSwitch() {
+  const overlay = document.getElementById('mode-switch-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+  // Highlight current mode
+  document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('active'));
+  const currentBtn = document.getElementById('mode-btn-' + (userMode || 'user'));
+  if (currentBtn) currentBtn.classList.add('active');
+}
+
+function closeModeSwitch() {
+  const overlay = document.getElementById('mode-switch-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+function switchLevel(level) {
+  console.log('🔄 switchLevel() called with:', level);
+
+  if (level === userMode) {
+    console.log('✓ Already in this mode');
+    closeModeSwitch();
+    return;
+  }
+
+  userMode = level;
+
+  // Update level and suggestions
+  if (level === 'partner') {
+    userLevel = 'expert';
+    updateSuggestionsBar('business');
+    addMessage('bot', '🤝 Вы переключились на режим **Партнёра**. Нажмите кнопку 🏛️ Кабинет для управления API и подписками.', null, false);
+  } else if (level === 'business') {
+    userLevel = 'intermediate';
+    updateSuggestionsBar('business');
+    addMessage('bot', '💼 Вы переключились на режим **Бизнеса**. Я помогу подключить вашу компанию к Системе Bitbon.', null, false);
+  } else {
+    userLevel = 'beginner';
+    updateSuggestionsBar('user');
+    addMessage('bot', '👤 Вы переключились на режим **Пользователя**. Я расскажу о Системе Bitbon простым языком.', null, false);
+  }
+
+  // Update badge
+  var badge = document.getElementById('level-badge');
+  badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
+  badge.style.display = 'inline-flex';
+
+  // Close modal
+  closeModeSwitch();
 
   // Load knowledge base
   loadKnowledgeBase();
