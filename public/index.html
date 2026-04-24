@@ -81,6 +81,12 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 @keyframes shimmer{0%{left:-100%}100%{left:100%}}
 .share-messenger-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 10px;border-radius:10px;font-family:'Onest',sans-serif;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:all 0.2s;min-height:70px}
 .share-messenger-btn:hover{transform:translateY(-2px);filter:brightness(1.2)}
+.toggle-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--surface3);border-radius:24px;transition:.25s}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.25s}
+.toggle-switch input:checked + .toggle-slider{background:var(--accent)}
+.toggle-switch input:checked + .toggle-slider::before{transform:translateX(20px)}
 @keyframes glow{0%,100%{box-shadow:0 0 10px rgba(59,130,246,0.5)}50%{box-shadow:0 0 20px rgba(59,130,246,0.8)}}
 @keyframes glowGold{0%,100%{box-shadow:0 0 10px rgba(245,158,11,0.5)}50%{box-shadow:0 0 20px rgba(245,158,11,0.8)}}
 
@@ -896,6 +902,37 @@ textarea::placeholder{color:var(--text3)}
           </div>
         </div>
       </div>
+
+      <!-- Настройки видимости для клиентов -->
+      <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:16px;margin-top:14px">
+        <div style="font-weight:600;color:var(--accent2);margin-bottom:14px;font-size:14px">⚙️ Показывать клиентам и бизнесу</div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text)">📈 Экономика</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Калькулятор Viking Economy</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-show-economy" onchange="saveClientSettings()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text)">👤 Личный бренд</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">Страница профиля партнёра</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="setting-show-brand" onchange="saveClientSettings()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5">
+          Включённые кнопки появятся у клиентов и бизнес-пользователей в заголовке.
+        </div>
+      </div>
     </div>
 
     <!-- Tab: Личный бренд -->
@@ -1262,12 +1299,13 @@ function closeModeSwitch() {
 
 // ── Показать/скрыть кнопки хедера в зависимости от режима ─────────────
 function updateHeaderButtons(mode) {
-  // user:    только req-counter. Убрать: клиент, партнёр, метаресурс, кабинет, экономика, бренд
-  // business: убрать: клиент, партнёр, кабинет. Оставить: метаресурс, экономика, бренд
-  // partner:  все кнопки
+  var s = loadClientSettings();
+  // partner: всё видно
+  // business: метаресурс + economy/brand по настройкам
+  // user:    только economy/brand по настройкам
   var show = {
-    'hbtn-economy': mode === 'business' || mode === 'partner',
-    'hbtn-brand':   mode === 'partner',
+    'hbtn-economy': mode === 'partner' || (mode === 'business' && s.showEconomy) || (mode === 'user' && s.showEconomy),
+    'hbtn-brand':   mode === 'partner' || (mode === 'business' && s.showBrand)   || (mode === 'user' && s.showBrand),
     'hbtn-client':  false,
     'hbtn-partner': false,
     'hbtn-meta':    mode === 'business' || mode === 'partner',
@@ -1491,6 +1529,8 @@ function openCabinet() {
   var shareUrl = window.location.origin + window.location.pathname;
   var el = document.getElementById('cab-share-url');
   if (el) el.textContent = shareUrl;
+  // Load toggle settings
+  loadClientSettings();
 }
 function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
 
@@ -1560,6 +1600,25 @@ function cabCopyInviteLink() {
 }
 function cabOpenInviteLink() {
   if (cabCurrentInviteLink) window.open(cabCurrentInviteLink, '_blank');
+}
+
+// ── Настройки видимости кнопок для клиентов ──────────────────────────
+function loadClientSettings() {
+  var showEconomy = localStorage.getItem('setting-show-economy') === 'true';
+  var showBrand   = localStorage.getItem('setting-show-brand')   === 'true';
+  var elE = document.getElementById('setting-show-economy');
+  var elB = document.getElementById('setting-show-brand');
+  if (elE) elE.checked = showEconomy;
+  if (elB) elB.checked = showBrand;
+  return { showEconomy, showBrand };
+}
+function saveClientSettings() {
+  var showEconomy = document.getElementById('setting-show-economy').checked;
+  var showBrand   = document.getElementById('setting-show-brand').checked;
+  localStorage.setItem('setting-show-economy', showEconomy);
+  localStorage.setItem('setting-show-brand',   showBrand);
+  // Применить немедленно если текущий режим не partner
+  if (userMode !== 'partner') updateHeaderButtons(userMode);
 }
 
 function selectPlan(plan) {
