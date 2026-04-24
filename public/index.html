@@ -773,7 +773,10 @@ textarea::placeholder{color:var(--text3)}
       <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
         Подробнее о экономической модели можно узнать через AI агента, задав вопросы о структуре Bitbon и потенциале инвестиций.
       </div>
-      <button class="form-btn primary" onclick="ask('Расскажи подробнее об экономической модели Bitbon и Viking Economy')">📚 Узнать больше</button>
+      <div style="display:flex;gap:12px">
+        <button class="form-btn primary" onclick="ask('Расскажи подробнее об экономической модели Bitbon и Viking Economy')">📚 Узнать больше</button>
+        <button class="form-btn gold" onclick="window.open('https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app','_blank')">🔗 Открыть калькулятор</button>
+      </div>
     </div>
 
     <!-- Tab: Личный бренд -->
@@ -796,7 +799,10 @@ textarea::placeholder{color:var(--text3)}
       <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
         Сильный личный бренд в Bitbon — ключ к успеху. Инвестируйте в развитие своего профиля и привлекайте партнёров с вашей сетью.
       </div>
-      <button class="form-btn primary" onclick="ask('Как развивать личный бренд и АУРА в Системе Bitbon?')">🚀 Развивать бренд</button>
+      <div style="display:flex;gap:12px">
+        <button class="form-btn primary" onclick="ask('Как развивать личный бренд и АУРА в Системе Bitbon?')">🚀 Развивать бренд</button>
+        <button class="form-btn gold" onclick="window.open('https://parner.vercel.app/ru','_blank')">🔗 Мой профиль</button>
+      </div>
     </div>
   </div>
 </div>
@@ -838,7 +844,7 @@ textarea::placeholder{color:var(--text3)}
       <div class="header-left">
         <div class="avatar">⚡</div>
         <div class="header-info">
-          <h1 id="agent-name">AI Agent · Система Bitbon</h1>
+          <h1 id="agent-name">AI Viking Agent · Система Bitbon</h1>
           <p id="agent-sub">Партнёр Система Bitbon</p>
         </div>
       </div>
@@ -1020,14 +1026,14 @@ function getAgentName() {
   if (partnerInfo && partnerInfo.fullName) {
     return partnerInfo.fullName + ' · Партнёр Система Bitbon';
   }
-  return 'AI Agent · Система Bitbon';
+  return 'AI Viking Agent · Система Bitbon';
 }
 
 function getBotLabel() {
   if (partnerInfo && partnerInfo.fullName) {
     return partnerInfo.fullName + ' · AI Agent';
   }
-  return 'AI Agent · Система Bitbon';
+  return 'AI Viking Agent · Система Bitbon';
 }
 
 // ═══ LEVEL SELECTION ═══
