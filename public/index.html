@@ -313,6 +313,33 @@ textarea::placeholder{color:var(--text3)}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(99,179,237,0.2);border-radius:4px}
+
+/* ═══ CORRECTIONS PANEL ═══ */
+.corrections-panel{position:fixed;bottom:20px;right:20px;width:400px;max-height:600px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;z-index:250}
+.corrections-panel.hidden{display:none}
+.corrections-header{padding:16px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center}
+.corrections-title{font-size:14px;font-weight:600;color:var(--text)}
+.corrections-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;padding:0;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+.corrections-close:hover{color:var(--text)}
+.corrections-list{flex:1;overflow-y:auto;padding:12px}
+.correction-item{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+.correction-item.disabled{opacity:0.5}
+.correction-toggle{width:18px;height:18px;border:1px solid var(--border2);border-radius:4px;background:transparent;cursor:pointer;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--accent)}
+.correction-toggle.active{background:var(--accent);border-color:var(--accent)}
+.correction-content{flex:1;min-width:0}
+.correction-trigger{font-size:12px;font-weight:600;color:var(--accent);word-break:break-word}
+.correction-text{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.4;word-break:break-word}
+.correction-mode{font-size:10px;color:var(--text3);margin-top:4px}
+.correction-delete{background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:4px;flex-shrink:0}
+.correction-delete:hover{color:#ff6666}
+.corrections-footer{padding:12px;border-top:1px solid var(--border2);display:flex;gap:8px}
+.corrections-input{flex:1;padding:8px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'Onest',sans-serif;font-size:12px;outline:none}
+.corrections-input:focus{border-color:var(--accent)}
+.corrections-btn{padding:8px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-family:'Onest',sans-serif;font-size:12px;font-weight:600;transition:background 0.2s}
+.corrections-btn:hover{background:var(--accent2)}
+.corrections-toggle-btn{width:36px;height:36px;position:fixed;bottom:20px;right:20px;background:var(--gold);color:#000;border:none;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,0.3);transition:all 0.2s;z-index:240}
+.corrections-toggle-btn:hover{transform:scale(1.1);box-shadow:0 6px 16px rgba(245,158,11,0.4)}
+
 /* ═══ MOBILE FIRST — 480px и меньше (смартфоны) ═══ */
 @media(max-width:480px){
   :root{--radius:12px;--radius-sm:8px}
@@ -449,6 +476,10 @@ textarea::placeholder{color:var(--text3)}
 
   /* EXPAND BUTTON MOBILE */
   .expand-btn{font-size:11px;padding:4px 10px;border-radius:var(--radius-sm);min-height:32px}
+
+  /* CORRECTIONS PANEL MOBILE */
+  .corrections-panel{width:calc(100% - 20px);right:10px;bottom:60px;max-height:50vh}
+  .corrections-toggle-btn{right:10px;bottom:10px}
 }
 
 /* ═══ TABLET — 481px до 768px ═══ */
@@ -1868,6 +1899,141 @@ window.addEventListener('orientationchange', function() {
     document.body.style.height = window.innerHeight + 'px';
   }, 100);
 });
+
+// ═══ CORRECTIONS SYSTEM ═══
+let corrections = [];
+let correctionsUIVisible = false;
+
+function loadCorrections() {
+  const saved = localStorage.getItem('bitbon_corrections');
+  corrections = saved ? JSON.parse(saved) : [];
+  renderCorrections();
+}
+
+function saveCorrections() {
+  localStorage.setItem('bitbon_corrections', JSON.stringify(corrections));
+  renderCorrections();
+}
+
+function addCorrection() {
+  const triggerInput = document.getElementById('correction-trigger');
+  const textInput = document.getElementById('correction-text');
+
+  if (!triggerInput.value.trim() || !textInput.value.trim()) {
+    alert('Заполните триггер и текст поправки');
+    return;
+  }
+
+  corrections.push({
+    id: Date.now(),
+    trigger: triggerInput.value.trim().toLowerCase(),
+    text: textInput.value.trim(),
+    enabled: true,
+    mode: 'all'
+  });
+
+  triggerInput.value = '';
+  textInput.value = '';
+  saveCorrections();
+}
+
+function toggleCorrection(id) {
+  const correction = corrections.find(c => c.id === id);
+  if (correction) {
+    correction.enabled = !correction.enabled;
+    saveCorrections();
+  }
+}
+
+function deleteCorrection(id) {
+  corrections = corrections.filter(c => c.id !== id);
+  saveCorrections();
+}
+
+function renderCorrections() {
+  const list = document.getElementById('corrections-list');
+  if (!list) return;
+
+  list.innerHTML = corrections.length === 0
+    ? '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Поправок нет. Добавьте первую!</div>'
+    : corrections.map(c => `
+      <div class="correction-item ${c.enabled ? '' : 'disabled'}">
+        <button class="correction-toggle ${c.enabled ? 'active' : ''}" onclick="toggleCorrection(${c.id})" title="Включить/выключить">
+          ${c.enabled ? '✓' : ''}
+        </button>
+        <div class="correction-content">
+          <div class="correction-trigger">🔗 ${escapeHtml(c.trigger)}</div>
+          <div class="correction-text">${escapeHtml(c.text)}</div>
+          <div class="correction-mode">Режим: ${c.mode}</div>
+        </div>
+        <button class="correction-delete" onclick="deleteCorrection(${c.id})" title="Удалить">✕</button>
+      </div>
+    `).join('');
+}
+
+function toggleCorrectionsUI() {
+  correctionsUIVisible = !correctionsUIVisible;
+  const panel = document.getElementById('corrections-panel');
+  if (panel) {
+    panel.classList.toggle('hidden', !correctionsUIVisible);
+  }
+}
+
+function applyCorrections(text) {
+  if (!text) return text;
+
+  const activeCorrections = corrections.filter(c => c.enabled);
+  let result = text;
+
+  activeCorrections.forEach(c => {
+    const regex = new RegExp(c.trigger, 'gi');
+    if (regex.test(result)) {
+      result = result.replace(regex, c.text);
+    }
+  });
+
+  return result;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Инициализация на загрузке
+document.addEventListener('DOMContentLoaded', function() {
+  loadCorrections();
+
+  // Перехват addMessage для применения поправок
+  const originalAddMessage = window.addMessage;
+  if (originalAddMessage) {
+    window.addMessage = function(role, content, actions, renderMarkdown) {
+      if (role === 'bot') {
+        content = applyCorrections(content);
+      }
+      return originalAddMessage.call(this, role, content, actions, renderMarkdown);
+    };
+  }
+});
 </script>
+
+<!-- CORRECTIONS PANEL -->
+<div id="corrections-panel" class="corrections-panel hidden">
+  <div class="corrections-header">
+    <div class="corrections-title">🔧 Поправки базы знаний</div>
+    <button class="corrections-close" onclick="toggleCorrectionsUI()">✕</button>
+  </div>
+  <div class="corrections-list" id="corrections-list"></div>
+  <div class="corrections-footer">
+    <input type="text" id="correction-trigger" class="corrections-input" placeholder="Триггер (слово/фраза)..." maxlength="100">
+    <input type="text" id="correction-text" class="corrections-input" placeholder="Замена..." maxlength="200">
+    <button class="corrections-btn" onclick="addCorrection()">+</button>
+  </div>
+</div>
+
+<!-- CORRECTIONS TOGGLE BUTTON -->
+<button class="corrections-toggle-btn" id="corrections-btn" onclick="toggleCorrectionsUI()" title="Открыть панель поправок">🔧</button>
+
 </body>
 </html>
