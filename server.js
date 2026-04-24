@@ -54,7 +54,8 @@ const DB = {
   payments: [],       // payment records
   requestsLog: [],    // API usage log
   metaresources: [],  // Created metaresources (knowledge base learning)
-  sessions: {}        // admin sessions
+  sessions: {},       // admin sessions
+  guestTokens: {}     // token -> { partnerId, quota, used, createdAt }
 };
 
 // ── DATA FILES ───────────────────────────────────────────────────────
@@ -97,6 +98,10 @@ DB.partners = savedPartners;
 // Load payments
 let savedPayments = loadJSON('payments_db.json') || [];
 DB.payments = savedPayments;
+
+// Load guest tokens
+let savedGuests = loadJSON('guests_db.json') || {};
+DB.guestTokens = savedGuests;
 
 // ── HELPERS ──────────────────────────────────────────────────────────
 function hashApiKey(key) {
@@ -148,6 +153,10 @@ function authenticatePartner(req, res, next) {
   } catch (e) {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
+}
+
+function persistGuests() {
+  saveJSON('guests_db.json', DB.guestTokens);
 }
 
 function persistData() {
@@ -832,6 +841,92 @@ app.post('/api/query', (req, res) => {
 // ══════════════════════════════════════════════════════════════════════
 // STATIC PAGES
 // ══════════════════════════════════════════════════════════════════════
+
+// ── Guest tokens (gift requests) ─────────────────────────────────────
+
+// POST /api/gift/create — partner creates a gift link (requires partner API key)
+app.post('/api/gift/create', (req, res) => {
+  const { apiKey, quota = 20 } = req.body;
+  if (!apiKey) return res.status(400).json({ error: 'apiKey required' });
+
+  // Find partner by apiKey
+  const partner = Object.values(DB.partners).find(p => p.apiKey === apiKey);
+  if (!partner) return res.status(403).json({ error: 'Invalid API key' });
+  if (partner.status !== 'active') return res.status(403).json({ error: 'Partner not active' });
+
+  const guestToken = uuidv4().replace(/-/g, '').substring(0, 24);
+  DB.guestTokens[guestToken] = {
+    token: guestToken,
+    partnerId: partner.id,
+    partnerName: `${partner.firstName || ''} ${partner.lastName || ''}`.trim() || partner.telegram,
+    quota: Math.max(1, Math.min(parseInt(quota) || 20, 1000)),
+    used: 0,
+    createdAt: new Date().toISOString(),
+    claimedAt: null,
+    userAgent: req.headers['user-agent'] || ''
+  };
+  persistGuests();
+
+  const giftUrl = `${req.protocol}://${req.get('host')}/?gift=${guestToken}`;
+  res.json({ success: true, guestToken, giftUrl, quota: DB.guestTokens[guestToken].quota });
+});
+
+// POST /api/gift/claim — client claims a gift token (returns remaining quota)
+app.post('/api/gift/claim', (req, res) => {
+  const { token } = req.body;
+  const gt = DB.guestTokens[token];
+  if (!gt) return res.status(404).json({ error: 'Token not found or expired' });
+  if (!gt.claimedAt) {
+    gt.claimedAt = new Date().toISOString();
+    persistGuests();
+  }
+  res.json({ success: true, quota: gt.quota, used: gt.used, remaining: gt.quota - gt.used });
+});
+
+// POST /api/gift/use — decrement one request from a guest token
+app.post('/api/gift/use', (req, res) => {
+  const { token } = req.body;
+  const gt = DB.guestTokens[token];
+  if (!gt) return res.status(404).json({ error: 'Token not found' });
+  if (gt.used >= gt.quota) return res.status(429).json({ error: 'Quota exhausted', remaining: 0 });
+  gt.used++;
+  persistGuests();
+  res.json({ success: true, used: gt.used, remaining: gt.quota - gt.used });
+});
+
+// POST /api/gift/topup — partner adds more requests to an existing token
+app.post('/api/gift/topup', (req, res) => {
+  const { apiKey, token, add = 10 } = req.body;
+  if (!apiKey || !token) return res.status(400).json({ error: 'apiKey and token required' });
+  const partner = Object.values(DB.partners).find(p => p.apiKey === apiKey);
+  if (!partner) return res.status(403).json({ error: 'Invalid API key' });
+  const gt = DB.guestTokens[token];
+  if (!gt) return res.status(404).json({ error: 'Token not found' });
+  if (gt.partnerId !== partner.id) return res.status(403).json({ error: 'Not your token' });
+  gt.quota += Math.max(1, Math.min(parseInt(add) || 10, 500));
+  persistGuests();
+  res.json({ success: true, quota: gt.quota, used: gt.used, remaining: gt.quota - gt.used });
+});
+
+// GET /api/partner/guests — list guest tokens created by this partner
+app.get('/api/partner/guests', (req, res) => {
+  const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+  if (!apiKey) return res.status(400).json({ error: 'apiKey required' });
+  const partner = Object.values(DB.partners).find(p => p.apiKey === apiKey);
+  if (!partner) return res.status(403).json({ error: 'Invalid API key' });
+  const guests = Object.values(DB.guestTokens)
+    .filter(g => g.partnerId === partner.id)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map(g => ({
+      token: g.token,
+      quota: g.quota,
+      used: g.used,
+      remaining: g.quota - g.used,
+      createdAt: g.createdAt,
+      claimedAt: g.claimedAt
+    }));
+  res.json({ success: true, guests });
+});
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

@@ -779,6 +779,19 @@ textarea::placeholder{color:var(--text3)}
       <div class="requests-bar-wrap"><div class="requests-bar" id="cab-bar" style="width:0%"></div></div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:12px" id="cab-plan-label">Пакет не выбран</div>
       <div style="font-size:12px;color:var(--text2);line-height:1.6" id="cab-status-info"></div>
+
+      <!-- Клиенты партнёра -->
+      <div style="margin-top:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em">👥 Клиенты</div>
+          <button onclick="loadGuestStats()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;cursor:pointer;font-family:'Onest',sans-serif">↻ Обновить</button>
+        </div>
+        <div id="guests-list" style="font-size:12px;color:var(--text3)">— введите API ключ для загрузки —</div>
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+          <input id="stat-api-key" class="form-input" placeholder="Ваш API ключ" style="font-size:12px;padding:8px 12px;flex:1">
+          <button onclick="loadGuestStats()" class="form-btn primary" style="margin:0;padding:8px 14px;font-size:12px;white-space:nowrap">Загрузить</button>
+        </div>
+      </div>
     </div>
 
     <div class="tab-content" id="cab-tab-payment">
@@ -857,9 +870,25 @@ textarea::placeholder{color:var(--text3)}
       <!-- Поделиться с клиентом -->
       <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:16px;margin-bottom:14px">
         <div style="font-weight:600;color:var(--green);margin-bottom:6px;font-size:14px">👤 Поделиться с клиентом</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5">
-          Отправьте ссылку на AI-агента Системы Bitbon через любой мессенджер.
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">
+          Выберите количество запросов и отправьте ссылку через любой мессенджер.
         </div>
+
+        <!-- Счётчик запросов -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px">
+          <span style="font-size:12px;color:var(--text2);flex:1">🎁 Запросов в подарок:</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button onclick="changeGiftQuota(-5)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Onest',sans-serif">−</button>
+            <span id="gift-quota-val" style="font-size:16px;font-weight:700;color:var(--green);min-width:32px;text-align:center">20</span>
+            <button onclick="changeGiftQuota(5)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Onest',sans-serif">+</button>
+          </div>
+          <div style="display:flex;gap:4px">
+            <button onclick="setGiftQuota(20)" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text3);font-size:10px;cursor:pointer;font-family:'Onest',sans-serif">20</button>
+            <button onclick="setGiftQuota(50)" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text3);font-size:10px;cursor:pointer;font-family:'Onest',sans-serif">50</button>
+            <button onclick="setGiftQuota(100)" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text3);font-size:10px;cursor:pointer;font-family:'Onest',sans-serif">100</button>
+          </div>
+        </div>
+
         <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
           <div id="cab-share-url" style="font-size:11px;color:var(--text2);flex:1;word-break:break-all"></div>
           <button onclick="cabCopyShareUrl()" style="flex-shrink:0;padding:5px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text2);font-size:11px;cursor:pointer;font-family:'Onest',sans-serif">📋</button>
@@ -1537,9 +1566,7 @@ function openCabinet() {
     document.getElementById('pay-partner-id').value = partnerInfo.id || '';
   }
   // Fill share URL in tools tab
-  var shareUrl = window.location.origin + window.location.pathname;
-  var el = document.getElementById('cab-share-url');
-  if (el) el.textContent = shareUrl;
+  refreshShareUrl();
   // Load toggle settings
   loadClientSettings();
 }
@@ -1612,6 +1639,105 @@ function cabCopyInviteLink() {
 function cabOpenInviteLink() {
   if (cabCurrentInviteLink) window.open(cabCurrentInviteLink, '_blank');
 }
+
+// ── Gift quota counter ────────────────────────────────────────────────
+var giftQuota = 20;
+function changeGiftQuota(delta) {
+  giftQuota = Math.max(5, Math.min(1000, giftQuota + delta));
+  document.getElementById('gift-quota-val').textContent = giftQuota;
+  refreshShareUrl();
+}
+function setGiftQuota(val) {
+  giftQuota = val;
+  document.getElementById('gift-quota-val').textContent = giftQuota;
+  refreshShareUrl();
+}
+
+async function refreshShareUrl() {
+  // If partner has API key — create a real gift token, otherwise use plain URL
+  var apiKey = (document.getElementById('stat-api-key') || {}).value || '';
+  var baseUrl = window.location.origin + window.location.pathname;
+  if (apiKey) {
+    try {
+      var r = await fetch(API_BASE + '/api/gift/create', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ apiKey, quota: giftQuota })
+      });
+      var d = await r.json();
+      if (d.success) {
+        var el = document.getElementById('cab-share-url');
+        if (el) el.textContent = d.giftUrl;
+        return;
+      }
+    } catch(e) {}
+  }
+  var el = document.getElementById('cab-share-url');
+  if (el) el.textContent = baseUrl + '?gift_quota=' + giftQuota;
+}
+
+// ── Guest clients stats ───────────────────────────────────────────────
+async function loadGuestStats() {
+  var apiKey = document.getElementById('stat-api-key').value.trim();
+  var list = document.getElementById('guests-list');
+  if (!apiKey) { list.innerHTML = '<span style="color:var(--red)">Введите API ключ</span>'; return; }
+  list.innerHTML = '⏳ Загрузка...';
+  try {
+    var r = await fetch(API_BASE + '/api/partner/guests?apiKey=' + encodeURIComponent(apiKey));
+    var d = await r.json();
+    if (!d.success) { list.innerHTML = '<span style="color:var(--red)">❌ ' + (d.error || 'Ошибка') + '</span>'; return; }
+    if (!d.guests.length) { list.innerHTML = '<span style="color:var(--text3)">Нет клиентов. Отправьте ссылку с подарком.</span>'; return; }
+    list.innerHTML = d.guests.map(function(g) {
+      var pct = g.quota > 0 ? Math.round(g.used / g.quota * 100) : 0;
+      var claimed = g.claimedAt ? '✅' : '⏳';
+      var date = g.createdAt ? new Date(g.createdAt).toLocaleDateString('ru-RU') : '';
+      return '<div style="padding:10px;border:1px solid var(--border2);border-radius:8px;margin-bottom:8px;background:var(--surface2)">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+          '<span style="font-size:11px;color:var(--text3);font-family:monospace">' + g.token.substring(0,12) + '…</span>' +
+          '<span style="font-size:10px;color:var(--text3)">' + claimed + ' ' + date + '</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+          '<div style="flex:1;height:4px;background:var(--surface3);border-radius:2px"><div style="width:' + pct + '%;height:100%;background:var(--accent);border-radius:2px"></div></div>' +
+          '<span style="font-size:11px;color:var(--text2)">' + g.used + '/' + g.quota + '</span>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px">' +
+          '<button onclick="topupGuest(\'' + apiKey + '\',\'' + g.token + '\',10)" style="flex:1;padding:5px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:10px;cursor:pointer;font-family:\'Onest\',sans-serif">+10</button>' +
+          '<button onclick="topupGuest(\'' + apiKey + '\',\'' + g.token + '\',25)" style="flex:1;padding:5px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:10px;cursor:pointer;font-family:\'Onest\',sans-serif">+25</button>' +
+          '<button onclick="topupGuest(\'' + apiKey + '\',\'' + g.token + '\',50)" style="flex:1;padding:5px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:10px;cursor:pointer;font-family:\'Onest\',sans-serif">+50</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<span style="color:var(--red)">❌ Ошибка соединения</span>';
+  }
+}
+
+async function topupGuest(apiKey, token, add) {
+  try {
+    var r = await fetch(API_BASE + '/api/gift/topup', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ apiKey, token, add })
+    });
+    var d = await r.json();
+    if (d.success) loadGuestStats();
+  } catch(e) {}
+}
+
+// ── Claim gift on page load ───────────────────────────────────────────
+(function claimGiftOnLoad() {
+  var params = new URLSearchParams(window.location.search);
+  var giftToken = params.get('gift');
+  if (!giftToken) return;
+  fetch(API_BASE + '/api/gift/claim', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ token: giftToken })
+  }).then(function(r){ return r.json(); }).then(function(d) {
+    if (d.success) {
+      localStorage.setItem('guestToken', giftToken);
+      localStorage.setItem('guestQuota', d.quota);
+      localStorage.setItem('guestUsed', d.used);
+    }
+  }).catch(function(){});
+})();
 
 // ── Настройки видимости кнопок для клиентов ──────────────────────────
 function loadClientSettings() {
