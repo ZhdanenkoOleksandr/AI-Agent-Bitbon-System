@@ -639,66 +639,35 @@ textarea::placeholder{color:var(--text3)}
 
 <!-- ═══ REGISTER PARTNER OVERLAY ═══ -->
 <div class="overlay hidden" id="register-overlay">
-  <div class="modal" style="max-width:480px">
+  <div class="modal" style="max-width:440px">
     <button class="close-btn" onclick="closeRegister()">×</button>
-    <div class="modal-title">🤝 Регистрация Партнёра</div>
-    <div class="modal-sub">Заполните данные для регистрации. После оплаты Bitbon администратор активирует ваш API ключ.</div>
+    <div class="modal-title">🤝 Пригласить Партнёра</div>
+    <div class="modal-sub">Введите Telegram партнёра — бот автоматически напишет ему и соберёт все данные.</div>
     <div id="register-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Имя *</label>
-          <input class="form-input" id="reg-first" placeholder="Ваше имя">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Фамилия *</label>
-          <input class="form-input" id="reg-last" placeholder="Ваша фамилия">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Email *</label>
-        <input class="form-input" id="reg-email" type="email" placeholder="partner@example.com">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Telegram *</label>
-        <input class="form-input" id="reg-telegram" placeholder="@username">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Телефон</label>
-        <input class="form-input" id="reg-phone" type="tel" placeholder="+380...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Bitbon кошелёк (для оплаты)</label>
-        <input class="form-input" id="reg-wallet" placeholder="Адрес кошелька">
+
+      <div class="form-group" style="margin-top:20px">
+        <label class="form-label">Telegram партнёра *</label>
+        <input class="form-input" id="reg-telegram" placeholder="@username" style="font-size:16px;padding:14px 16px">
       </div>
 
-      <div style="margin:16px 0 12px;font-size:13px;font-weight:600;color:var(--text)">Выберите пакет:</div>
-      <div class="plan-grid" id="reg-plans">
-        <div class="plan-card" data-pkg="starter" onclick="selectRegPlan('starter')">
-          <div class="plan-icon">🌱</div>
-          <div class="plan-name">Стартер</div>
-          <div class="plan-price">10 BB <span>/мес</span></div>
-          <div class="plan-requests">100 запросов</div>
-          <ul class="plan-features"><li>AI агент для клиентов</li><li>3 метаресурса</li><li>Базовая поддержка</li></ul>
-        </div>
-        <div class="plan-card popular" data-pkg="pro" onclick="selectRegPlan('pro')">
-          <div class="plan-badge">🔥 Популярный</div>
-          <div class="plan-icon">📖</div>
-          <div class="plan-name">Про</div>
-          <div class="plan-price">50 BB <span>/мес</span></div>
-          <div class="plan-requests">500 запросов</div>
-          <ul class="plan-features"><li>Всё из Стартер</li><li>15 метаресурсов</li><li>Приоритет</li></ul>
-        </div>
-        <div class="plan-card" data-pkg="expert" onclick="selectRegPlan('expert')">
-          <div class="plan-icon">🚀</div>
-          <div class="plan-name">Эксперт</div>
-          <div class="plan-price">150 BB <span>/мес</span></div>
-          <div class="plan-requests">Безлимит</div>
-          <ul class="plan-features"><li>Всё из Про</li><li>∞ метаресурсов</li><li>White-label</li></ul>
-        </div>
-      </div>
-
-      <button class="form-btn primary" onclick="submitRegistration()">Зарегистрироваться</button>
+      <button class="form-btn primary" onclick="submitRegistration()" style="margin-top:16px">
+        📩 Создать приглашение
+      </button>
       <div id="reg-result"></div>
+
+      <!-- Показывается после успешного создания -->
+      <div id="invite-block" style="display:none;margin-top:20px;padding:16px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:12px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Ссылка-приглашение</div>
+        <div id="invite-link-text" style="font-size:13px;color:var(--text);word-break:break-all;margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px">
+          <button class="form-btn" onclick="copyInviteLink()" style="flex:1;padding:10px;font-size:13px">📋 Скопировать</button>
+          <button class="form-btn" onclick="openInviteLink()" style="flex:1;padding:10px;font-size:13px;background:rgba(139,92,246,0.2)">📲 Открыть</button>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text2)">
+          Отправьте эту ссылку партнёру. Когда он нажмёт — бот задаст все вопросы и данные появятся в системе автоматически.
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1262,47 +1231,57 @@ function selectRegPlan(pkg) {
   document.querySelector(`#reg-plans .plan-card[data-pkg="${pkg}"]`).classList.add('active');
 }
 
+var currentInviteLink = '';
+
 async function submitRegistration() {
-  var first = document.getElementById('reg-first').value.trim();
-  var last = document.getElementById('reg-last').value.trim();
-  var email = document.getElementById('reg-email').value.trim();
   var tg = document.getElementById('reg-telegram').value.trim();
-  var phone = document.getElementById('reg-phone').value.trim();
-  var wallet = document.getElementById('reg-wallet').value.trim();
   var result = document.getElementById('reg-result');
 
-  if (!first || !last || !email || !tg) {
-    result.innerHTML = '<div class="form-error">Заполните все обязательные поля (Имя, Фамилия, Email, Telegram)</div>';
+  if (!tg) {
+    result.innerHTML = '<div class="form-error">Введите Telegram партнёра</div>';
     return;
   }
+  if (!tg.startsWith('@')) tg = '@' + tg;
 
   try {
     var resp = await fetch(API_BASE + '/api/partner/register', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({firstName: first, lastName: last, email, telegram: tg, phone, walletAddress: wallet})
+      body: JSON.stringify({ telegram: tg })
     });
     var data = await resp.json();
     if (data.success) {
-      partnerInfo = {id: data.partnerId, firstName: first, lastName: last, fullName: data.fullName};
-      document.getElementById('agent-name').textContent = getAgentName();
-      document.getElementById('agent-sub').textContent = 'Партнёр Система Bitbon';
-      result.innerHTML = '<div class="form-success">✅ ' + data.message +
-        '<br><br><strong>Ваш ID:</strong> ' + data.partnerId +
-        '<br><strong>Пакет:</strong> ' + selectedRegPlan +
-        '<br><br>Отправьте Bitbon на кошелёк системы и укажите TX хэш в разделе «Оплата» вашего Кабинета.</div>';
-      setTimeout(() => {
-        closeRegister();
-        document.getElementById('level-screen').style.display = 'none';
-        updateSuggestionsBar('business');
-        addMessage('bot', `Добро пожаловать, ${first}! Вы зарегистрированы как партнёр.\n\n**Следующий шаг:** откройте 🏛️ Кабинет → Оплата, отправьте Bitbon и укажите TX хэш. После подтверждения администратором ваш API ключ будет активирован.\n\nА пока вы можете изучить систему и создать демо-метаресурс.`, null, false);
-      }, 3000);
+      result.innerHTML = '';
+
+      if (data.inviteLink) {
+        // Показать блок с ссылкой
+        currentInviteLink = data.inviteLink;
+        document.getElementById('invite-link-text').textContent = data.inviteLink;
+        document.getElementById('invite-block').style.display = 'block';
+      } else {
+        // Бот не настроен — показать ID
+        result.innerHTML = '<div class="form-success">✅ ' + data.message +
+          '<br><br><strong>ID:</strong> ' + data.partnerId + '</div>';
+      }
     } else {
-      result.innerHTML = '<div class="form-error">❌ ' + (data.error || 'Ошибка регистрации') + '</div>';
+      result.innerHTML = '<div class="form-error">❌ ' + (data.error || 'Ошибка') + '</div>';
     }
   } catch(e) {
     result.innerHTML = '<div class="form-error">❌ Ошибка соединения с сервером</div>';
   }
+}
+
+function copyInviteLink() {
+  if (!currentInviteLink) return;
+  navigator.clipboard.writeText(currentInviteLink).then(() => {
+    var btn = event.target;
+    btn.textContent = '✅ Скопировано!';
+    setTimeout(() => btn.textContent = '📋 Скопировать', 2000);
+  });
+}
+
+function openInviteLink() {
+  if (currentInviteLink) window.open(currentInviteLink, '_blank');
 }
 
 // ═══ PAYMENT ═══

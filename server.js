@@ -13,6 +13,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
+const { initBot, notifyPartnerActivated } = require('./src/telegram-bot');
 
 // Anthropic API (using fetch - no SDK needed)
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -274,50 +275,54 @@ app.post('/api/admin/deactivate', authenticateAdmin, (req, res) => {
 // PARTNER REGISTRATION & AUTH
 // ══════════════════════════════════════════════════════════════════════
 
-// Register new partner
+// Register new partner (invite flow — sends Telegram deep link)
 app.post('/api/partner/register', (req, res) => {
-  const { firstName, lastName, email, telegram, phone, walletAddress } = req.body;
+  const { telegram } = req.body;
 
-  if (!firstName || !lastName || !email || !telegram) {
-    return res.status(400).json({ error: 'Заполните обязательные поля: Имя, Фамилия, Email, Telegram' });
+  if (!telegram) {
+    return res.status(400).json({ error: 'Укажите Telegram партнёра' });
   }
 
-  // Check duplicate email
-  const existing = Object.values(DB.partners).find(p => p.email === email);
-  if (existing) {
-    return res.status(409).json({ error: 'Партнёр с таким email уже зарегистрирован' });
-  }
+  // Генерация уникального токена для deep link
+  const inviteToken = uuidv4().replace(/-/g, '').substring(0, 20);
+  const partnerId   = generatePartnerId();
 
-  const partnerId = generatePartnerId();
   const partner = {
-    id: partnerId,
-    firstName: firstName.trim(),
-    lastName: lastName.trim(),
-    email: email.trim().toLowerCase(),
-    telegram: telegram.trim(),
-    phone: phone?.trim() || '',
-    walletAddress: walletAddress?.trim() || '',
-    status: 'pending_payment', // pending_payment -> active -> suspended -> expired
-    packageType: null,
-    apiKey: null,
-    requestsLimit: 0,
-    requestsUsed: 0,
+    id:                 partnerId,
+    firstName:          '',
+    lastName:           '',
+    email:              '',
+    telegram:           telegram.trim().startsWith('@') ? telegram.trim() : '@' + telegram.trim(),
+    phone:              '',
+    walletAddress:      '',
+    inviteToken,
+    telegramChatId:     null,
+    status:             'invited',
+    packageType:        null,
+    apiKey:             null,
+    requestsLimit:      0,
+    requestsUsed:       0,
     metaresourcesLimit: 0,
-    metaresourcesUsed: 0,
-    createdAt: new Date().toISOString(),
-    activatedAt: null,
-    expiresAt: null
+    metaresourcesUsed:  0,
+    createdAt:          new Date().toISOString(),
+    activatedAt:        null,
+    expiresAt:          null,
+    source:             'cabinet_invite'
   };
 
   DB.partners[partnerId] = partner;
   persistData();
 
+  const { getInviteLink } = require('./src/telegram-bot');
+  const inviteLink = getInviteLink(inviteToken);
+
   res.json({
-    success: true,
+    success:    true,
     partnerId,
-    fullName: `${partner.firstName} ${partner.lastName}`,
-    status: 'pending_payment',
-    message: `Партнёр ${partner.firstName} ${partner.lastName} зарегистрирован. Ожидается оплата Bitbon для активации.`
+    inviteToken,
+    inviteLink,
+    telegram:   partner.telegram,
+    message:    `Приглашение создано для ${partner.telegram}. Отправьте партнёру ссылку — бот соберёт все данные автоматически.`
   });
 });
 
@@ -850,6 +855,9 @@ app.listen(PORT, () => {
   console.log(`  📊 ${DB.metaresources.length} metaresources in KB`);
   console.log(`  👥 ${Object.keys(DB.partners).length} partners`);
   console.log(`══════════════════════════════════════════\n`);
+
+  // Start Telegram bot
+  telegramBot = initBot(DB, persistData, generatePartnerId);
 });
 
 module.exports = app;
