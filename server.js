@@ -3,7 +3,10 @@
 // Express backend: auth, admin, partner API, metaresource knowledge base
 // ══════════════════════════════════════════════════════════════════════
 
+const path = require('path');
 require('dotenv').config();
+// Also load from AI-Agent-Bitbon-System/.env if root .env is missing vars
+require('dotenv').config({ path: path.join(__dirname, 'AI-Agent-Bitbon-System', '.env'), override: false });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -12,7 +15,6 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-const path = require('path');
 const { initBot, notifyPartnerActivated } = require('./src/telegram-bot');
 
 // Anthropic API (using fetch - no SDK needed)
