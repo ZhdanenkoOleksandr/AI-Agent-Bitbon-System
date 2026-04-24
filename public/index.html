@@ -692,11 +692,13 @@ textarea::placeholder{color:var(--text3)}
     <div class="modal-title">🏛️ Кабинет партнёра</div>
     <div class="modal-sub" id="cab-partner-name">Управление подпиской и API</div>
 
-    <!-- Tabs: User / Business -->
+    <!-- Tabs: Statistics / Payment / Plans / Economy / Brand -->
     <div class="tab-row">
       <button class="tab-btn active" onclick="switchCabTab('info')">📊 Статистика</button>
       <button class="tab-btn" onclick="switchCabTab('payment')">💳 Оплата</button>
       <button class="tab-btn" onclick="switchCabTab('plans')">📦 Пакеты</button>
+      <button class="tab-btn" onclick="switchCabTab('economy')">📈 Экономика</button>
+      <button class="tab-btn" onclick="switchCabTab('brand')">👤 Бренд</button>
     </div>
 
     <div class="tab-content active" id="cab-tab-info">
@@ -749,6 +751,52 @@ textarea::placeholder{color:var(--text3)}
           <ul class="plan-features"><li>∞ метаресурсов</li><li>White-label</li><li>Приоритетная поддержка</li></ul>
         </div>
       </div>
+    </div>
+
+    <!-- Tab: Экономическая модель (Bitbon Viking Economy) -->
+    <div class="tab-content" id="cab-tab-economy">
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+        <strong>📈 Bitbon Viking Economy</strong> — инновационная экономическая модель системы Bitbon, основанная на принципах децентрализации и дефляционной модели роста стоимости АУРА.
+      </div>
+
+      <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-weight:600;color:var(--purple);margin-bottom:10px;font-size:14px">🎯 Ключевые компоненты:</div>
+        <ul style="list-style:none;color:var(--text2);font-size:13px;line-height:1.8">
+          <li>💰 <strong>Дефляционная модель</strong> — всего 100 млн BB, ограниченное предложение</li>
+          <li>🔄 <strong>АУРА как цифровой актив</strong> — растёт в цене с развитием экосистемы</li>
+          <li>🌐 <strong>Web 4.0 интеграция</strong> — блокчейн + AI для реального сектора</li>
+          <li>📊 <strong>Партнёрская модель</strong> — разделение доходов между участниками</li>
+          <li>🚀 <strong>Масштабирование</strong> — рост стоимости вместе с числом пользователей</li>
+        </ul>
+      </div>
+
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+        Подробнее о экономической модели можно узнать через AI агента, задав вопросы о структуре Bitbon и потенциале инвестиций.
+      </div>
+      <button class="form-btn primary" onclick="ask('Расскажи подробнее об экономической модели Bitbon и Viking Economy')">📚 Узнать больше</button>
+    </div>
+
+    <!-- Tab: Личный бренд -->
+    <div class="tab-content" id="cab-tab-brand">
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+        <strong>👤 Личный бренд партнёра</strong> — развитие и управление вашей профессиональной идентичности в Системе Bitbon.
+      </div>
+
+      <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-weight:600;color:var(--accent);margin-bottom:10px;font-size:14px">⭐ Компоненты личного бренда:</div>
+        <ul style="list-style:none;color:var(--text2);font-size:13px;line-height:1.8">
+          <li>📝 <strong>Профиль партнёра</strong> — ваша визитная карточка в экосистеме</li>
+          <li>🏆 <strong>АУРА рейтинг</strong> — репутационный капитал и доверие</li>
+          <li>🎓 <strong>Сертификация</strong> — признание уровня компетентности</li>
+          <li>💼 <strong>Портфолио метаресурсов</strong> — демонстрация готовых решений</li>
+          <li>🤝 <strong>Сетевой эффект</strong> — привлечение клиентов через репутацию</li>
+        </ul>
+      </div>
+
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+        Сильный личный бренд в Bitbon — ключ к успеху. Инвестируйте в развитие своего профиля и привлекайте партнёров с вашей сетью.
+      </div>
+      <button class="form-btn primary" onclick="ask('Как развивать личный бренд и АУРА в Системе Bitbon?')">🚀 Развивать бренд</button>
     </div>
   </div>
 </div>
@@ -1198,8 +1246,8 @@ function openCabinet() {
 function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
 
 function switchCabTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['info','payment','plans'][i] === tab));
-  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', ['info','payment','plans'][i] === tab));
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['info','payment','plans','economy','brand'][i] === tab));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', ['info','payment','plans','economy','brand'][i] === tab));
 }
 
 function selectPlan(plan) {
