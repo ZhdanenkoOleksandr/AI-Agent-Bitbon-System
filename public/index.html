@@ -761,6 +761,7 @@ textarea::placeholder{color:var(--text3)}
       <button class="tab-btn" onclick="switchCabTab('plans')">📦 Пакеты</button>
       <button class="tab-btn" onclick="switchCabTab('economy')">📈 Экономика</button>
       <button class="tab-btn" onclick="switchCabTab('brand')">👤 Бренд</button>
+      <button class="tab-btn" onclick="switchCabTab('tools')">🛠️ Партнёры</button>
     </div>
 
     <div class="tab-content active" id="cab-tab-info">
@@ -838,6 +839,62 @@ textarea::placeholder{color:var(--text3)}
       <div style="display:flex;gap:12px;flex-wrap:wrap">
         <button class="fancy-btn economy" onclick="ask('Расскажи подробнее об экономической модели Bitbon и Viking Economy')">📚 Узнать больше</button>
         <button class="fancy-btn economy" onclick="window.open('https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app','_blank')">🔗 Открыть калькулятор</button>
+      </div>
+    </div>
+
+    <!-- Tab: Инструменты партнёра -->
+    <div class="tab-content" id="cab-tab-tools">
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">
+        Инструменты для привлечения клиентов и расширения партнёрской сети.
+      </div>
+
+      <!-- Поделиться с клиентом -->
+      <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:16px;margin-bottom:14px">
+        <div style="font-weight:600;color:var(--green);margin-bottom:6px;font-size:14px">👤 Поделиться с клиентом</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5">
+          Отправьте ссылку на AI-агента Системы Bitbon через любой мессенджер.
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <div id="cab-share-url" style="font-size:11px;color:var(--text2);flex:1;word-break:break-all"></div>
+          <button onclick="cabCopyShareUrl()" style="flex-shrink:0;padding:5px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text2);font-size:11px;cursor:pointer;font-family:'Onest',sans-serif">📋</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+          <button class="share-messenger-btn" onclick="cabShareTelegram()" style="background:rgba(0,136,204,0.12);border:1px solid rgba(0,136,204,0.3);font-size:11px;min-height:54px;gap:4px">
+            <span style="font-size:18px">✈️</span><span>Telegram</span>
+          </button>
+          <button class="share-messenger-btn" onclick="cabShareWhatsApp()" style="background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3);font-size:11px;min-height:54px;gap:4px">
+            <span style="font-size:18px">💬</span><span>WhatsApp</span>
+          </button>
+          <button class="share-messenger-btn" onclick="cabShareViber()" style="background:rgba(127,63,191,0.1);border:1px solid rgba(127,63,191,0.3);font-size:11px;min-height:54px;gap:4px">
+            <span style="font-size:18px">📳</span><span>Viber</span>
+          </button>
+          <button class="share-messenger-btn" onclick="cabShareEmail()" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);font-size:11px;min-height:54px;gap:4px">
+            <span style="font-size:18px">📧</span><span>Email</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Пригласить партнёра -->
+      <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px">
+        <div style="font-weight:600;color:var(--purple);margin-bottom:6px;font-size:14px">🤝 Пригласить партнёра</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5">
+          Введите Telegram — бот автоматически напишет партнёру и соберёт все данные.
+        </div>
+        <div class="form-group" style="margin-bottom:10px">
+          <input class="form-input" id="cab-reg-telegram" placeholder="@username" style="font-size:14px;padding:11px 14px">
+        </div>
+        <button class="form-btn primary" onclick="cabSubmitRegistration()" style="margin-top:0">
+          📩 Создать приглашение
+        </button>
+        <div id="cab-reg-result" style="margin-top:12px"></div>
+        <div id="cab-invite-block" style="display:none;margin-top:14px;padding:14px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:10px">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Ссылка-приглашение</div>
+          <div id="cab-invite-link-text" style="font-size:12px;color:var(--text);word-break:break-all;margin-bottom:10px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="form-btn" onclick="cabCopyInviteLink()" style="flex:1;padding:9px;font-size:12px">📋 Скопировать</button>
+            <button class="form-btn" onclick="cabOpenInviteLink()" style="flex:1;padding:9px;font-size:12px;background:rgba(139,92,246,0.2)">📲 Открыть</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1211,8 +1268,8 @@ function updateHeaderButtons(mode) {
   var show = {
     'hbtn-economy': mode === 'business' || mode === 'partner',
     'hbtn-brand':   mode === 'partner',
-    'hbtn-client':  mode === 'partner',
-    'hbtn-partner': mode === 'partner',
+    'hbtn-client':  false,
+    'hbtn-partner': false,
     'hbtn-meta':    mode === 'business' || mode === 'partner',
     'hbtn-cabinet': mode === 'partner'
   };
@@ -1430,12 +1487,79 @@ function openCabinet() {
     document.getElementById('cab-partner-name').textContent = partnerInfo.fullName + ' · Партнёр Система Bitbon';
     document.getElementById('pay-partner-id').value = partnerInfo.id || '';
   }
+  // Fill share URL in tools tab
+  var shareUrl = window.location.origin + window.location.pathname;
+  var el = document.getElementById('cab-share-url');
+  if (el) el.textContent = shareUrl;
 }
 function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
 
+var CAB_TABS = ['info','payment','plans','economy','brand','tools'];
 function switchCabTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['info','payment','plans','economy','brand'][i] === tab));
-  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', ['info','payment','plans','economy','brand'][i] === tab));
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', CAB_TABS[i] === tab));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', CAB_TABS[i] === tab));
+}
+
+// ── Кабинет: Поделиться с клиентом ───────────────────────────────────
+var cabCurrentInviteLink = '';
+function cabCopyShareUrl() {
+  var url = document.getElementById('cab-share-url').textContent;
+  navigator.clipboard.writeText(url).then(function() {
+    var btn = event.target; var o = btn.textContent;
+    btn.textContent = '✅'; setTimeout(function(){ btn.textContent = o; }, 1500);
+  });
+}
+function cabShareTelegram() {
+  var url = document.getElementById('cab-share-url').textContent;
+  window.open('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent('AI-агент Системы Bitbon — спросите всё о Web 4.0: ' + url), '_blank');
+}
+function cabShareWhatsApp() {
+  var url = document.getElementById('cab-share-url').textContent;
+  window.open('https://wa.me/?text=' + encodeURIComponent('AI-агент Системы Bitbon: ' + url), '_blank');
+}
+function cabShareViber() {
+  var url = document.getElementById('cab-share-url').textContent;
+  window.open('viber://forward?text=' + encodeURIComponent('AI-агент Системы Bitbon: ' + url), '_blank');
+}
+function cabShareEmail() {
+  var url = document.getElementById('cab-share-url').textContent;
+  window.open('mailto:?subject=' + encodeURIComponent('AI-агент Системы Bitbon') + '&body=' + encodeURIComponent('Здравствуйте!\n\nAI-агент Системы Bitbon:\n' + url), '_blank');
+}
+
+// ── Кабинет: Пригласить партнёра ─────────────────────────────────────
+async function cabSubmitRegistration() {
+  var tg = document.getElementById('cab-reg-telegram').value.trim();
+  var result = document.getElementById('cab-reg-result');
+  if (!tg) { result.innerHTML = '<div class="form-error">Введите Telegram партнёра</div>'; return; }
+  if (!tg.startsWith('@')) tg = '@' + tg;
+  try {
+    var resp = await fetch(API_BASE + '/api/partner/register', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ telegram: tg })
+    });
+    var data = await resp.json();
+    if (data.success) {
+      result.innerHTML = '';
+      var link = data.inviteLink || ('https://t.me/CandidatesZhdanenko_bot?start=' + data.inviteToken);
+      cabCurrentInviteLink = link;
+      document.getElementById('cab-invite-link-text').textContent = link;
+      document.getElementById('cab-invite-block').style.display = 'block';
+    } else {
+      result.innerHTML = '<div class="form-error">❌ ' + (data.error || 'Ошибка') + '</div>';
+    }
+  } catch(e) {
+    result.innerHTML = '<div class="form-error">❌ Ошибка соединения</div>';
+  }
+}
+function cabCopyInviteLink() {
+  if (!cabCurrentInviteLink) return;
+  navigator.clipboard.writeText(cabCurrentInviteLink).then(function() {
+    var btn = event.target; btn.textContent = '✅ Скопировано!';
+    setTimeout(function(){ btn.textContent = '📋 Скопировать'; }, 2000);
+  });
+}
+function cabOpenInviteLink() {
+  if (cabCurrentInviteLink) window.open(cabCurrentInviteLink, '_blank');
 }
 
 function selectPlan(plan) {
