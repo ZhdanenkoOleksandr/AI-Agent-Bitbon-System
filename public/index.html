@@ -1308,7 +1308,7 @@ function updateHeaderButtons(mode) {
     'hbtn-brand':   mode === 'partner' || (mode === 'business' && s.showBrand)   || (mode === 'user' && s.showBrand),
     'hbtn-client':  false,
     'hbtn-partner': false,
-    'hbtn-meta':    mode === 'business' || mode === 'partner',
+    'hbtn-meta':    mode === 'partner',
     'hbtn-cabinet': mode === 'partner'
   };
   Object.keys(show).forEach(function(id) {
