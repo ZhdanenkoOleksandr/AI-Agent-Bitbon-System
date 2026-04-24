@@ -79,6 +79,8 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .fancy-btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);transition:left 0.5s;animation:shimmer 2s infinite}
 .fancy-btn:hover::before{left:100%}
 @keyframes shimmer{0%{left:-100%}100%{left:100%}}
+.share-messenger-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 10px;border-radius:10px;font-family:'Onest',sans-serif;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;transition:all 0.2s;min-height:70px}
+.share-messenger-btn:hover{transform:translateY(-2px);filter:brightness(1.2)}
 @keyframes glow{0%,100%{box-shadow:0 0 10px rgba(59,130,246,0.5)}50%{box-shadow:0 0 20px rgba(59,130,246,0.8)}}
 @keyframes glowGold{0%,100%{box-shadow:0 0 10px rgba(245,158,11,0.5)}50%{box-shadow:0 0 20px rgba(245,158,11,0.8)}}
 
@@ -637,6 +639,47 @@ textarea::placeholder{color:var(--text3)}
   <div class="level-note">Партнёры Системы Bitbon получают API-доступ к AI агенту для своих клиентов</div>
 </div>
 
+<!-- ═══ SHARE CLIENT OVERLAY ═══ -->
+<div class="overlay hidden" id="share-client-overlay">
+  <div class="modal" style="max-width:420px">
+    <button class="close-btn" onclick="closeShareClient()">×</button>
+    <div class="modal-title">👤 Поделиться с клиентом</div>
+    <div class="modal-sub">Отправьте ссылку на AI-агента Системы Bitbon через любой мессенджер.</div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;margin-bottom:18px;display:flex;align-items:center;gap:10px">
+      <div id="share-url-text" style="font-size:12px;color:var(--text2);flex:1;word-break:break-all;line-height:1.5"></div>
+      <button onclick="copyShareUrl()" style="flex-shrink:0;padding:6px 12px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text2);font-size:11px;cursor:pointer;font-family:'Onest',sans-serif" title="Скопировать">📋</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="share-messenger-btn" onclick="shareViaTelegram()" style="background:rgba(0,136,204,0.12);border:1px solid rgba(0,136,204,0.3)">
+        <span style="font-size:22px">✈️</span>
+        <span>Telegram</span>
+      </button>
+      <button class="share-messenger-btn" onclick="shareViaWhatsApp()" style="background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3)">
+        <span style="font-size:22px">💬</span>
+        <span>WhatsApp</span>
+      </button>
+      <button class="share-messenger-btn" onclick="shareViaViber()" style="background:rgba(127,63,191,0.1);border:1px solid rgba(127,63,191,0.3)">
+        <span style="font-size:22px">📳</span>
+        <span>Viber</span>
+      </button>
+      <button class="share-messenger-btn" onclick="shareViaEmail()" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25)">
+        <span style="font-size:22px">📧</span>
+        <span>Email</span>
+      </button>
+      <button class="share-messenger-btn" onclick="shareViaInstagram()" style="background:rgba(225,48,108,0.1);border:1px solid rgba(225,48,108,0.3);grid-column:1/-1">
+        <span style="font-size:22px">📸</span>
+        <span>Скопировать для Instagram / другого</span>
+      </button>
+    </div>
+
+    <div style="margin-top:14px;font-size:11px;color:var(--text3);text-align:center">
+      Клиент получит доступ к AI-агенту Системы Bitbon
+    </div>
+  </div>
+</div>
+
 <!-- ═══ REGISTER PARTNER OVERLAY ═══ -->
 <div class="overlay hidden" id="register-overlay">
   <div class="modal" style="max-width:440px">
@@ -872,6 +915,8 @@ textarea::placeholder{color:var(--text3)}
         <span class="req-counter" id="req-counter" style="display:none"></span>
         <button class="header-btn" onclick="window.location.href='https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app'" title="Viking Economy калькулятор">📈 Экономика</button>
         <button class="header-btn" onclick="window.location.href='https://parner.vercel.app/ru'" title="Личный бренд партнёра">👤 Бренд</button>
+        <button class="header-btn" onclick="openShareClient()" title="Поделиться с клиентом" style="border-color:rgba(16,185,129,0.4);color:var(--green)">👤 Клиент</button>
+        <button class="header-btn" onclick="openRegister()" title="Зарегистрировать партнёра" style="border-color:rgba(139,92,246,0.4);color:var(--purple)">🤝 Партнёр</button>
         <button class="header-btn meta-btn" onclick="startMetaWizard()">🏗️ Метаресурс</button>
         <button class="header-btn cabinet-btn" onclick="openCabinet()">🏛️ Кабинет</button>
         <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
@@ -1214,6 +1259,52 @@ function updateSuggestionsBar(mode) {
 
 // ═══ REGISTRATION ═══
 let selectedRegPlan = 'pro';
+
+// ── Share Client ──────────────────────────────────────────────────────
+function openShareClient() {
+  var url = window.location.origin + window.location.pathname;
+  document.getElementById('share-url-text').textContent = url;
+  document.getElementById('share-client-overlay').classList.remove('hidden');
+}
+function closeShareClient() {
+  document.getElementById('share-client-overlay').classList.add('hidden');
+}
+function copyShareUrl() {
+  var url = document.getElementById('share-url-text').textContent;
+  navigator.clipboard.writeText(url).then(function() {
+    var btn = event.target;
+    var orig = btn.textContent;
+    btn.textContent = '✅';
+    setTimeout(function(){ btn.textContent = orig; }, 1500);
+  });
+}
+function shareViaTelegram() {
+  var url = document.getElementById('share-url-text').textContent;
+  var text = encodeURIComponent('AI-агент Системы Bitbon — спросите всё о Web 4.0 и Bitbon: ' + url);
+  window.open('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + text, '_blank');
+}
+function shareViaWhatsApp() {
+  var url = document.getElementById('share-url-text').textContent;
+  var text = encodeURIComponent('AI-агент Системы Bitbon — спросите всё о Web 4.0 и Bitbon: ' + url);
+  window.open('https://wa.me/?text=' + text, '_blank');
+}
+function shareViaViber() {
+  var url = document.getElementById('share-url-text').textContent;
+  var text = encodeURIComponent('AI-агент Системы Bitbon: ' + url);
+  window.open('viber://forward?text=' + text, '_blank');
+}
+function shareViaEmail() {
+  var url = document.getElementById('share-url-text').textContent;
+  var subject = encodeURIComponent('AI-агент Системы Bitbon');
+  var body = encodeURIComponent('Здравствуйте!\n\nПредлагаю ознакомиться с AI-агентом Системы Bitbon:\n' + url);
+  window.open('mailto:?subject=' + subject + '&body=' + body, '_blank');
+}
+function shareViaInstagram() {
+  var url = document.getElementById('share-url-text').textContent;
+  navigator.clipboard.writeText(url).then(function() {
+    alert('Ссылка скопирована!\nВставьте её в Instagram Direct или Stories.');
+  });
+}
 
 function openRegister() {
   document.getElementById('register-overlay').classList.remove('hidden');
