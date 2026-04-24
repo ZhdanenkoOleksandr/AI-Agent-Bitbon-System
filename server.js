@@ -80,6 +80,7 @@ function saveJSON(filename, data) {
 
 // Load initial knowledge base
 let knowledgeBase = loadJSON('knowledge_base_v2.0.json') || { categories: {}, meta: {} };
+let knowledgeBaseV3 = loadJSON('knowledge_base_v3.0.json') || { segments: {}, routing: { rules: [] } };
 let metaresourceTemplates = loadJSON('metaresource_templates.json') || { templates: {} };
 
 // Load created metaresources from disk (persistence)
@@ -652,6 +653,42 @@ function describeRelation(indA, indB) {
 // API QUERY ENDPOINT (for partner clients)
 // ══════════════════════════════════════════════════════════════════════
 // CHAT API — Proxy to Anthropic API (free access for all users)
+// ── KB ROUTING ───────────────────────────────────────────────────────
+// Routes question to 1-2 relevant KB segments and returns formatted context
+function routeKBContext(question) {
+  if (!knowledgeBaseV3 || !knowledgeBaseV3.segments) return '';
+
+  const q = question.toLowerCase();
+  const rules = knowledgeBaseV3.routing?.rules || [];
+
+  // Score each segment by how many trigger keywords match the question
+  const scores = rules.map(rule => ({
+    segment: rule.segment,
+    score: rule.triggers.filter(t => q.includes(t.toLowerCase())).length
+  })).filter(r => r.score > 0).sort((a, b) => b.score - a.score);
+
+  // Take top 2 matching segments; fallback to segment 1 if no match
+  const topSegments = scores.length > 0
+    ? scores.slice(0, 2).map(r => r.segment)
+    : ['1_fundamentals'];
+
+  let ctx = '\n\n═══ РЕЛЕВАНТНАЯ БАЗА ЗНАНИЙ ═══\n';
+  topSegments.forEach(segKey => {
+    const seg = knowledgeBaseV3.segments[segKey];
+    if (!seg) return;
+    ctx += `\n[${seg.name}]\n`;
+    seg.facts.slice(0, 3).forEach(fact => {
+      // Trim answer to 600 chars to stay token-efficient
+      const answer = fact.answer.length > 600
+        ? fact.answer.substring(0, 600) + '...'
+        : fact.answer;
+      ctx += `Вопрос: ${fact.question}\nОтвет: ${answer}\n\n`;
+    });
+  });
+
+  return ctx;
+}
+
 app.post('/api/chat', async (req, res) => {
   try {
     const { question, messages, systemPrompt, userLevel, userMode } = req.body;
@@ -666,6 +703,10 @@ app.post('/api/chat', async (req, res) => {
       return res.status(503).json({ error: 'API key not configured on server' });
     }
 
+    // Inject routed KB context into system prompt
+    const kbContext = routeKBContext(question);
+    const enhancedSystemPrompt = systemPrompt + kbContext;
+
     // Call Anthropic API
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -677,7 +718,7 @@ app.post('/api/chat', async (req, res) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
-        system: systemPrompt,
+        system: enhancedSystemPrompt,
         messages: messages
       })
     });
