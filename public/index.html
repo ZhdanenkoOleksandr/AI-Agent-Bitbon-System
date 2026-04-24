@@ -335,6 +335,10 @@ textarea::placeholder{color:var(--text3)}
 .corrections-footer{padding:12px;border-top:1px solid var(--border2);display:flex;gap:8px}
 .corrections-input{flex:1;padding:8px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'Onest',sans-serif;font-size:12px;outline:none}
 .corrections-input:focus{border-color:var(--accent)}
+.corrections-voice-btn{padding:6px 10px;background:var(--surface2);color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius-sm);cursor:pointer;font-size:14px;transition:all 0.2s;flex-shrink:0}
+.corrections-voice-btn:hover{border-color:var(--accent);color:var(--accent)}
+.corrections-voice-btn.recording{background:rgba(239,68,68,0.2);border-color:var(--red);color:var(--red);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
 .corrections-btn{padding:8px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-family:'Onest',sans-serif;font-size:12px;font-weight:600;transition:background 0.2s}
 .corrections-btn:hover{background:var(--accent2)}
 .corrections-toggle-btn{width:36px;height:36px;position:fixed;bottom:20px;right:20px;background:var(--gold);color:#000;border:none;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,0.3);transition:all 0.2s;z-index:240}
@@ -1903,6 +1907,91 @@ window.addEventListener('orientationchange', function() {
 // ═══ CORRECTIONS SYSTEM ═══
 let corrections = [];
 let correctionsUIVisible = false;
+let voiceRecognition = null;
+let isRecording = false;
+let currentVoiceField = null;
+
+// Инициализация Web Speech API
+function initVoiceRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SpeechRecognition) {
+    voiceRecognition = new SpeechRecognition();
+    voiceRecognition.lang = 'ru-RU';
+    voiceRecognition.continuous = false;
+    voiceRecognition.interimResults = true;
+
+    voiceRecognition.onstart = function() {
+      isRecording = true;
+      updateVoiceButtons();
+    };
+
+    voiceRecognition.onresult = function(event) {
+      let interimTranscript = '';
+      let finalTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      if (currentVoiceField) {
+        const input = document.getElementById(`correction-${currentVoiceField}`);
+        if (input) {
+          const current = input.value;
+          const newText = finalTranscript || interimTranscript;
+          input.value = current ? current + ' ' + newText : newText;
+        }
+      }
+    };
+
+    voiceRecognition.onerror = function(event) {
+      console.error('Ошибка распознавания:', event.error);
+      const errorMap = {
+        'no-speech': 'Речь не обнаружена. Попробуйте ещё раз.',
+        'audio-capture': 'Микрофон не найден или отключен.',
+        'network': 'Ошибка сети. Проверьте подключение.',
+        'not-allowed': 'Доступ к микрофону запрещен.'
+      };
+      alert(errorMap[event.error] || 'Ошибка распознавания речи');
+    };
+
+    voiceRecognition.onend = function() {
+      isRecording = false;
+      updateVoiceButtons();
+    };
+  }
+}
+
+function startVoiceInput(field) {
+  if (!voiceRecognition) {
+    alert('Web Speech API не поддерживается вашим браузером. Используйте Chrome, Firefox или Edge.');
+    return;
+  }
+
+  if (isRecording && currentVoiceField === field) {
+    voiceRecognition.stop();
+    return;
+  }
+
+  currentVoiceField = field;
+  voiceRecognition.start();
+}
+
+function updateVoiceButtons() {
+  const triggerBtn = document.getElementById('trigger-voice-btn');
+  const textBtn = document.getElementById('text-voice-btn');
+
+  if (triggerBtn) {
+    triggerBtn.classList.toggle('recording', isRecording && currentVoiceField === 'trigger');
+  }
+  if (textBtn) {
+    textBtn.classList.toggle('recording', isRecording && currentVoiceField === 'text');
+  }
+}
 
 function loadCorrections() {
   const saved = localStorage.getItem('bitbon_corrections');
@@ -2004,6 +2093,7 @@ function escapeHtml(text) {
 // Инициализация на загрузке
 document.addEventListener('DOMContentLoaded', function() {
   loadCorrections();
+  initVoiceRecognition();
 
   // Перехват addMessage для применения поправок
   const originalAddMessage = window.addMessage;
@@ -2026,9 +2116,15 @@ document.addEventListener('DOMContentLoaded', function() {
   </div>
   <div class="corrections-list" id="corrections-list"></div>
   <div class="corrections-footer">
-    <input type="text" id="correction-trigger" class="corrections-input" placeholder="Триггер (слово/фраза)..." maxlength="100">
-    <input type="text" id="correction-text" class="corrections-input" placeholder="Замена..." maxlength="200">
-    <button class="corrections-btn" onclick="addCorrection()">+</button>
+    <div style="display:flex;gap:6px;width:100%">
+      <input type="text" id="correction-trigger" class="corrections-input" placeholder="Триггер..." maxlength="100">
+      <button class="corrections-voice-btn" id="trigger-voice-btn" onclick="startVoiceInput('trigger')" title="Продиктовать триггер">🎤</button>
+    </div>
+    <div style="display:flex;gap:6px;width:100%">
+      <input type="text" id="correction-text" class="corrections-input" placeholder="Замена..." maxlength="200">
+      <button class="corrections-voice-btn" id="text-voice-btn" onclick="startVoiceInput('text')" title="Продиктовать замену">🎤</button>
+    </div>
+    <button class="corrections-btn" onclick="addCorrection()">+ Добавить</button>
   </div>
 </div>
 
