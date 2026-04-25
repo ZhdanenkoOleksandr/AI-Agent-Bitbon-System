@@ -541,25 +541,37 @@ app.post('/api/partner/login', (req, res) => {
 });
 
 // Auth: Exchange web token (first login via Telegram)
-// POST /api/auth/pin — прямой вход по PIN-коду (только нулевой пользователь)
+// POST /api/auth/pin — вход по PIN для всех партнёров
 app.post('/api/auth/pin', (req, res) => {
   const { pin } = req.body;
+  if (!pin) return res.status(400).json({ error: 'PIN required' });
+
   const ZERO_PIN = process.env.ZERO_USER_PIN || '8387';
   const ZERO_TG  = process.env.ZERO_USER_TELEGRAM || '@VikingOLZH';
 
-  if (!pin) return res.status(400).json({ error: 'PIN required' });
-  if (String(pin) !== String(ZERO_PIN)) {
+  let partner = null;
+
+  // 1. Проверить нулевого пользователя (PIN из env, без хэша)
+  if (String(pin) === String(ZERO_PIN)) {
+    partner = Object.values(DB.partners).find(
+      p => p.telegram && p.telegram.toLowerCase() === ZERO_TG.toLowerCase() && p.status === 'active'
+    );
+  }
+
+  // 2. Поиск среди обычных партнёров по хэшу PIN
+  if (!partner) {
+    partner = Object.values(DB.partners).find(
+      p => p.status === 'active' && p.pinHash && bcrypt.compareSync(String(pin), p.pinHash)
+    );
+  }
+
+  if (!partner) {
     return res.status(401).json({ error: 'Неверный PIN-код' });
   }
 
-  const partner = Object.values(DB.partners).find(
-    p => p.telegram && p.telegram.toLowerCase() === ZERO_TG.toLowerCase() && p.status === 'active'
-  );
-
-  if (!partner) return res.status(403).json({ error: 'Аккаунт не найден. Используйте Telegram бот.' });
-
   const sessionToken = jwt.sign(
-    { role: 'partner', partnerId: partner.id, telegram: partner.telegram, name: `${partner.firstName} ${partner.lastName}` },
+    { role: partner.role || 'partner', partnerId: partner.id, telegram: partner.telegram,
+      name: `${partner.firstName} ${partner.lastName}` },
     JWT_SECRET,
     { expiresIn: '7d' }
   );
@@ -1205,7 +1217,10 @@ app.listen(PORT, () => {
   console.log(`══════════════════════════════════════════\n`);
 
   // Start Telegram bot
-  telegramBot = initBot(DB, persistData, generatePartnerId, generateWebToken, persistWebTokens);
+  telegramBot = initBot(
+    DB, persistData, generatePartnerId, generateWebToken, persistWebTokens,
+    (pin) => bcrypt.hashSync(String(pin), 8)   // hashPin — для хранения PIN партнёров
+  );
 });
 
 // ── Graceful shutdown — save DB before exit ───────────────────────────

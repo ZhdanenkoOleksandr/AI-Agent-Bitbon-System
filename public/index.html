@@ -780,48 +780,45 @@ textarea::placeholder{color:var(--text3)}
 <div class="overlay hidden" id="login-required-modal">
   <div class="modal" style="max-width:480px">
     <button class="close-btn" onclick="closeLoginModal()">×</button>
-    <div style="text-align:center;margin-bottom:24px">
-      <div style="font-size:48px;margin-bottom:12px">🔐</div>
-      <div class="modal-title">Требуется вход в систему</div>
-      <div class="modal-sub" style="margin-bottom:20px">Кабинет партнёра доступен только после входа через Telegram</div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:44px;margin-bottom:10px">🔐</div>
+      <div class="modal-title" style="justify-content:center">Вход в кабинет партнёра</div>
     </div>
 
-    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center">
-      <div style="font-size:14px;color:var(--text2);line-height:1.6">
-        ✈️ Используйте Telegram для безопасного входа<br/>
-        <span style="font-size:12px;color:var(--text3)">Ваши данные защищены и верифицированы</span>
-      </div>
-    </div>
-
-    <a href="https://t.me/BitbonPartnerBot" target="_blank" rel="noopener" style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,rgba(0,136,204,0.2),rgba(0,136,204,0.05));border:1.5px solid rgba(0,136,204,0.4);border-radius:10px;color:var(--text1);text-decoration:none;font-weight:500;font-size:15px;font-family:'Onest',sans-serif;transition:all 0.2s;cursor:pointer" onmouseover="this.style.background='linear-gradient(135deg,rgba(0,136,204,0.3),rgba(0,136,204,0.1))';this.style.borderColor='rgba(0,136,204,0.6)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(0,136,204,0.2),rgba(0,136,204,0.05))';this.style.borderColor='rgba(0,136,204,0.4)'">
-      ✈️ Войти через Telegram
-    </a>
-
-    <!-- PIN divider -->
-    <div style="display:flex;align-items:center;gap:10px;margin:20px 0">
-      <div style="flex:1;height:1px;background:var(--border2)"></div>
-      <span style="font-size:12px;color:var(--text3)">или</span>
-      <div style="flex:1;height:1px;background:var(--border2)"></div>
-    </div>
-
-    <!-- PIN login section -->
-    <div id="login-pin-section">
-      <div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:12px">Вход по PIN-коду</div>
+    <!-- PIN login — primary -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:500">Введите ваш PIN-код:</div>
       <div style="display:flex;gap:10px">
-        <input type="password" id="login-pin-input" placeholder="Введите PIN" maxlength="8"
-          style="flex:1;padding:12px 16px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;color:var(--text1);font-size:16px;letter-spacing:3px;text-align:center;outline:none;font-family:'Onest',sans-serif"
+        <input type="password" id="login-pin-input" placeholder="PIN-код" maxlength="8"
+          style="flex:1;padding:13px 16px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;color:var(--text1);font-size:18px;letter-spacing:4px;text-align:center;outline:none;font-family:'Onest',sans-serif"
           onfocus="this.style.borderColor='var(--accent)'"
           onblur="this.style.borderColor='var(--border2)'"
           onkeydown="if(event.key==='Enter') loginWithPin()"
           oninput="document.getElementById('login-pin-error').style.display='none'">
         <button onclick="loginWithPin()"
-          style="padding:12px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-weight:600;font-size:14px;font-family:'Onest',sans-serif;cursor:pointer;white-space:nowrap;transition:opacity 0.2s"
+          style="padding:13px 22px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-weight:600;font-size:15px;font-family:'Onest',sans-serif;cursor:pointer;white-space:nowrap;transition:opacity 0.2s"
           onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
           Войти
         </button>
       </div>
       <div id="login-pin-error" style="color:var(--red,#e74c3c);font-size:12px;text-align:center;margin-top:8px;display:none"></div>
     </div>
+
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;gap:10px;margin:18px 0">
+      <div style="flex:1;height:1px;background:var(--border2)"></div>
+      <span style="font-size:11px;color:var(--text3)">ещё не партнёр?</span>
+      <div style="flex:1;height:1px;background:var(--border2)"></div>
+    </div>
+
+    <!-- Telegram registration -->
+    <a href="https://t.me/BitbonPartnerBot" target="_blank" rel="noopener"
+      style="display:block;text-align:center;padding:13px;background:linear-gradient(135deg,rgba(0,136,204,0.15),rgba(0,136,204,0.05));border:1.5px solid rgba(0,136,204,0.35);border-radius:10px;color:var(--text2);text-decoration:none;font-size:14px;font-family:'Onest',sans-serif;transition:all 0.2s"
+      onmouseover="this.style.borderColor='rgba(0,136,204,0.6)';this.style.color='var(--text1)'"
+      onmouseout="this.style.borderColor='rgba(0,136,204,0.35)';this.style.color='var(--text2)'">
+      ✈️ Зарегистрироваться через Telegram
+    </a>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Бот соберёт данные и установит ваш PIN-код</div>
   </div>
 </div>
 
