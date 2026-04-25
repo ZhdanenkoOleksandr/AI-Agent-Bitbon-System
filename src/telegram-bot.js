@@ -357,90 +357,73 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
 
     if (!text || text.startsWith('/')) return;
 
+    const fromUsername = msg.from.username ? '@' + msg.from.username : null;
+
+    // ── PIN нулевого пользователя — работает БЕЗ сессии ──────────
+    // Если сообщение от @VikingOLZH и выглядит как PIN (цифры) — проверяем
+    if (fromUsername && fromUsername.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()) {
+      if (/^\d{4,8}$/.test(text)) {
+        if (text === ZERO_USER_PIN) {
+          delete sessions[chatId];
+          console.log(`✅ [BOT] PIN correct for zero user (chat ${chatId})`);
+
+          const zeroPartner = Object.values(db.partners).find(p =>
+            p.telegram && p.telegram.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()
+            && p.status === 'active'
+          );
+
+          if (zeroPartner) {
+            sendLoginLink(chatId, ZERO_USER_TELEGRAM, `✅ *PIN верен!* Нажмите кнопку для входа:`);
+          } else {
+            // Аккаунта нет — создать администратора
+            console.log(`🆕 [BOT] Creating admin account after PIN (chat ${chatId})`);
+            const partnerId = generatePartnerId();
+            const partner = {
+              id: partnerId,
+              firstName: msg.from.first_name || 'Олександр',
+              lastName: msg.from.last_name || 'Жданенко',
+              email: ZERO_USER_EMAIL,
+              phone: ZERO_USER_PHONE,
+              telegram: ZERO_USER_TELEGRAM,
+              walletAddress: '',
+              inviteToken: null,
+              telegramChatId: String(chatId),
+              status: 'active',
+              packageType: 'expert',
+              apiKey: null,
+              role: 'admin',
+              requestsLimit: 999999,
+              requestsUsed: 0,
+              metaresourcesLimit: 999999,
+              metaresourcesUsed: 0,
+              createdAt: new Date().toISOString(),
+              activatedAt: new Date().toISOString(),
+              expiresAt: null,
+              source: 'zero_registration'
+            };
+            db.partners[partnerId] = partner;
+            persistData();
+            sendLoginLink(chatId, ZERO_USER_TELEGRAM, `✅ *Аккаунт создан!* Нажмите кнопку для входа:`);
+          }
+        } else {
+          bot.sendMessage(chatId,
+            `❌ *Неверный PIN-код.*\n\nПовторите ввод:`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+        return;
+      }
+    }
+
     const sess = sessions[chatId];
 
-    // ── PIN для нулевого пользователя: верификация входа ─────────
-    if (sess && sess.step === 'pin_verification') {
-      if (text === ZERO_USER_PIN) {
-        delete sessions[chatId];
-        console.log(`✅ [BOT] PIN correct for zero user (chat ${chatId})`);
-        sendLoginLink(chatId, sess.username, `✅ *PIN верен!* Вход разрешён.`);
-      } else {
-        sess.attempts = (sess.attempts || 0) + 1;
-        if (sess.attempts >= 3) {
-          delete sessions[chatId];
-          bot.sendMessage(chatId, `❌ Исчерпаны попытки. Используйте /start для нового входа.`);
-        } else {
-          bot.sendMessage(chatId,
-            `❌ *Неверный PIN-код.* Осталось попыток: ${3 - sess.attempts}\n\nПовторите ввод:`,
-            { parse_mode: 'Markdown' }
-          );
-        }
-      }
+    // ── Старый session-based PIN (на случай если сессия жива) ─────
+    if (sess && (sess.step === 'pin_verification' || sess.step === 'pin_setup')) {
+      // Уже обработано выше через sessionless проверку
+      delete sessions[chatId];
       return;
     }
 
-    // ── PIN для нулевого пользователя: первоначальная настройка ──
-    if (sess && sess.step === 'pin_setup') {
-      if (text === ZERO_USER_PIN) {
-        delete sessions[chatId];
-        console.log(`✅ [BOT] PIN setup correct — creating admin account (chat ${chatId})`);
-
-        // Создать аккаунт администратора
-        const partnerId = generatePartnerId();
-        const partner = {
-          id: partnerId,
-          firstName: msg.from.first_name || 'Олександр',
-          lastName: msg.from.last_name || 'Жданенко',
-          email: ZERO_USER_EMAIL,
-          phone: ZERO_USER_PHONE,
-          telegram: ZERO_USER_TELEGRAM,
-          walletAddress: '',
-          inviteToken: null,
-          telegramChatId: String(chatId),
-          status: 'active',
-          packageType: 'expert',
-          apiKey: null,
-          role: 'admin',
-          requestsLimit: 999999,
-          requestsUsed: 0,
-          metaresourcesLimit: 999999,
-          metaresourcesUsed: 0,
-          createdAt: new Date().toISOString(),
-          activatedAt: new Date().toISOString(),
-          expiresAt: null,
-          source: 'zero_registration'
-        };
-
-        db.partners[partnerId] = partner;
-        persistData();
-
-        console.log(`🆕 [BOT] Admin account created: ${partnerId}`);
-
-        bot.sendMessage(chatId,
-          `✅ *Аккаунт администратора создан!*\n\n` +
-          `👤 ${partner.firstName} ${partner.lastName}\n` +
-          `📧 ${partner.email}\n` +
-          `📦 Эксперт (безлимит)\n\n` +
-          `Теперь нажмите кнопку ниже для входа в кабинет:`,
-          { parse_mode: 'Markdown' }
-        );
-
-        sendLoginLink(chatId, ZERO_USER_TELEGRAM);
-      } else {
-        sess.attempts = (sess.attempts || 0) + 1;
-        if (sess.attempts >= 3) {
-          delete sessions[chatId];
-          bot.sendMessage(chatId, `❌ Исчерпаны попытки. Используйте /start для повторной попытки.`);
-        } else {
-          bot.sendMessage(chatId,
-            `❌ *Неверный PIN-код.* Осталось попыток: ${3 - sess.attempts}\n\nПовторите ввод:`,
-            { parse_mode: 'Markdown' }
-          );
-        }
-      }
-      return;
-    }
 
     // ── Сбор данных для регистрации партнёра ─────────────────────
     if (!sess) return;
