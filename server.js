@@ -27,24 +27,58 @@ console.log('   Environment:', process.env.NODE_ENV || 'development');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'bitbon-secret-change-in-production-' + Date.now();
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin2026';
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ CRITICAL: JWT_SECRET not set in .env — refusing to start in production without it');
+    process.exit(1);
+  }
+  console.warn('⚠️  JWT_SECRET not set — using dev-only fallback (NOT safe in production)');
+  return 'bitbon-secret-dev-ONLY-not-for-production';
+})();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (() => {
+  console.warn('⚠️  ADMIN_PASSWORD not set in .env — using weak default');
+  return 'admin2026';
+})();
 
 // ── MIDDLEWARE ────────────────────────────────────────────────────────
+// CSP: unsafe-inline required because frontend uses inline scripts/styles
 app.use(helmet({
-  contentSecurityPolicy: false
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc:  ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net"],
+      styleSrc:   ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+      fontSrc:    ["'self'", "fonts.gstatic.com"],
+      imgSrc:     ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      objectSrc:  ["'none'"],
+      baseUri:    ["'self'"],
+    }
+  }
 }));
-app.use(cors());
+
+// CORS: restrict to configured origin only
+const ALLOWED_ORIGIN = (process.env.SITE_URL || process.env.ALLOWED_ORIGIN || 'http://localhost:3000').replace(/\/$/, '');
+app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rate limiting
+// Global rate limiting (100 req / 15 min per IP)
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: 'Too many requests, try again later' }
 });
 app.use('/api/', apiLimiter);
+
+// Strict PIN auth rate limit — brute-force protection (5 attempts / 15 min per IP)
+const pinLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Слишком много попыток входа. Попробуйте через 15 минут.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ── IN-MEMORY DATABASE ───────────────────────────────────────────────
 // In production, replace with PostgreSQL/MongoDB
@@ -542,7 +576,7 @@ app.post('/api/partner/login', (req, res) => {
 
 // Auth: Exchange web token (first login via Telegram)
 // POST /api/auth/pin — вход по PIN для всех партнёров
-app.post('/api/auth/pin', (req, res) => {
+app.post('/api/auth/pin', pinLimiter, (req, res) => {
   const { pin } = req.body;
   if (!pin) return res.status(400).json({ error: 'PIN required' });
 

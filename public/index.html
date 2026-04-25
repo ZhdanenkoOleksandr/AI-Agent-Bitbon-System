@@ -15,6 +15,18 @@
   --purple:#8b5cf6;--red:#ef4444;
   --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
   --user-bg:#1e3a5f;--bot-bg:#131b2e;--radius:16px;--radius-sm:10px;
+
+  /* ── Цвета по продукту ─────────────────────────────── */
+  --product-ai:      #3b82f6; /* AI / Chat — синий     */
+  --product-ai-bg:   rgba(59,130,246,0.10);
+  --product-economy: #f59e0b; /* Экономика — золотой   */
+  --product-economy-bg: rgba(245,158,11,0.10);
+  --product-brand:   #8b5cf6; /* Личный Бренд — пурпур */
+  --product-brand-bg:  rgba(139,92,246,0.10);
+  --product-partner: #10b981; /* Партнёры/Статус — зелёный */
+  --product-partner-bg: rgba(16,185,129,0.10);
+  --product-admin:   #ef4444; /* Администратор — красный  */
+  --product-admin-bg:  rgba(239,68,68,0.10);
 }
 body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
@@ -56,10 +68,28 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 
 /* TABS */
 .tab-row{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border2);border-radius:var(--radius-sm);overflow:hidden}
-.tab-btn{flex:1;padding:10px;text-align:center;font-family:'Onest',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;background:var(--surface2);color:var(--text2)}
+.tab-btn{flex:1;padding:10px;text-align:center;font-family:'Onest',sans-serif;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;background:var(--surface2);color:var(--text2);border-top:3px solid transparent;box-sizing:border-box}
 .tab-btn.active{background:var(--accent);color:#fff}
+.tab-btn:hover:not(.active){background:var(--surface3);color:var(--text)}
 .tab-content{display:none}
 .tab-content.active{display:block}
+
+/* ── Цвет продукта на вкладках кабинета ────────────────────────────── */
+#cabinet-overlay .tab-btn[data-tab="info"].active    {background:var(--product-partner-bg);color:var(--product-partner);border-top-color:var(--product-partner)}
+#cabinet-overlay .tab-btn[data-tab="payment"].active {background:var(--product-economy-bg);color:var(--product-economy);border-top-color:var(--product-economy)}
+#cabinet-overlay .tab-btn[data-tab="plans"].active   {background:var(--product-ai-bg);color:var(--product-ai);border-top-color:var(--product-ai)}
+#cabinet-overlay .tab-btn[data-tab="economy"].active {background:var(--product-brand-bg);color:var(--product-brand);border-top-color:var(--product-brand)}
+#cabinet-overlay .tab-btn[data-tab="brand"].active   {background:var(--product-partner-bg);color:var(--product-partner);border-top-color:var(--product-partner)}
+#cabinet-overlay .tab-btn[data-tab="tools"].active   {background:var(--product-brand-bg);color:var(--product-brand);border-top-color:var(--product-brand)}
+/* hover подсветка по продукту */
+#cabinet-overlay .tab-btn[data-tab="info"]:hover:not(.active)    {border-top-color:var(--product-partner)}
+#cabinet-overlay .tab-btn[data-tab="payment"]:hover:not(.active) {border-top-color:var(--product-economy)}
+#cabinet-overlay .tab-btn[data-tab="plans"]:hover:not(.active)   {border-top-color:var(--product-ai)}
+#cabinet-overlay .tab-btn[data-tab="economy"]:hover:not(.active) {border-top-color:var(--product-brand)}
+#cabinet-overlay .tab-btn[data-tab="brand"]:hover:not(.active)   {border-top-color:var(--product-partner)}
+#cabinet-overlay .tab-btn[data-tab="tools"]:hover:not(.active)   {border-top-color:var(--product-brand)}
+/* Вкладки админки — красный акцент */
+#admin-panel-overlay .tab-btn.active {background:var(--product-admin-bg);color:var(--product-admin);border-top-color:var(--product-admin)}
 
 /* FORM FIELDS */
 .form-group{margin-bottom:14px}
@@ -761,21 +791,6 @@ textarea::placeholder{color:var(--text3)}
   </div>
 </div>
 
-<!-- ═══ CABINET OVERLAY ═══ -->
-<!-- PIN Input Modal for Zero User -->
-<div class="overlay hidden" id="pin-modal-overlay">
-  <div class="modal" style="max-width:420px">
-    <button class="close-btn" onclick="closePinModal()">×</button>
-    <div class="modal-title">🔐 Введите PIN-код</div>
-    <div class="modal-sub" style="margin-bottom:20px">Для входа в кабинет введите PIN-код доступа</div>
-    <div class="form-group">
-      <input type="password" class="form-input" id="pin-input" placeholder="PIN-код" style="font-size:16px;letter-spacing:2px;text-align:center" onkeypress="if(event.key==='Enter') verifyPinCode()">
-    </div>
-    <div id="pin-error" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
-    <button onclick="verifyPinCode()" class="form-btn primary">Войти</button>
-  </div>
-</div>
-
 <!-- ═══ LOGIN REQUIRED MODAL ═══ -->
 <div class="overlay hidden" id="login-required-modal">
   <div class="modal" style="max-width:480px">
@@ -789,7 +804,7 @@ textarea::placeholder{color:var(--text3)}
     <div style="margin-bottom:16px">
       <div style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:500">Введите ваш PIN-код:</div>
       <div style="display:flex;gap:10px">
-        <input type="password" id="login-pin-input" placeholder="PIN-код" maxlength="8"
+        <input type="password" id="login-pin-input" placeholder="PIN-код" maxlength="8" inputmode="numeric" pattern="[0-9]*"
           style="flex:1;padding:13px 16px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;color:var(--text1);font-size:18px;letter-spacing:4px;text-align:center;outline:none;font-family:'Onest',sans-serif"
           onfocus="this.style.borderColor='var(--accent)'"
           onblur="this.style.borderColor='var(--border2)'"
@@ -830,12 +845,12 @@ textarea::placeholder{color:var(--text3)}
 
     <!-- Tabs: Statistics / Payment / Plans / Economy / Brand -->
     <div class="tab-row">
-      <button class="tab-btn active" onclick="switchCabTab('info')">📊 Статистика</button>
-      <button class="tab-btn" onclick="switchCabTab('payment')">💳 Оплата</button>
-      <button class="tab-btn" onclick="switchCabTab('plans')">📦 Пакеты</button>
-      <button class="tab-btn" onclick="switchCabTab('economy')">📈 Экономика</button>
-      <button class="tab-btn" onclick="switchCabTab('brand')">🤝 Партнёры</button>
-      <button class="tab-btn" onclick="switchCabTab('tools')">👤 Бренд</button>
+      <button class="tab-btn active" data-tab="info"    onclick="switchCabTab('info')">📊 Статистика</button>
+      <button class="tab-btn"        data-tab="payment" onclick="switchCabTab('payment')">💳 Оплата</button>
+      <button class="tab-btn"        data-tab="plans"   onclick="switchCabTab('plans')">📦 Пакеты</button>
+      <button class="tab-btn"        data-tab="economy" onclick="switchCabTab('economy')">📈 Экономика</button>
+      <button class="tab-btn"        data-tab="brand"   onclick="switchCabTab('brand')">🤝 Партнёры</button>
+      <button class="tab-btn"        data-tab="tools"   onclick="switchCabTab('tools')">👤 Бренд</button>
     </div>
 
     <div class="tab-content active" id="cab-tab-info">
@@ -1155,9 +1170,9 @@ textarea::placeholder{color:var(--text3)}
 
     <!-- Tabs: Invites / Partners / Payments -->
     <div class="tab-row">
-      <button class="tab-btn active" onclick="switchAdminTab('invites')">🔗 Приглашения</button>
-      <button class="tab-btn" onclick="switchAdminTab('partners')">👥 Партнёры</button>
-      <button class="tab-btn" onclick="switchAdminTab('payments')">💳 Платежи</button>
+      <button class="tab-btn active" data-tab="invites"  onclick="switchAdminTab('invites')">🔗 Приглашения</button>
+      <button class="tab-btn"        data-tab="partners" onclick="switchAdminTab('partners')">👥 Партнёры</button>
+      <button class="tab-btn"        data-tab="payments" onclick="switchAdminTab('payments')">💳 Платежи</button>
     </div>
 
     <!-- Tab: Create Invitations -->
@@ -1814,39 +1829,6 @@ function _openCabinetContent(userData) {
   loadClientSettings();
 }
 
-function verifyPinCode() {
-  var pinInput = document.getElementById('pin-input').value;
-  var pinError = document.getElementById('pin-error');
-
-  // Correct PIN is 8387 (for zero user @VikingOLZH)
-  if (pinInput === '8387') {
-    // PIN is correct
-    document.getElementById('pin-modal-overlay').classList.add('hidden');
-
-    var user = sessionStorage.getItem('user');
-    var userData = null;
-    if (user) {
-      try {
-        userData = JSON.parse(user);
-      } catch(e) {}
-    }
-
-    _openCabinetContent(userData);
-  } else {
-    // PIN is wrong
-    pinError.textContent = '❌ Неверный PIN-код';
-    pinError.style.display = 'block';
-    document.getElementById('pin-input').value = '';
-    document.getElementById('pin-input').focus();
-  }
-}
-
-function closePinModal() {
-  document.getElementById('pin-modal-overlay').classList.add('hidden');
-  document.getElementById('pin-input').value = '';
-  document.getElementById('pin-error').style.display = 'none';
-}
-
 function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
 
 function openLoginModal() {
@@ -1924,21 +1906,12 @@ function closeAdmin() {
 }
 
 function switchAdminTab(tab) {
-  // Hide all tabs and deactivate buttons
-  document.querySelectorAll('.tab-content').forEach(function(el) {
-    el.classList.remove('active');
+  var panel = document.getElementById('admin-panel-overlay');
+  panel.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  panel.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
   });
-  document.querySelectorAll('.tab-btn').forEach(function(btn) {
-    btn.classList.remove('active');
-  });
-
-  // Show selected tab and activate button
   document.getElementById('admin-tab-' + tab).classList.add('active');
-  Array.from(document.querySelectorAll('.tab-btn')).forEach(function(btn) {
-    if (btn.getAttribute('onclick').includes(tab)) {
-      btn.classList.add('active');
-    }
-  });
 }
 
 function createInvite() {
@@ -1994,17 +1967,13 @@ function adminLogout() {
     window.location.href = '/';
   }
 }
-function adminLogout() {
-  sessionStorage.removeItem('jwt');
-  sessionStorage.removeItem('user');
-  localStorage.removeItem('role');
-  window.location.href = '/';
-}
 
-var CAB_TABS = ['info','payment','plans','economy','brand','tools'];
 function switchCabTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', CAB_TABS[i] === tab));
-  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', CAB_TABS[i] === tab));
+  var cab = document.getElementById('cabinet-overlay');
+  cab.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.tab === tab); });
+  cab.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+  var target = document.getElementById('cab-tab-' + tab);
+  if (target) target.classList.add('active');
 }
 
 // ── Кабинет: Поделиться с клиентом ───────────────────────────────────
@@ -3110,6 +3079,32 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────
+// Escape — закрыть верхнюю открытую модалку
+// Enter  — подтвердить ввод PIN в модалке входа
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var order = [
+      'admin-panel-overlay',
+      'cabinet-overlay',
+      'login-required-modal',
+    ];
+    for (var i = 0; i < order.length; i++) {
+      var el = document.getElementById(order[i]);
+      if (el && !el.classList.contains('hidden')) {
+        el.classList.add('hidden');
+        break;
+      }
+    }
+  }
+  if (e.key === 'Enter') {
+    var loginModal = document.getElementById('login-required-modal');
+    if (loginModal && !loginModal.classList.contains('hidden')) {
+      loginWithPin();
+    }
+  }
+});
 
 // Инициализация на загрузке
 document.addEventListener('DOMContentLoaded', function() {
