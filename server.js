@@ -17,8 +17,8 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const { initBot, notifyPartnerActivated } = require('./src/telegram-bot');
 
-// Anthropic API (using fetch - no SDK needed)
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+// Anthropic API — поддержка обоих имён переменной
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
 
 // Debug: Log API key status
 console.log('🔑 API Configuration:');
