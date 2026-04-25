@@ -47,7 +47,7 @@ const PROMPTS = {
 let botInstance = null;
 
 // ── INIT ──────────────────────────────────────────────────────────────
-function initBot(db, persistData, generatePartnerId) {
+function initBot(db, persistData, generatePartnerId, generateWebToken, persistWebTokens) {
   if (!BOT_TOKEN) {
     console.warn('⚠️  TELEGRAM_BOT_TOKEN не задан — Telegram бот отключён');
     return null;
@@ -102,14 +102,62 @@ function initBot(db, persistData, generatePartnerId) {
     );
   });
 
-  // ── /start без токена ──────────────────────────────────────────────
+  // ── /start без токена — генерировать web_token для входа ────────────
   bot.onText(/\/start$/, (msg) => {
-    bot.sendMessage(msg.chat.id,
-      `👋 Привет! Это бот регистрации партнёров *Системы Bitbon*.\n\n` +
-      `Для регистрации используйте персональную ссылку-приглашение от вашего менеджера.\n\n` +
-      `Уже зарегистрированы? Используйте /status`,
-      { parse_mode: 'Markdown' }
+    const chatId = msg.chat.id;
+    const username = msg.from.username ? '@' + msg.from.username : null;
+
+    if (!username) {
+      bot.sendMessage(chatId,
+        `❌ *Ошибка:* У вас не установлено имя пользователя (@username) в Telegram.\n\n` +
+        `Пожалуйста, установите имя пользователя в настройках аккаунта и попробуйте снова.`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    // Проверить есть ли уже активный партнёр с этим username
+    const existingPartner = Object.values(db.partners).find(
+      p => p.telegram === username || p.telegram === username.substring(1)
     );
+
+    if (existingPartner && existingPartner.status === 'active') {
+      // Уже активирован — генерировать web_token для входа в кабинет
+      const webToken = generateWebToken();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 минут
+
+      db.webTokens[webToken] = {
+        username: username.startsWith('@') ? username : '@' + username,
+        createdAt: new Date().toISOString(),
+        expiresAt: expiresAt.toISOString()
+      };
+      persistWebTokens();
+
+      // Отправить inline кнопку для входа на сайт
+      const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+      const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(username)}`;
+
+      bot.sendMessage(chatId,
+        `🎉 *Добро пожаловать!* Нажмите кнопку ниже чтобы войти в личный кабинет.\n\n` +
+        `⏱️ Ссылка действует 10 минут`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '🔑 Войти в кабинет', url: loginUrl }]
+            ]
+          }
+        }
+      );
+    } else {
+      // Не активирован или не найден — показать инструкцию
+      bot.sendMessage(chatId,
+        `👋 Привет! Это бот регистрации партнёров *Системы Bitbon*.\n\n` +
+        `Для регистрации используйте персональную ссылку-приглашение от вашего менеджера.\n\n` +
+        `🤝 *Уже партнёр?* Используйте /status для проверки статуса`,
+        { parse_mode: 'Markdown' }
+      );
+    }
   });
 
   // ── /cancel ────────────────────────────────────────────────────────
@@ -134,6 +182,32 @@ function initBot(db, persistData, generatePartnerId) {
       suspended:       '🚫 Приостановлен',
       expired:         '⌛ Истёк'
     };
+    const options = {
+      parse_mode: 'Markdown'
+    };
+
+    // Если партнёр активирован, добавить кнопку входа
+    if (partner.status === 'active') {
+      const webToken = generateWebToken();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+      db.webTokens[webToken] = {
+        username: partner.telegram || ('@' + msg.from.username),
+        createdAt: new Date().toISOString(),
+        expiresAt: expiresAt.toISOString()
+      };
+      persistWebTokens();
+
+      const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+      const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(partner.telegram || ('@' + msg.from.username))}`;
+
+      options.reply_markup = {
+        inline_keyboard: [
+          [{ text: '🔑 Войти в кабинет', url: loginUrl }]
+        ]
+      };
+    }
+
     bot.sendMessage(chatId,
       `📋 *Статус партнёра:*\n\n` +
       `🆔 \`${partner.id}\`\n` +
@@ -141,7 +215,7 @@ function initBot(db, persistData, generatePartnerId) {
       `📦 ${partner.packageType ? PLAN_LABELS[partner.packageType] : 'пакет не выбран'}\n` +
       `${statusText[partner.status] || partner.status}\n` +
       (partner.apiKey ? `\n🔑 API: \`${partner.apiKey}\`` : ''),
-      { parse_mode: 'Markdown' }
+      options
     );
   });
 

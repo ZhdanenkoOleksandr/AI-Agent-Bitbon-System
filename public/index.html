@@ -1253,7 +1253,7 @@ const PLANS = {
   expert: {name:'🚀 Эксперт', requests:Infinity, meta:Infinity}
 };
 
-let history=[], isLoading=false, userLevel=null, userMode=null;
+let history=[], isLoading=false, userLevel=null, userMode=null, jwtToken=null;
 let explainedConcepts=[], sidebarOpen=true, diagramCounter=0;
 let currentPlan=null, usedRequests=0, usedMeta=0;
 let wizardMode=false, wizardStep=0, wizardAnswers=[];
@@ -1748,6 +1748,21 @@ async function topupGuest(apiKey, token, add) {
   } catch(e) {}
 }
 
+// ── Helper: Add JWT to API request headers ────────────────────────────
+function getFetchOptions(method, body) {
+  var opts = {
+    method: method || 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  };
+  if (jwtToken) {
+    opts.headers['Authorization'] = 'Bearer ' + jwtToken;
+  }
+  if (body) {
+    opts.body = JSON.stringify(body);
+  }
+  return opts;
+}
+
 // ── Claim gift on page load ───────────────────────────────────────────
 (function claimGiftOnLoad() {
   var params = new URLSearchParams(window.location.search);
@@ -1763,6 +1778,56 @@ async function topupGuest(apiKey, token, add) {
       localStorage.setItem('guestUsed', d.used);
     }
   }).catch(function(){});
+})();
+
+// ── Exchange Telegram web_token for JWT session ─────────────────────────
+(function handleTelegramWebToken() {
+  var params = new URLSearchParams(window.location.search);
+  var webToken = params.get('wt');
+  var username = params.get('username');
+
+  if (!webToken) return;
+
+  fetch(API_BASE + '/api/auth/web-token?wt=' + encodeURIComponent(webToken))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        // Store JWT session token
+        localStorage.setItem('jwt', d.jwt);
+        // Store user data
+        localStorage.setItem('user', JSON.stringify(d.user));
+        // Clean URL and redirect to cabinet
+        window.history.replaceState({}, document.title, '/cabinet');
+        window.location.href = '/cabinet';
+      } else {
+        console.error('Telegram auth failed:', d.error);
+        alert('❌ ' + (d.error || 'Ошибка при входе'));
+        window.location.href = '/';
+      }
+    })
+    .catch(function(e) {
+      console.error('Telegram auth error:', e);
+      alert('❌ Ошибка при входе в систему');
+      window.location.href = '/';
+    });
+})();
+
+// ── Initialize JWT from localStorage on page load ───────────────────────
+(function initJWT() {
+  var stored = localStorage.getItem('jwt');
+  if (stored) {
+    jwtToken = stored;
+    var userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        var user = JSON.parse(userData);
+        // Set partner mode if this is a partner
+        if (user && (user.status === 'active' || user.packageType)) {
+          switchLevel('partner');
+        }
+      } catch(e) {}
+    }
+  }
 })();
 
 // ── Настройки видимости кнопок для клиентов ──────────────────────────

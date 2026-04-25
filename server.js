@@ -55,7 +55,8 @@ const DB = {
   requestsLog: [],    // API usage log
   metaresources: [],  // Created metaresources (knowledge base learning)
   sessions: {},       // admin sessions
-  guestTokens: {}     // token -> { partnerId, quota, used, createdAt }
+  guestTokens: {},    // token -> { partnerId, quota, used, createdAt }
+  webTokens: {}       // web_token -> { username, createdAt, expiresAt }
 };
 
 // ── DATA FILES ───────────────────────────────────────────────────────
@@ -103,6 +104,10 @@ DB.payments = savedPayments;
 let savedGuests = loadJSON('guests_db.json') || {};
 DB.guestTokens = savedGuests;
 
+// Load web tokens (for first login via Telegram)
+let savedWebTokens = loadJSON('web_tokens_db.json') || {};
+DB.webTokens = savedWebTokens;
+
 // ── HELPERS ──────────────────────────────────────────────────────────
 function hashApiKey(key) {
   return bcrypt.hashSync(key, 8);
@@ -118,6 +123,10 @@ function generateApiKey() {
 
 function generatePartnerId() {
   return 'prt_' + uuidv4().replace(/-/g, '').substring(0, 16);
+}
+
+function generateWebToken() {
+  return uuidv4().replace(/-/g, '').substring(0, 24);
 }
 
 function getPackageLimits(packageType) {
@@ -157,6 +166,10 @@ function authenticatePartner(req, res, next) {
 
 function persistGuests() {
   saveJSON('guests_db.json', DB.guestTokens);
+}
+
+function persistWebTokens() {
+  saveJSON('web_tokens_db.json', DB.webTokens);
 }
 
 function persistData() {
@@ -404,6 +417,73 @@ app.post('/api/partner/login', (req, res) => {
       id: partner.id,
       fullName: `${partner.firstName} ${partner.lastName}`,
       email: partner.email,
+      status: partner.status,
+      packageType: partner.packageType,
+      requestsUsed: partner.requestsUsed,
+      requestsLimit: partner.requestsLimit,
+      metaresourcesUsed: partner.metaresourcesUsed,
+      metaresourcesLimit: partner.metaresourcesLimit,
+      expiresAt: partner.expiresAt
+    }
+  });
+});
+
+// Auth: Exchange web token (first login via Telegram)
+// GET /api/auth/web-token?wt=TOKEN
+app.get('/api/auth/web-token', (req, res) => {
+  const { wt } = req.query;
+
+  if (!wt) {
+    return res.status(400).json({ error: 'Missing web token' });
+  }
+
+  const tokenData = DB.webTokens[wt];
+
+  // Check if token exists
+  if (!tokenData) {
+    return res.status(404).json({ error: 'Token not found or expired' });
+  }
+
+  // Check if token is expired
+  if (new Date() > new Date(tokenData.expiresAt)) {
+    delete DB.webTokens[wt];
+    persistWebTokens();
+    return res.status(401).json({ error: 'Token expired' });
+  }
+
+  // Find partner by Telegram username
+  const partner = Object.values(DB.partners).find(
+    p => p.telegram === tokenData.username || p.telegram === '@' + tokenData.username
+  );
+
+  if (!partner) {
+    return res.status(404).json({ error: 'Partner not found' });
+  }
+
+  // Generate JWT session token
+  const sessionToken = jwt.sign(
+    {
+      role: 'partner',
+      partnerId: partner.id,
+      name: `${partner.firstName} ${partner.lastName}`,
+      telegram: tokenData.username
+    },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  // Clean up used web token
+  delete DB.webTokens[wt];
+  persistWebTokens();
+
+  res.json({
+    success: true,
+    jwt: sessionToken,
+    user: {
+      id: partner.id,
+      fullName: `${partner.firstName} ${partner.lastName}`,
+      email: partner.email,
+      telegram: partner.telegram,
       status: partner.status,
       packageType: partner.packageType,
       requestsUsed: partner.requestsUsed,
@@ -953,7 +1033,7 @@ app.listen(PORT, () => {
   console.log(`══════════════════════════════════════════\n`);
 
   // Start Telegram bot
-  telegramBot = initBot(DB, persistData, generatePartnerId);
+  telegramBot = initBot(DB, persistData, generatePartnerId, generateWebToken, persistWebTokens);
 });
 
 // ── Graceful shutdown — save DB before exit ───────────────────────────
