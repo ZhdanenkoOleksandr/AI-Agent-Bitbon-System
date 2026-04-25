@@ -849,8 +849,7 @@ app.post('/api/gift/create', (req, res) => {
   const { apiKey, quota = 20 } = req.body;
   if (!apiKey) return res.status(400).json({ error: 'apiKey required' });
 
-  // Find partner by apiKey
-  const partner = Object.values(DB.partners).find(p => p.apiKey === apiKey);
+  const partner = Object.values(DB.partners).find(p => p.apiKey && verifyApiKey(apiKey, p.apiKey));
   if (!partner) return res.status(403).json({ error: 'Invalid API key' });
   if (partner.status !== 'active') return res.status(403).json({ error: 'Partner not active' });
 
@@ -898,7 +897,7 @@ app.post('/api/gift/use', (req, res) => {
 app.post('/api/gift/topup', (req, res) => {
   const { apiKey, token, add = 10 } = req.body;
   if (!apiKey || !token) return res.status(400).json({ error: 'apiKey and token required' });
-  const partner = Object.values(DB.partners).find(p => p.apiKey === apiKey);
+  const partner = Object.values(DB.partners).find(p => p.apiKey && verifyApiKey(apiKey, p.apiKey));
   if (!partner) return res.status(403).json({ error: 'Invalid API key' });
   const gt = DB.guestTokens[token];
   if (!gt) return res.status(404).json({ error: 'Token not found' });
@@ -912,7 +911,7 @@ app.post('/api/gift/topup', (req, res) => {
 app.get('/api/partner/guests', (req, res) => {
   const apiKey = req.headers['x-api-key'] || req.query.apiKey;
   if (!apiKey) return res.status(400).json({ error: 'apiKey required' });
-  const partner = Object.values(DB.partners).find(p => p.apiKey === apiKey);
+  const partner = Object.values(DB.partners).find(p => p.apiKey && verifyApiKey(apiKey, p.apiKey));
   if (!partner) return res.status(403).json({ error: 'Invalid API key' });
   const guests = Object.values(DB.guestTokens)
     .filter(g => g.partnerId === partner.id)
