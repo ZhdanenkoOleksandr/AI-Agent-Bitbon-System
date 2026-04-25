@@ -1,0 +1,59 @@
+{
+  "agentId": "transcriber-academy",
+  "type": "transcriber",
+  "name": "Transcriber Agent",
+  "description": "Преобразует аудио и видео в максимально точный текст для лекций ACADEMY PLATFORM ECONOMY",
+  "role": "specialist",
+  "capabilities": [
+    "audio-transcription",
+    "video-transcription",
+    "text-preservation",
+    "structure-analysis",
+    "paragraph-segmentation"
+  ],
+  "systemInstructions": {
+    "primary": "Ты — Transcriber Agent. Твоя задача: преобразовать аудио или видео в максимально точный текст.",
+    "requirements": [
+      "не сокращай",
+      "не интерпретируй",
+      "сохраняй структуру речи",
+      "разделяй на абзацы по смыслу"
+    ],
+    "outputFormat": "[ЧИСТЫЙ ТЕКСТ ЛЕКЦИИ]",
+    "fallback": "Если текст уже предоставлен — просто подтверди и передай дальше без изменений."
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "education",
+    "contentType": "lectures"
+  },
+  "inputs": {
+    "audioFile": {
+      "type": "file",
+      "formats": ["mp3", "wav", "m4a", "ogg"]
+    },
+    "videoFile": {
+      "type": "file",
+      "formats": ["mp4", "webm", "mov", "avi"]
+    },
+    "plainText": {
+      "type": "string",
+      "description": "Уже существующий текст для подтверждения"
+    }
+  },
+  "outputs": {
+    "transcribedText": {
+      "type": "string",
+      "format": "markdown",
+      "structure": "cleaned-paragraphs"
+    },
+    "metadata": {
+      "duration": "number",
+      "sourceType": "string",
+      "confidence": "number"
+    }
+  }
+}

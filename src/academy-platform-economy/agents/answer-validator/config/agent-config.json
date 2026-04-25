@@ -1,0 +1,151 @@
+{
+  "id": "answer-validator-academy",
+  "name": "Answer Validator Agent",
+  "type": "answer-validator",
+  "role": "specialist",
+  "status": "active",
+  "pipelineStage": "student-learning",
+  "description": "Проверяет ответы учеников на вопросы, дает обратную связь, отслеживает ошибки для улучшения курсов",
+  "configPath": "agents/answer-validator/config/agent-config.json",
+  "readmePath": "agents/answer-validator/README.md",
+  "systemPromptPath": "agents/answer-validator/config/system-prompt.txt",
+  "model": "claude-opus-4-6",
+  "temperature": 0.3,
+  "maxTokens": 8000,
+  "capabilities": [
+    "answer-evaluation",
+    "correctness-assessment",
+    "semantic-similarity-check",
+    "concept-understanding-analysis",
+    "personalized-feedback-generation",
+    "error-pattern-detection",
+    "knowledge-base-update",
+    "student-progress-tracking"
+  ],
+  "inputFormats": {
+    "question": {
+      "type": "string",
+      "description": "Вопрос из урока"
+    },
+    "reference_answer": {
+      "type": "string",
+      "description": "Эталонный ответ (может быть несколько вариантов)"
+    },
+    "student_answer": {
+      "type": "string",
+      "description": "Ответ ученика"
+    },
+    "lesson_context": {
+      "type": "object",
+      "description": "Контекст урока (тема, материал, цель)",
+      "fields": {
+        "lesson_id": "string",
+        "lesson_title": "string",
+        "topic": "string",
+        "difficulty": "enum: beginner|intermediate|advanced",
+        "key_concepts": "array<string>"
+      }
+    },
+    "student_context": {
+      "type": "object",
+      "description": "Контекст ученика (уровень, прогресс)",
+      "fields": {
+        "student_id": "string",
+        "course_id": "string",
+        "current_level": "enum: beginner|intermediate|advanced",
+        "previous_answers": "array<object>",
+        "common_mistakes": "array<string>"
+      }
+    },
+    "question_type": {
+      "type": "enum",
+      "values": [
+        "multiple_choice",
+        "short_answer",
+        "essay",
+        "coding",
+        "practical_task",
+        "true_false",
+        "fill_in_blank"
+      ]
+    }
+  },
+  "outputFormat": {
+    "correctness": {
+      "type": "enum",
+      "values": ["correct", "partially_correct", "incorrect"],
+      "description": "Корректность ответа"
+    },
+    "score": {
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "description": "Процент правильности"
+    },
+    "explanation": {
+      "type": "string",
+      "description": "Объяснение почему ответ правильный/неправильный"
+    },
+    "feedback": {
+      "type": "string",
+      "description": "Персональная обратная связь для ученика"
+    },
+    "suggestions": {
+      "type": "array",
+      "items": "string",
+      "description": "Предложения для улучшения"
+    },
+    "missing_concepts": {
+      "type": "array",
+      "items": "string",
+      "description": "Какие концепции ученик не понял"
+    },
+    "related_materials": {
+      "type": "array",
+      "items": {
+        "lesson_id": "string",
+        "title": "string",
+        "reason": "string"
+      },
+      "description": "Рекомендуемые материалы для дополнительного изучения"
+    },
+    "error_patterns": {
+      "type": "array",
+      "items": {
+        "pattern": "string",
+        "frequency": "number",
+        "severity": "enum: low|medium|high"
+      },
+      "description": "Выявленные паттерны ошибок"
+    },
+    "knowledge_base_update": {
+      "type": "object",
+      "description": "Что нужно обновить в Knowledge Base",
+      "fields": {
+        "lesson_needs_revision": "boolean",
+        "revision_reason": "string",
+        "common_misunderstanding": "string",
+        "suggested_clarification": "string"
+      }
+    }
+  },
+  "integrations": {
+    "knowledge_base": {
+      "enabled": true,
+      "operations": ["read", "update", "log_error_patterns"]
+    },
+    "student_progress_tracking": {
+      "enabled": true,
+      "operations": ["update_score", "track_mastery", "identify_gaps"]
+    },
+    "course_improvement": {
+      "enabled": true,
+      "operations": ["log_common_errors", "suggest_revisions"]
+    }
+  },
+  "performanceMetrics": {
+    "avg_evaluation_time": "2-3 seconds",
+    "accuracy": "95%+",
+    "throughput": "100+ answers per minute"
+  }
+}

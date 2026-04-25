@@ -1,0 +1,184 @@
+{
+  "projectName": "ACADEMY PLATFORM ECONOMY",
+  "version": "1.0.0",
+  "description": "Многоагентная образовательная платформа для обработки лекционного контента",
+  "createdAt": "2026-04-15",
+  "status": "active",
+  "environment": {
+    "development": {
+      "debug": true,
+      "logLevel": "debug",
+      "apiUrl": "http://localhost:3000"
+    },
+    "production": {
+      "debug": false,
+      "logLevel": "info",
+      "apiUrl": "https://api.academy.platform"
+    }
+  },
+  "agents": {
+    "topology": {
+      "type": "hierarchical-mesh",
+      "maxAgents": 15,
+      "coordinationStrategy": "specialized",
+      "consensusAlgorithm": "raft",
+      "healthCheckInterval": 30000,
+      "failoverThreshold": 3
+    },
+    "defaults": {
+      "model": "claude-opus-4-6",
+      "maxTokens": 16000,
+      "temperature": 0,
+      "timeout": 300000
+    },
+    "resources": {
+      "cpuLimit": "2000m",
+      "memoryLimit": "2Gi",
+      "diskLimit": "10Gi"
+    }
+  },
+  "memory": {
+    "type": "hybrid",
+    "backend": "sql.js",
+    "vectorSearch": {
+      "enabled": true,
+      "type": "hnsw",
+      "dimension": 384,
+      "metric": "cosine"
+    },
+    "namespace": "academy-platform-economy",
+    "ttl": 2592000
+  },
+  "storage": {
+    "type": "filesystem",
+    "locations": {
+      "content": "content/",
+      "lectures": "content/lectures/",
+      "videos": "content/videos/",
+      "audio": "content/audio/",
+      "drafts": "content/drafts/"
+    },
+    "backup": {
+      "enabled": true,
+      "frequency": "daily",
+      "retention": 30
+    }
+  },
+  "security": {
+    "authentication": {
+      "enabled": true,
+      "type": "api-key"
+    },
+    "encryption": {
+      "enabled": true,
+      "algorithm": "aes-256-cbc"
+    },
+    "validation": {
+      "enabled": true,
+      "strict": true
+    },
+    "logging": {
+      "enabled": true,
+      "level": "info",
+      "retentionDays": 90
+    }
+  },
+  "quality": {
+    "standards": {
+      "transcriptionAccuracy": 95,
+      "translationAccuracy": 90,
+      "qaChecks": [
+        "spelling",
+        "grammar",
+        "consistency",
+        "formatting",
+        "completeness"
+      ]
+    },
+    "testing": {
+      "enabled": true,
+      "coverage": 80,
+      "framework": "jest"
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics": {
+      "collection": true,
+      "interval": 60000
+    },
+    "alerts": {
+      "enabled": true,
+      "channels": ["email", "slack"]
+    }
+  },
+  "integrations": {
+    "github": {
+      "enabled": false,
+      "repository": "academy-platform-economy"
+    },
+    "slack": {
+      "enabled": false,
+      "webhookUrl": "https://hooks.slack.com/..."
+    },
+    "analytics": {
+      "enabled": true,
+      "service": "internal"
+    }
+  },
+  "features": {
+    "transcription": {
+      "enabled": true,
+      "supportedFormats": ["mp3", "wav", "m4a", "ogg", "mp4", "webm", "mov", "avi"]
+    },
+    "translation": {
+      "enabled": false,
+      "supportedLanguages": ["ru", "en", "es", "de", "fr"]
+    },
+    "summarization": {
+      "enabled": false,
+      "summaryLength": "short"
+    },
+    "publishing": {
+      "enabled": false,
+      "channels": ["platform", "archive"]
+    }
+  },
+  "scalability": {
+    "autoScaling": {
+      "enabled": true,
+      "minAgents": 1,
+      "maxAgents": 15,
+      "scalingFactor": 1.5
+    },
+    "loadBalancing": {
+      "enabled": true,
+      "algorithm": "round-robin"
+    }
+  },
+  "performance": {
+    "caching": {
+      "enabled": true,
+      "ttl": 3600
+    },
+    "compression": {
+      "enabled": true,
+      "level": 6
+    },
+    "optimization": {
+      "vectorIndexing": true,
+      "parallelProcessing": true
+    }
+  },
+  "compliance": {
+    "dataProtection": {
+      "enabled": true,
+      "gdpr": true,
+      "retention": 365
+    },
+    "audit": {
+      "enabled": true,
+      "logAll": true
+    }
+  }
+}

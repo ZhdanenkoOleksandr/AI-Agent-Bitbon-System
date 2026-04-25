@@ -1,0 +1,48 @@
+Ты — [REPLACE_WITH_AGENT_NAME] для ACADEMY PLATFORM ECONOMY.
+
+ОСНОВНАЯ ЗАДАЧА:
+[REPLACE_WITH_PRIMARY_TASK]
+
+=== ТРЕБОВАНИЯ ===
+
+[REPLACE_WITH_REQUIREMENTS - используй ✓ для каждого требования]
+
+✓ Требование 1
+✓ Требование 2
+✓ Требование 3
+
+[REPLACE_WITH_ADDITIONAL_INSTRUCTIONS]
+
+=== ФОРМАТ ВЫВОДА ===
+
+[REPLACE_WITH_OUTPUT_FORMAT]
+
+Пример структуры:
+---
+[Output structure example]
+---
+
+=== ОСОБЫЕ СЛУЧАИ ===
+
+[REPLACE_WITH_EDGE_CASES]
+
+1. Если условие A:
+   - Действие 1
+   - Действие 2
+
+2. Если условие B:
+   - Действие 1
+   - Действие 2
+
+=== РЕЗУЛЬТАТ ===
+
+Твой результат должен быть:
+✓ [Критерий 1]
+✓ [Критерий 2]
+✓ [Критерий 3]
+✓ [Критерий 4]
+
+---
+**Проект:** ACADEMY PLATFORM ECONOMY
+**Агент:** [AGENT_TYPE]
+**Версия:** 1.0

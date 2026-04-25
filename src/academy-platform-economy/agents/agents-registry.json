@@ -1,0 +1,212 @@
+{
+  "project": "ACADEMY PLATFORM ECONOMY",
+  "description": "Реестр всех агентов платформы",
+  "createdAt": "2026-04-15",
+  "agents": [
+    {
+      "id": "transcriber-academy",
+      "name": "Transcriber Agent",
+      "type": "transcriber",
+      "role": "specialist",
+      "status": "active",
+      "pipelineStage": 1,
+      "description": "Преобразует аудио и видео в точный текст без искажений",
+      "configPath": "agents/transcriber/config/agent-config.json",
+      "readmePath": "agents/transcriber/README.md",
+      "model": "claude-opus-4-6",
+      "temperature": 0,
+      "capabilities": [
+        "audio-transcription",
+        "video-transcription",
+        "text-preservation",
+        "structure-analysis",
+        "paragraph-segmentation"
+      ]
+    },
+    {
+      "id": "cleaner-academy",
+      "name": "Cleaner Agent",
+      "type": "cleaner",
+      "role": "specialist",
+      "status": "active",
+      "pipelineStage": 2,
+      "description": "Очищает текст от мусора и подготавливает к анализу",
+      "configPath": "agents/cleaner/config/agent-config.json",
+      "readmePath": "agents/cleaner/README.md",
+      "model": "claude-opus-4-6",
+      "temperature": 0.1,
+      "capabilities": [
+        "text-cleaning",
+        "error-correction",
+        "text-structuring",
+        "parasite-removal"
+      ]
+    },
+    {
+      "id": "insight-extractor-academy",
+      "name": "Insight Extractor Agent",
+      "type": "insight-extractor",
+      "role": "specialist",
+      "status": "active",
+      "pipelineStage": 3,
+      "description": "Вытаскивает суть лекции: ключевые идеи, инсайты, модели и термины",
+      "configPath": "agents/insight-extractor/config/agent-config.json",
+      "readmePath": "agents/insight-extractor/README.md",
+      "model": "claude-opus-4-6",
+      "temperature": 0.3,
+      "capabilities": [
+        "content-analysis",
+        "key-idea-extraction",
+        "insight-identification",
+        "model-recognition",
+        "terminology-extraction"
+      ]
+    },
+    {
+      "id": "summary-academy",
+      "name": "Structured Summary Agent",
+      "type": "structured-summary",
+      "role": "specialist",
+      "status": "active",
+      "pipelineStage": 4,
+      "description": "Создает понятный конспект лекции с простым языком и логичной структурой",
+      "configPath": "agents/structured-summary/config/agent-config.json",
+      "readmePath": "agents/structured-summary/README.md",
+      "model": "claude-opus-4-6",
+      "temperature": 0.2,
+      "capabilities": [
+        "text-summarization",
+        "structure-organization",
+        "simplification",
+        "outline-creation"
+      ]
+    },
+    {
+      "id": "personalization-academy",
+      "name": "Personalization Agent",
+      "type": "personalization",
+      "role": "specialist",
+      "status": "active",
+      "pipelineStage": 5,
+      "description": "Адаптирует знания под пользователя для пути к $1,000,000 через Bitbon",
+      "configPath": "agents/personalization/config/agent-config.json",
+      "readmePath": "agents/personalization/README.md",
+      "model": "claude-opus-4-6",
+      "temperature": 0.5,
+      "capabilities": [
+        "user-context-analysis",
+        "knowledge-adaptation",
+        "action-planning",
+        "project-ideation"
+      ]
+    },
+    {
+      "id": "lesson-builder-academy",
+      "name": "Lesson Builder Agent",
+      "type": "lesson-builder",
+      "role": "specialist",
+      "status": "active",
+      "pipelineStage": 6,
+      "description": "Создает полноценный урок на основе конспекта с примерами и заданиями",
+      "configPath": "agents/lesson-builder/config/agent-config.json",
+      "readmePath": "agents/lesson-builder/README.md",
+      "model": "claude-opus-4-6",
+      "temperature": 0.4,
+      "capabilities": [
+        "lesson-structuring",
+        "content-expansion",
+        "example-creation",
+        "assignment-design"
+      ]
+    },
+    {
+      "id": "course-architect-academy",
+      "name": "Course Architect Agent",
+      "type": "course-architect",
+      "role": "specialist",
+      "status": "active",
+      "pipelineStage": 7,
+      "description": "Собирает полноценный курс из нескольких уроков с модулями и логикой прохождения",
+      "configPath": "agents/course-architect/config/agent-config.json",
+      "readmePath": "agents/course-architect/README.md",
+      "model": "claude-opus-4-6",
+      "temperature": 0.4,
+      "capabilities": [
+        "curriculum-design",
+        "module-organization",
+        "learning-path-creation",
+        "progression-planning"
+      ]
+    },
+    {
+      "id": "repurposer-academy",
+      "name": "Content Repurposer Agent",
+      "type": "content-repurposer",
+      "role": "specialist",
+      "status": "active",
+      "pipelineStage": 8,
+      "description": "Переработает контент для соцсетей: TikTok видео, посты и сторителлинг",
+      "configPath": "agents/content-repurposer/config/agent-config.json",
+      "readmePath": "agents/content-repurposer/README.md",
+      "model": "claude-opus-4-6",
+      "temperature": 0.6,
+      "capabilities": [
+        "short-form-content",
+        "social-media-optimization",
+        "storytelling",
+        "viral-potential-maximization"
+      ]
+    }
+  ],
+  "plannedAgents": [
+    {
+      "id": "editor-academy",
+      "name": "Editor Agent",
+      "type": "editor",
+      "description": "Редактирует и улучшает контент, проверяет структуру",
+      "status": "planned",
+      "pipelineStage": "optional"
+    },
+    {
+      "id": "translator-academy",
+      "name": "Translator Agent",
+      "type": "translator",
+      "description": "Переводит лекции на другие языки с сохранением смысла",
+      "status": "planned",
+      "pipelineStage": "optional"
+    },
+    {
+      "id": "qa-academy",
+      "name": "QA Agent",
+      "type": "qa",
+      "description": "Проверяет качество контента и выявляет ошибки перед публикацией",
+      "status": "planned",
+      "pipelineStage": 9
+    },
+    {
+      "id": "publisher-academy",
+      "name": "Publisher Agent",
+      "type": "publisher",
+      "description": "Публикует контент на платформе и управляет версиями",
+      "status": "planned",
+      "pipelineStage": 10
+    }
+  ],
+  "topology": {
+    "type": "hierarchical-mesh",
+    "maxAgents": 15,
+    "coordinationStrategy": "specialized",
+    "consensusAlgorithm": "raft"
+  },
+  "memory": {
+    "type": "hybrid",
+    "vectorSearch": "enabled",
+    "namespace": "academy-platform-economy"
+  },
+  "standards": {
+    "inputValidation": "required",
+    "outputFormatting": "standardized",
+    "errorHandling": "graceful",
+    "logging": "detailed"
+  }
+}

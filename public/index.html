@@ -1078,6 +1078,51 @@ textarea::placeholder{color:var(--text3)}
   </div>
 </div>
 
+<!-- ═══ ADMIN PANEL ═══ -->
+<div class="overlay hidden" id="admin-panel-overlay">
+  <div class="modal" style="max-width:600px">
+    <button class="close-btn" onclick="closeAdmin()">×</button>
+    <div class="modal-title">⚙️ Панель Администратора</div>
+    <div class="modal-sub" id="admin-user-name">Управление партнёрами и приглашениями</div>
+
+    <!-- Tabs: Invites / Partners / Payments -->
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchAdminTab('invites')">🔗 Приглашения</button>
+      <button class="tab-btn" onclick="switchAdminTab('partners')">👥 Партнёры</button>
+      <button class="tab-btn" onclick="switchAdminTab('payments')">💳 Платежи</button>
+    </div>
+
+    <!-- Tab: Create Invitations -->
+    <div class="tab-content active" id="admin-tab-invites">
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+        Создайте приглашение для нового партнёра. Бот соберёт все данные автоматически.
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telegram партнёра (@username)</label>
+        <input type="text" id="invite-telegram" class="form-input" placeholder="@johndoe или johndoe">
+      </div>
+      <button class="form-btn gold" onclick="createInvite()">🔗 Создать приглашение</button>
+      <div id="invite-result" style="margin-top:12px"></div>
+    </div>
+
+    <!-- Tab: All Partners -->
+    <div class="tab-content" id="admin-tab-partners">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:12px">
+        <div id="partners-list">⏳ Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- Tab: Payments -->
+    <div class="tab-content" id="admin-tab-payments">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:12px">
+        <div id="payments-list">⏳ Загрузка...</div>
+      </div>
+    </div>
+
+    <button class="form-btn" onclick="adminLogout()" style="margin-top:16px;background:rgba(239,68,68,0.15);color:var(--red);width:100%">🚪 Выход</button>
+  </div>
+</div>
+
 <!-- ═══ APP ═══ -->
 <div class="app">
   <!-- SIDEBAR -->
@@ -1669,16 +1714,85 @@ function openAdmin() {
   if (user) {
     try {
       var userData = JSON.parse(user);
-      document.getElementById('admin-username').textContent = 'Вход как ' + (userData.username || userData.fullName);
+      document.getElementById('admin-user-name').textContent = 'Администратор: ' + (userData.username || userData.fullName);
     } catch(e) {}
   }
-  // Update stats (in a real app, these would come from API)
-  document.getElementById('admin-stat-partners').textContent = '—';
-  document.getElementById('admin-stat-users').textContent = '—';
-  document.getElementById('admin-stat-sessions').textContent = '—';
-  document.getElementById('admin-overlay').classList.remove('hidden');
+  document.getElementById('admin-panel-overlay').classList.remove('hidden');
+  switchAdminTab('invites'); // Show invites tab by default
+  loadAdminStats();
 }
-function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); }
+
+function closeAdmin() {
+  document.getElementById('admin-panel-overlay').classList.add('hidden');
+}
+
+function switchAdminTab(tab) {
+  // Hide all tabs
+  ['invites', 'partners', 'payments'].forEach(function(t) {
+    document.getElementById('admin-tab-' + t).classList.remove('active');
+    document.querySelector('.tab-row').querySelector('[onclick*="switchAdminTab(\'' + t + '\')"]).classList.remove('active');
+  });
+  // Show selected tab
+  document.getElementById('admin-tab-' + tab).classList.add('active');
+  // Mark button as active (simple approach)
+  Array.from(document.querySelector('.tab-row').querySelectorAll('.tab-btn')).forEach(function(btn, idx) {
+    btn.classList.toggle('active', btn.getAttribute('onclick').includes(tab));
+  });
+}
+
+function createInvite() {
+  var telegram = document.getElementById('invite-telegram').value?.trim();
+  if (!telegram) {
+    alert('❌ Введите Telegram партнёра');
+    return;
+  }
+
+  var resultDiv = document.getElementById('invite-result');
+  resultDiv.innerHTML = '⏳ Создание приглашения...';
+
+  fetch(API_BASE + '/api/admin/create-invite', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + (jwtToken || '')
+    },
+    body: JSON.stringify({ telegram: telegram })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        resultDiv.innerHTML =
+          '<div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:12px;color:var(--green)">' +
+          '<strong>✅ Приглашение создано!</strong><br><br>' +
+          'Telegram: ' + d.telegram + '<br>' +
+          '<div style="margin-top:8px;word-break:break-all;background:rgba(255,255,255,0.05);padding:8px;border-radius:4px;font-size:12px">' +
+          d.inviteLink +
+          '</div>' +
+          '<button onclick="navigator.clipboard.writeText(\'' + d.inviteLink.replace(/'/g, "\\'") + '\');alert(\'✅ Ссылка скопирована\')" style="margin-top:8px;padding:6px 12px;background:rgba(34,197,94,0.2);border:none;border-radius:4px;color:var(--green);cursor:pointer;font-size:12px">📋 Копировать ссылку</button>' +
+          '</div>';
+        document.getElementById('invite-telegram').value = '';
+      } else {
+        resultDiv.innerHTML = '<div style="color:var(--red)">❌ ' + (d.error || 'Ошибка') + '</div>';
+      }
+    })
+    .catch(function(e) {
+      resultDiv.innerHTML = '<div style="color:var(--red)">❌ Ошибка: ' + e.message + '</div>';
+    });
+}
+
+function loadAdminStats() {
+  // Load partners, payments, etc. from API if needed
+  // For now, just placeholder
+}
+
+function adminLogout() {
+  if (confirm('Вы уверены? Это завершит вашу сессию администратора.')) {
+    localStorage.removeItem('jwt');
+    localStorage.removeItem('user');
+    localStorage.removeItem('role');
+    window.location.href = '/';
+  }
+}
 function adminLogout() {
   localStorage.removeItem('jwt');
   localStorage.removeItem('user');

@@ -1,0 +1,52 @@
+{
+  "agentId": "cleaner-academy",
+  "type": "cleaner",
+  "name": "Cleaner Agent",
+  "description": "Очищает текст лекции от мусора и подготавливает к анализу",
+  "role": "specialist",
+  "capabilities": [
+    "text-cleaning",
+    "error-correction",
+    "text-structuring",
+    "parasite-removal",
+    "meaning-preservation"
+  ],
+  "systemInstructions": {
+    "primary": "Ты — Content Cleaner Agent. Твоя задача: очистить текст лекции от мусора и подготовить его к анализу.",
+    "requirements": [
+      "убери слова-паразиты (ну, типа, вот, видишь и т.д.)",
+      "исправь орфографические ошибки",
+      "структурируй текст на логичные абзацы",
+      "сохрани смысл 1:1",
+      "не добавляй новую информацию"
+    ],
+    "outputFormat": "[ЧИСТЫЙ, СТРУКТУРИРОВАННЫЙ ТЕКСТ]"
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0.1,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "content-processing",
+    "contentType": "lectures",
+    "stage": "cleaning"
+  },
+  "inputs": {
+    "rawText": {
+      "type": "string",
+      "description": "Исходный текст лекции от Transcriber или пользователя"
+    }
+  },
+  "outputs": {
+    "cleanedText": {
+      "type": "string",
+      "format": "markdown",
+      "structure": "clean-paragraphs"
+    },
+    "statistics": {
+      "parasiteWordsRemoved": "number",
+      "errorsFixed": "number",
+      "paragraphCount": "number"
+    }
+  }
+}

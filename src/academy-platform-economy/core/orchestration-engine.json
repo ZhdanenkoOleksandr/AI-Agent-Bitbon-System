@@ -1,0 +1,258 @@
+{
+  "orchestration": {
+    "version": "2.0",
+    "description": "Orchestration Engine для ACADEMY PLATFORM ECONOMY",
+    "workflows": {
+      "fast_track": {
+        "id": "fast_track",
+        "name": "Fast Track - Быстрый социальный контент",
+        "description": "Быстрое преобразование лекции в готовый контент для соцсетей",
+        "target_time_minutes": 15,
+        "use_case": "Оперативный контент, тренды, быстрое распространение",
+        "stages": [
+          {
+            "stage_number": 1,
+            "agent": "transcriber-academy",
+            "input_type": "audio|video|text",
+            "output_type": "raw_text",
+            "parallel": false,
+            "required": true,
+            "timeout_seconds": 300
+          },
+          {
+            "stage_number": 2,
+            "agent": "cleaner-academy",
+            "input_type": "raw_text",
+            "output_type": "cleaned_text",
+            "parallel": false,
+            "required": true,
+            "timeout_seconds": 120
+          },
+          {
+            "stage_number": 3,
+            "agent": "insight-extractor-academy",
+            "input_type": "cleaned_text",
+            "output_type": "insights",
+            "parallel": false,
+            "required": true,
+            "timeout_seconds": 180
+          },
+          {
+            "stage_number": 4,
+            "agent": "content-repurposer-academy",
+            "input_type": "insights",
+            "output_type": "social_content",
+            "parallel": false,
+            "required": true,
+            "timeout_seconds": 180
+          }
+        ],
+        "quality_gates": [],
+        "output_types": ["tiktok_ideas", "social_posts", "storytelling"],
+        "knowledge_base_save": false
+      },
+      "deep_learning": {
+        "id": "deep_learning",
+        "name": "Deep Learning - Полный обучающий курс",
+        "description": "Создание полного курса с уроками и домашними заданиями",
+        "target_time_minutes": 40,
+        "use_case": "Образовательный продукт, полное обучение",
+        "stages": [
+          {
+            "stage_number": 1,
+            "agents": ["transcriber-academy", "cleaner-academy", "insight-extractor-academy"],
+            "input_type": "audio|video|text",
+            "output_type": "insights",
+            "parallel": false,
+            "required": true
+          },
+          {
+            "stage_number": 2,
+            "agent": "summary-academy",
+            "input_type": "insights+cleaned_text",
+            "output_type": "structured_summary",
+            "parallel": false,
+            "required": true,
+            "timeout_seconds": 180
+          },
+          {
+            "stage_number": 3,
+            "agent": "lesson-builder-academy",
+            "input_type": "structured_summary",
+            "output_type": "lesson",
+            "parallel": false,
+            "required": true,
+            "timeout_seconds": 300
+          },
+          {
+            "stage_number": 4,
+            "agent": "course-architect-academy",
+            "input_type": "lessons",
+            "output_type": "course",
+            "parallel": false,
+            "required": true,
+            "timeout_seconds": 600
+          }
+        ],
+        "quality_gates": ["qa-agent"],
+        "output_types": ["course", "lessons", "lesson_assignments"],
+        "knowledge_base_save": true
+      },
+      "full_stack": {
+        "id": "full_stack",
+        "name": "Full Stack - Максимум ценности",
+        "description": "Полный контент пакет: курс + персональный путь + социальный контент",
+        "target_time_minutes": 45,
+        "use_case": "Максимальная ценность, полное покрытие всех аспектов",
+        "stages": [
+          {
+            "stage_number": 1,
+            "agents": ["transcriber-academy", "cleaner-academy", "insight-extractor-academy"],
+            "input_type": "audio|video|text",
+            "output_type": "insights",
+            "parallel": false,
+            "required": true
+          },
+          {
+            "stage_number": 2,
+            "agents": ["summary-academy", "personalization-academy", "content-repurposer-academy"],
+            "input_type": "insights+cleaned_text",
+            "output_type": ["structured_summary", "personal_actions", "social_content"],
+            "parallel": true,
+            "required": true,
+            "dependencies": ["stage_1"]
+          },
+          {
+            "stage_number": 3,
+            "agents": ["lesson-builder-academy", "course-architect-academy"],
+            "input_type": "structured_summary",
+            "output_type": ["lesson", "course"],
+            "parallel": true,
+            "required": true,
+            "dependencies": ["stage_2"]
+          }
+        ],
+        "quality_gates": ["qa-agent"],
+        "output_types": ["course", "personal_action_plan", "social_content", "lessons"],
+        "knowledge_base_save": true
+      },
+      "retrain_mode": {
+        "id": "retrain_mode",
+        "name": "Retrain Mode - Обновление курса",
+        "description": "Обновление существующего курса на основе новых лекций",
+        "target_time_minutes": 25,
+        "use_case": "Дообучение, улучшение материалов, добавление новых уроков",
+        "stages": [
+          {
+            "stage_number": 1,
+            "agents": ["transcriber-academy", "cleaner-academy", "insight-extractor-academy"],
+            "input_type": "audio|video|text",
+            "output_type": "insights",
+            "parallel": false,
+            "required": true
+          },
+          {
+            "stage_number": 2,
+            "agent": "lesson-builder-academy",
+            "input_type": "insights",
+            "output_type": "lesson",
+            "parallel": false,
+            "required": true
+          },
+          {
+            "stage_number": 3,
+            "agent": "course-architect-academy",
+            "input_type": ["existing_course", "new_lessons"],
+            "output_type": "updated_course",
+            "parallel": false,
+            "required": true,
+            "note": "Перестраивает структуру курса с учетом новых уроков"
+          }
+        ],
+        "quality_gates": ["qa-agent"],
+        "output_types": ["updated_course", "new_lessons"],
+        "knowledge_base_save": true,
+        "notifications": ["notify_students"]
+      },
+      "assessment_mode": {
+        "id": "assessment_mode",
+        "name": "Assessment Mode - Проверка ответов",
+        "description": "Проверка ответов студентов на вопросы в уроках",
+        "target_time_minutes": 5,
+        "use_case": "Валидация знаний, feedback, улучшение курсов",
+        "stages": [
+          {
+            "stage_number": 1,
+            "agent": "answer-validator-academy",
+            "input_type": "student_answer",
+            "output_type": "evaluation",
+            "parallel": true,
+            "batch_capable": true,
+            "required": true,
+            "timeout_seconds": 30
+          }
+        ],
+        "quality_gates": [],
+        "output_types": ["evaluation", "feedback", "error_analysis"],
+        "knowledge_base_save": true,
+        "integrations": ["knowledge_base_update", "student_dashboard"]
+      }
+    },
+    "global_settings": {
+      "default_workflow": "full_stack",
+      "max_parallel_agents": 4,
+      "error_retry_count": 2,
+      "error_retry_delay_seconds": 5,
+      "quality_threshold": 0.85,
+      "enable_monitoring": true,
+      "enable_logging": true,
+      "save_intermediary_outputs": true,
+      "knowledge_base_auto_update": true
+    },
+    "quality_gates": {
+      "qa-agent": {
+        "name": "QA Agent",
+        "checks": [
+          "content_accuracy",
+          "completeness",
+          "clarity",
+          "formatting",
+          "no_errors"
+        ],
+        "pass_threshold": 0.85,
+        "enabled": true
+      }
+    },
+    "error_handling": {
+      "agent_timeout": {
+        "action": "retry",
+        "max_retries": 2,
+        "escalate_to_support": true
+      },
+      "quality_gate_failure": {
+        "action": "request_revision",
+        "notify_agent": true,
+        "create_ticket": true
+      },
+      "data_integrity_failure": {
+        "action": "stop_workflow",
+        "preserve_data": true,
+        "create_incident": true
+      }
+    },
+    "monitoring": {
+      "metrics": [
+        "agent_execution_time",
+        "workflow_completion_time",
+        "quality_scores",
+        "error_rates",
+        "knowledge_base_updates"
+      ],
+      "alert_thresholds": {
+        "execution_time_exceeded": "target_time * 1.5",
+        "quality_score_below": 0.75,
+        "error_rate_above": 0.1
+      }
+    }
+  }
+}

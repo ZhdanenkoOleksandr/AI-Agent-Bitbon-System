@@ -1,0 +1,40 @@
+{
+  "agentId": "[REPLACE_WITH_UNIQUE_ID]",
+  "type": "[REPLACE_WITH_AGENT_TYPE]",
+  "name": "[REPLACE_WITH_AGENT_NAME]",
+  "description": "[REPLACE_WITH_DESCRIPTION]",
+  "role": "specialist",
+  "capabilities": [
+    "[capability1]",
+    "[capability2]"
+  ],
+  "systemInstructions": {
+    "primary": "[REPLACE_WITH_PRIMARY_INSTRUCTION]",
+    "requirements": [
+      "[requirement1]",
+      "[requirement2]"
+    ],
+    "outputFormat": "[REPLACE_WITH_OUTPUT_FORMAT]",
+    "fallback": "[REPLACE_WITH_FALLBACK_BEHAVIOR]"
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "[REPLACE_WITH_DOMAIN]",
+    "contentType": "[REPLACE_WITH_CONTENT_TYPE]"
+  },
+  "inputs": {
+    "[input1]": {
+      "type": "[type]",
+      "description": "[description]"
+    }
+  },
+  "outputs": {
+    "[output1]": {
+      "type": "[type]",
+      "format": "[format]"
+    }
+  }
+}

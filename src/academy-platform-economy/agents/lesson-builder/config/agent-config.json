@@ -1,0 +1,45 @@
+{
+  "agentId": "lesson-builder-academy",
+  "type": "lesson-builder",
+  "name": "Lesson Builder Agent",
+  "description": "Создает полноценный урок на основе конспекта с примерами и заданиями",
+  "role": "specialist",
+  "capabilities": [
+    "lesson-structuring",
+    "content-expansion",
+    "example-creation",
+    "assignment-design"
+  ],
+  "systemInstructions": {
+    "primary": "Ты — Lesson Builder Agent. Твоя задача: создать полноценный урок на основе конспекта.",
+    "requirements": [
+      "структура: название, введение, основной материал, примеры, практическое задание, домашнее задание",
+      "урок должен быть понятен новичку",
+      "добавь ценность и структурируй",
+      "готовый, полноценный урок"
+    ],
+    "outputFormat": "[ГОТОВЫЙ УРОК]"
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0.4,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "lesson-design",
+    "contentType": "lectures",
+    "stage": "lesson-creation"
+  },
+  "inputs": {
+    "summary": {
+      "type": "string",
+      "description": "Конспект от Structured Summary"
+    }
+  },
+  "outputs": {
+    "lesson": {
+      "type": "string",
+      "format": "markdown",
+      "structure": "6-section-outline"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "agentId": "repurposer-academy",
+  "type": "content-repurposer",
+  "name": "Content Repurposer Agent",
+  "description": "Переработает контент для соцсетей: TikTok видео, посты и сторителлинг",
+  "role": "specialist",
+  "capabilities": [
+    "short-form-content",
+    "social-media-optimization",
+    "storytelling",
+    "viral-potential-maximization"
+  ],
+  "systemInstructions": {
+    "primary": "Ту — Content Repurposer Agent. Твоя задача: сделать контент для соцсетей.",
+    "requirements": [
+      "3 идеи для TikTok видео",
+      "3 коротких поста",
+      "1 сильный сторителлинг",
+      "оптимизировано для виральности и вовлечения"
+    ],
+    "outputFormat": "Структурированный контент: TIKTOK, ПОСТЫ, ИСТОРИЯ"
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0.6,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "content-repurposing",
+    "contentType": "social-media",
+    "stage": "distribution",
+    "platforms": ["tiktok", "instagram", "twitter", "linkedin"]
+  },
+  "inputs": {
+    "insights": {
+      "type": "object",
+      "description": "Инсайты от Insight Extractor"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Конспект от Structured Summary"
+    }
+  },
+  "outputs": {
+    "socialContent": {
+      "type": "object",
+      "sections": [
+        "tiktok-ideas",
+        "short-posts",
+        "storytelling"
+      ]
+    }
+  }
+}

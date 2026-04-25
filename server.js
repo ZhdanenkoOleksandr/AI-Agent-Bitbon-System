@@ -405,6 +405,63 @@ app.post('/api/partner/register', (req, res) => {
   });
 });
 
+// ══════════════════════════════════════════════════════════════════════
+// ADMIN FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════
+
+// Admin: Create invitation link for new partner
+app.post('/api/admin/create-invite', authenticateAdmin, (req, res) => {
+  const { telegram } = req.body;
+
+  if (!telegram) {
+    return res.status(400).json({ error: 'Укажите Telegram партнёра' });
+  }
+
+  // Генерация уникального токена для deep link
+  const inviteToken = uuidv4().replace(/-/g, '').substring(0, 20);
+  const partnerId   = generatePartnerId();
+
+  const partner = {
+    id:                 partnerId,
+    firstName:          '',
+    lastName:           '',
+    email:              '',
+    telegram:           telegram.trim().startsWith('@') ? telegram.trim() : '@' + telegram.trim(),
+    phone:              '',
+    walletAddress:      '',
+    inviteToken,
+    telegramChatId:     null,
+    status:             'invited',
+    packageType:        null,
+    apiKey:             null,
+    role:               'partner',
+    requestsLimit:      0,
+    requestsUsed:       0,
+    metaresourcesLimit: 0,
+    metaresourcesUsed:  0,
+    createdAt:          new Date().toISOString(),
+    activatedAt:        null,
+    expiresAt:          null,
+    source:             'admin_invite',
+    createdByAdmin:     req.admin?.adminName || 'unknown'
+  };
+
+  DB.partners[partnerId] = partner;
+  persistData();
+
+  const { getInviteLink } = require('./src/telegram-bot');
+  const inviteLink = getInviteLink(inviteToken);
+
+  res.json({
+    success:    true,
+    partnerId,
+    inviteToken,
+    inviteLink,
+    telegram:   partner.telegram,
+    message:    `✅ Приглашение создано для ${partner.telegram}`
+  });
+});
+
 // Partner: Submit payment info
 app.post('/api/partner/payment', (req, res) => {
   const { partnerId, txHash, amountBB, packageType } = req.body;

@@ -68,9 +68,19 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     const chatId = msg.chat.id;
     const token  = match[1];
 
+    console.log(`🔗 [BOT] /start received with token: ${token.substring(0, 10)}... from chat ${chatId}`);
+    console.log(`📋 [BOT] Looking up partner with inviteToken...`);
+    console.log(`📊 [BOT] Total partners in DB: ${Object.keys(db.partners).length}`);
+
+    // Debug: log all inviteTokens
+    const allTokens = Object.values(db.partners).map(p => ({ id: p.id, token: p.inviteToken?.substring(0, 10), status: p.status }));
+    console.log(`🔑 [BOT] Available tokens:`, allTokens);
+
     // Найти приглашение по токену
     const partner = Object.values(db.partners).find(p => p.inviteToken === token);
+
     if (!partner) {
+      console.log(`❌ [BOT] Partner NOT found for token: ${token}`);
       bot.sendMessage(chatId,
         `❌ *Ссылка устарела или недействительна.*\n\n` +
         `Возможные причины:\n` +
@@ -82,8 +92,11 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
       return;
     }
 
+    console.log(`✅ [BOT] Partner found: ${partner.id}, status: ${partner.status}`);
+
     // Если уже зарегистрирован — не начинать заново
     if (partner.status !== 'invited') {
+      console.log(`⚠️  [BOT] Partner already registered with status: ${partner.status}`);
       bot.sendMessage(chatId,
         `ℹ️ Вы уже зарегистрированы!\n\nИспользуйте /status для проверки статуса.`
       );
@@ -97,6 +110,7 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
 
     // Начать сбор данных
     sessions[chatId] = { token, partnerId: partner.id, step: 0, data: {} };
+    console.log(`📝 [BOT] Session created for chat ${chatId}, step 0`);
 
     bot.sendMessage(chatId,
       `👋 Привет, *${msg.from.first_name || 'партнёр'}*!\n\n` +
@@ -108,7 +122,7 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     );
   });
 
-  // ── /start без токена — генерировать web_token для входа ────────────
+  // ── /start без токена — либо вход, либо НУЛЕВАЯ РЕГИСТРАЦИЯ ───────────
   bot.onText(/\/start$/, (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username ? '@' + msg.from.username : null;
@@ -155,14 +169,72 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
           }
         }
       );
-    } else {
-      // Не активирован или не найден — показать инструкцию
+    } else if (existingPartner) {
+      // Есть партнёр, но статус не активен — показать статус
       bot.sendMessage(chatId,
-        `👋 Привет! Это бот регистрации партнёров *Системы Bitbon*.\n\n` +
-        `Для регистрации используйте персональную ссылку-приглашение от вашего менеджера.\n\n` +
-        `🤝 *Уже партнёр?* Используйте /status для проверки статуса`,
+        `ℹ️ *Ваша регистрация в процессе.*\n\n` +
+        `📌 Статус: ${existingPartner.status}\n\n` +
+        `Используйте /status для подробностей.`,
         { parse_mode: 'Markdown' }
       );
+    } else {
+      // Нет партнёра — проверяем: есть ли ВООБЩЕ активные партнеры?
+      const hasActivePartners = Object.values(db.partners).some(p => p.status === 'active');
+
+      if (!hasActivePartners) {
+        // ✅ НУЛЕВАЯ РЕГИСТРАЦИЯ — первый пользователь становится АДМИНОМ
+        console.log(`🆕 [BOT] Zero registration started: ${username} will become ADMIN`);
+
+        const partnerId = generatePartnerId();
+        const partner = {
+          id: partnerId,
+          firstName: msg.from.first_name || '',
+          lastName: msg.from.last_name || '',
+          email: '',
+          telegram: username,
+          phone: '',
+          walletAddress: '',
+          inviteToken: null,
+          telegramChatId: String(chatId),
+          status: 'invited',
+          packageType: null,
+          apiKey: null,
+          role: 'admin', // ✅ ПЕРВЫЙ ПОЛЬЗОВАТЕЛЬ = АДМИН
+          requestsLimit: 0,
+          requestsUsed: 0,
+          metaresourcesLimit: 0,
+          metaresourcesUsed: 0,
+          createdAt: new Date().toISOString(),
+          activatedAt: null,
+          expiresAt: null,
+          source: 'zero_registration'
+        };
+
+        db.partners[partnerId] = partner;
+        persistData();
+
+        // Начать сбор данных для админа
+        sessions[chatId] = { partnerId, step: 0, data: {}, isZeroReg: true };
+        console.log(`📝 [BOT] Admin session created for chat ${chatId}`);
+
+        bot.sendMessage(chatId,
+          `🎉 *Добро пожаловать!*\n\n` +
+          `Вы первый пользователь системы Bitbon! 👑\n\n` +
+          `Вы будете администратором и сможете приглашать партнеров.\n\n` +
+          `Заполните свои данные:`,
+          { parse_mode: 'Markdown' }
+        );
+
+        bot.sendMessage(chatId, PROMPTS.firstName, { parse_mode: 'Markdown' });
+      } else {
+        // Не активирован, НО уже есть активные партнеры — требуется приглашение
+        bot.sendMessage(chatId,
+          `👋 Привет! Это бот регистрации партнёров *Системы Bitbon*.\n\n` +
+          `Для регистрации используйте персональную ссылку-приглашение от администратора.\n\n` +
+          `🤝 *Уже партнёр?* Используйте /status для проверки статуса`,
+          { parse_mode: 'Markdown' }
+        );
+      }
     }
   });
 
@@ -267,7 +339,13 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
   bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text?.trim();
-    if (!text || text.startsWith('/')) return;
+
+    console.log(`💬 [BOT] Message from chat ${chatId}: "${text?.substring(0, 30)}..."`);
+
+    if (!text || text.startsWith('/')) {
+      console.log(`⏭️  [BOT] Skipping: empty text or command`);
+      return;
+    }
 
     // ── Проверка админ сессии (ввод пароля) ──────────────────────────
     const adminSess = adminSessions[chatId];
@@ -324,10 +402,26 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
 
     // ── Регулярная сессия партнёра ────────────────────────────────────
     const sess = sessions[chatId];
-    if (!sess || typeof sess.step === 'string') return; // ждём inline keyboard
+
+    console.log(`📌 [BOT] Session check: exists=${!!sess}, step=${sess?.step}, type=${typeof sess?.step}`);
+
+    if (!sess) {
+      console.log(`❌ [BOT] No session found for chat ${chatId}. Active sessions:`, Object.keys(sessions));
+      return;
+    }
+
+    if (typeof sess.step === 'string') {
+      console.log(`⏸️  [BOT] Waiting for inline keyboard callback, not processing text input`);
+      return; // ждём inline keyboard
+    }
 
     const field = STEPS[sess.step];
-    if (!field) return;
+    console.log(`📋 [BOT] Processing field: ${field} (step ${sess.step}/${STEPS.length})`);
+
+    if (!field) {
+      console.log(`⚠️  [BOT] No field for step ${sess.step}`);
+      return;
+    }
 
     // Пропуск необязательных полей
     if (text === '.' && field === 'phone') {
@@ -367,37 +461,61 @@ async function completeRegistration(bot, chatId, sess, db, persistData) {
   partner.email         = sess.data.email?.trim().toLowerCase();
   partner.phone         = sess.data.phone || '';
   partner.packageType   = sess.data.plan;
-  partner.status        = 'pending_payment';
   partner.completedAt   = new Date().toISOString();
-  persistData();
 
-  // Подтверждение клиенту
-  bot.sendMessage(chatId,
-    `✅ *Данные сохранены!*\n\n` +
-    `👤 ${partner.firstName} ${partner.lastName}\n` +
-    `📧 ${partner.email}\n` +
-    `📱 ${partner.phone || '—'}\n` +
-    `📦 ${PLAN_LABELS[partner.packageType]}\n\n` +
-    `🆔 *Ваш ID:* \`${partner.id}\`\n\n` +
-    `⏳ *Следующий шаг:* отправьте оплату Bitbon и сообщите менеджеру TX-хэш.\n` +
-    `После подтверждения вы получите API-ключ здесь в боте.\n\n` +
-    `/status — проверить статус`,
-    { parse_mode: 'Markdown' }
-  );
+  // НУЛЕВАЯ РЕГИСТРАЦИЯ: админ сразу активный
+  if (sess.isZeroReg) {
+    partner.status = 'active';
+    partner.activatedAt = new Date().toISOString();
+    partner.requestsLimit = Infinity;
+    persistData();
 
-  // Уведомление админу
-  if (ADMIN_CHAT_ID) {
-    bot.sendMessage(ADMIN_CHAT_ID,
-      `🆕 *Партнёр заполнил данные!*\n\n` +
+    bot.sendMessage(chatId,
+      `✅ *Добро пожаловать, Администратор!*\n\n` +
+      `👤 ${partner.firstName} ${partner.lastName}\n` +
+      `📧 ${partner.email}\n\n` +
+      `🔑 Вы можете:\n` +
+      `• Создавать приглашения для партнёров\n` +
+      `• Управлять системой\n` +
+      `• Проверять платежи\n\n` +
+      `📱 Используйте /status для входа в кабинет\n\n`,
+      { parse_mode: 'Markdown' }
+    );
+
+    // Уведомление в консоль
+    console.log(`🆕 [BOT] ADMIN REGISTRATION COMPLETE: ${partner.id}`);
+  } else {
+    // Обычный партнер - требует платёж
+    partner.status = 'pending_payment';
+    persistData();
+
+    bot.sendMessage(chatId,
+      `✅ *Данные сохранены!*\n\n` +
       `👤 ${partner.firstName} ${partner.lastName}\n` +
       `📧 ${partner.email}\n` +
       `📱 ${partner.phone || '—'}\n` +
-      `💬 Telegram: ${partner.telegram || '—'}\n` +
-      `📦 ${PLAN_LABELS[partner.packageType]}\n` +
-      `🆔 \`${partner.id}\`\n` +
-      `📅 ${new Date().toLocaleString('ru-RU')}`,
+      `📦 ${PLAN_LABELS[partner.packageType]}\n\n` +
+      `🆔 *Ваш ID:* \`${partner.id}\`\n\n` +
+      `⏳ *Следующий шаг:* отправьте оплату Bitbon и сообщите менеджеру TX-хэш.\n` +
+      `После подтверждения вы получите API-ключ здесь в боте.\n\n` +
+      `/status — проверить статус`,
       { parse_mode: 'Markdown' }
     );
+
+    // Уведомление админу о новом партнере
+    if (ADMIN_CHAT_ID) {
+      bot.sendMessage(ADMIN_CHAT_ID,
+        `🆕 *Партнёр заполнил данные!*\n\n` +
+        `👤 ${partner.firstName} ${partner.lastName}\n` +
+        `📧 ${partner.email}\n` +
+        `📱 ${partner.phone || '—'}\n` +
+        `💬 Telegram: ${partner.telegram || '—'}\n` +
+        `📦 ${PLAN_LABELS[partner.packageType]}\n` +
+        `🆔 \`${partner.id}\`\n` +
+        `📅 ${new Date().toLocaleString('ru-RU')}`,
+        { parse_mode: 'Markdown' }
+      );
+    }
   }
 
   // Google Sheets

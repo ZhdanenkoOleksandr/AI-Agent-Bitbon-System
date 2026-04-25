@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/Expert-colorist/**)",
+      "Read(//private/tmp/Expert-colorist/**)",
+      "Read(//Users/oleksandr/Downloads/**)",
+      "Read(//Users/oleksandr/Desktop/**)",
+      "Read(//Users/oleksandr/Documents/**)",
+      "Read(//Users/oleksandr/OneSpace project/AI  Агент База Знаний Система Битбон/**)",
+      "Bash(node -e ':*)",
+      "Bash(curl -s -X POST http://localhost:3001/api/partner/register -H 'Content-Type: application/json' -d '{\"telegram\": \"@testuser\"}')",
+      "Bash(curl -s -X POST http://localhost:3001/api/partner/register -H 'Content-Type: application/json' -d '{\"telegram\": \"@VikingOLZk\"}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s http://localhost:3001/api/health)",
+      "Bash(curl -s http://localhost:3001/)",
+      "Bash(curl -s -X POST http://localhost:3001/api/chat -H 'Content-Type: application/json' -d '{\"message\":\"Что такое Bitbon одним предложением?\",\"history\":[],\"userLevel\":\"beginner\",\"userMode\":\"user\"}')",
+      "Bash(curl -s -X POST http://localhost:3001/api/chat -H 'Content-Type: application/json' -d '{:*)",
+      "Bash(pkill -f \"node server.js\")",
+      "Bash(node -c server.js)",
+      "Bash(node -c src/telegram-bot.js)",
+      "Read(//private/tmp/**)",
+      "Bash(cat)",
+      "Bash(chmod +x /tmp/test_admin_login.sh)",
+      "Bash(/tmp/test_admin_login.sh)",
+      "Bash(curl -s http://localhost:3000/api/status)",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill:*)",
+      "Bash(npm start:*)",
+      "Bash(curl -s http://localhost:3000)"
+    ],
+    "additionalDirectories": [
+      "/tmp/Expert-colorist/src/components",
+      "/private/tmp/Expert-colorist/src/components",
+      "/Users/oleksandr/OneSpace project/AI  Агент База Знаний Система Битбон"
+    ]
+  }
+}

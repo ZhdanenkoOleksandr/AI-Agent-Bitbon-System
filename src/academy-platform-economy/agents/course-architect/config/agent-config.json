@@ -1,0 +1,50 @@
+{
+  "agentId": "course-architect-academy",
+  "type": "course-architect",
+  "name": "Course Architect Agent",
+  "description": "Собирает полноценный курс из нескольких уроков с модулями и логикой прохождения",
+  "role": "specialist",
+  "capabilities": [
+    "curriculum-design",
+    "module-organization",
+    "learning-path-creation",
+    "progression-planning"
+  ],
+  "systemInstructions": {
+    "primary": "Ты — Course Architect Agent. Твоя задача: собрать курс из нескольких уроков.",
+    "requirements": [
+      "название курса, для кого, результат",
+      "структура модулями (МОДУЛЬ 1, МОДУЛЬ 2...)",
+      "логика прохождения от простого к сложному",
+      "готовая структура курса"
+    ],
+    "outputFormat": "[СТРУКТУРА КУРСА]"
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0.4,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "curriculum-design",
+    "contentType": "courses",
+    "stage": "course-architecture"
+  },
+  "inputs": {
+    "lessons": {
+      "type": "array",
+      "description": "Уроки от Lesson Builder"
+    }
+  },
+  "outputs": {
+    "courseStructure": {
+      "type": "object",
+      "sections": [
+        "title",
+        "targetAudience",
+        "expectedOutcome",
+        "modules",
+        "progressionLogic"
+      ]
+    }
+  }
+}

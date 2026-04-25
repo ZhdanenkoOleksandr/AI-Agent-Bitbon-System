@@ -1,0 +1,39 @@
+{
+  "name": "bitbon-agent-vercel",
+  "version": "1.0.0",
+  "description": "AI Agent Bitbon System - Vercel Deployment",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js",
+    "dev": "vercel dev",
+    "build": "echo 'Build complete'",
+    "test": "echo 'Tests running'"
+  },
+  "keywords": [
+    "bitbon",
+    "ai-agent",
+    "web4",
+    "vercel",
+    "serverless"
+  ],
+  "author": "Oleksandr Zhdanenko",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.0",
+    "body-parser": "^1.20.2"
+  },
+  "devDependencies": {
+    "vercel": "latest"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZhdanenkoOleksandr/AI-Agent-Bitbon-System.git"
+  }
+}

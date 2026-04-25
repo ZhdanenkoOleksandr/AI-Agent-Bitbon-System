@@ -1,0 +1,232 @@
+{
+  "swarmName": "academy-platform-economy",
+  "description": "Многоагентная система для обработки образовательного контента",
+  "topology": "hierarchical-mesh",
+  "version": "1.0.0",
+  "configuration": {
+    "maxAgents": 15,
+    "strategy": "specialized",
+    "consensusAlgorithm": "raft",
+    "coordinationMode": "push-pull",
+    "loadBalancing": "adaptive"
+  },
+  "layers": {
+    "orchestration": {
+      "name": "Orchestration Layer",
+      "description": "Управление и координация агентов",
+      "agents": [
+        {
+          "role": "coordinator",
+          "count": 1,
+          "priority": "high",
+          "resources": {
+            "cpu": "500m",
+            "memory": "1Gi"
+          }
+        }
+      ]
+    },
+    "processing": {
+      "name": "Processing Layer",
+      "description": "Обработка контента",
+      "agents": [
+        {
+          "role": "transcriber",
+          "count": 2,
+          "priority": "high",
+          "resources": {
+            "cpu": "1000m",
+            "memory": "2Gi"
+          },
+          "capabilities": [
+            "audio-transcription",
+            "video-transcription"
+          ]
+        },
+        {
+          "role": "editor",
+          "count": 0,
+          "priority": "medium",
+          "status": "planned",
+          "resources": {
+            "cpu": "800m",
+            "memory": "1.5Gi"
+          }
+        },
+        {
+          "role": "translator",
+          "count": 0,
+          "priority": "medium",
+          "status": "planned",
+          "resources": {
+            "cpu": "1000m",
+            "memory": "2Gi"
+          }
+        }
+      ]
+    },
+    "analysis": {
+      "name": "Analysis Layer",
+      "description": "Анализ и проверка качества",
+      "agents": [
+        {
+          "role": "summarizer",
+          "count": 0,
+          "priority": "low",
+          "status": "planned",
+          "resources": {
+            "cpu": "500m",
+            "memory": "1Gi"
+          }
+        },
+        {
+          "role": "qa",
+          "count": 0,
+          "priority": "high",
+          "status": "planned",
+          "resources": {
+            "cpu": "500m",
+            "memory": "1Gi"
+          }
+        }
+      ]
+    },
+    "distribution": {
+      "name": "Distribution Layer",
+      "description": "Публикация и распределение",
+      "agents": [
+        {
+          "role": "publisher",
+          "count": 0,
+          "priority": "high",
+          "status": "planned",
+          "resources": {
+            "cpu": "500m",
+            "memory": "1Gi"
+          }
+        }
+      ]
+    }
+  },
+  "communication": {
+    "protocol": "message-passing",
+    "topology": "hierarchical-mesh",
+    "channels": {
+      "control": {
+        "priority": "high",
+        "latency": "low",
+        "guaranteed": true
+      },
+      "data": {
+        "priority": "medium",
+        "latency": "medium",
+        "guaranteed": false
+      },
+      "telemetry": {
+        "priority": "low",
+        "latency": "high",
+        "guaranteed": false
+      }
+    }
+  },
+  "consensus": {
+    "algorithm": "raft",
+    "electionTimeout": 150,
+    "heartbeatTimeout": 50,
+    "quorum": "majority"
+  },
+  "failover": {
+    "enabled": true,
+    "healthCheckInterval": 30000,
+    "failoverThreshold": 3,
+    "recoveryStrategy": "rejoin"
+  },
+  "monitoring": {
+    "enabled": true,
+    "metricsCollection": true,
+    "logsCollection": true,
+    "tracesCollection": false,
+    "interval": 60000
+  },
+  "scaling": {
+    "autoScaling": {
+      "enabled": true,
+      "metric": "cpu-utilization",
+      "targetUtilization": 70,
+      "scaleUpThreshold": 80,
+      "scaleDownThreshold": 40,
+      "cooldownPeriod": 300
+    },
+    "limits": {
+      "minAgents": 1,
+      "maxAgents": 15,
+      "reservedForCoordination": 1
+    }
+  },
+  "priority": {
+    "critical": {
+      "maxWaitTime": 1000,
+      "retryAttempts": 3
+    },
+    "high": {
+      "maxWaitTime": 5000,
+      "retryAttempts": 2
+    },
+    "medium": {
+      "maxWaitTime": 10000,
+      "retryAttempts": 1
+    },
+    "low": {
+      "maxWaitTime": 30000,
+      "retryAttempts": 0
+    }
+  },
+  "workflows": [
+    {
+      "id": "transcription-workflow",
+      "name": "Transcription Workflow",
+      "description": "Основной поток обработки аудио/видео",
+      "steps": [
+        {
+          "name": "upload",
+          "agent": "coordinator",
+          "timeout": 30000
+        },
+        {
+          "name": "transcribe",
+          "agent": "transcriber",
+          "timeout": 600000,
+          "parallelism": 2
+        },
+        {
+          "name": "store",
+          "agent": "coordinator",
+          "timeout": 10000
+        }
+      ]
+    },
+    {
+      "id": "publishing-workflow",
+      "name": "Publishing Workflow",
+      "description": "Поток публикации контента",
+      "status": "planned",
+      "steps": [
+        {
+          "name": "validate",
+          "agent": "qa",
+          "timeout": 60000
+        },
+        {
+          "name": "publish",
+          "agent": "publisher",
+          "timeout": 30000
+        },
+        {
+          "name": "distribute",
+          "agent": "publisher",
+          "timeout": 60000
+        }
+      ]
+    }
+  ]
+}

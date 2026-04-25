@@ -1,0 +1,60 @@
+{
+  "agentId": "insight-extractor-academy",
+  "type": "insight-extractor",
+  "name": "Insight Extractor Agent",
+  "description": "Вытаскивает суть лекции: ключевые идеи, инсайты, модели и термины",
+  "role": "specialist",
+  "capabilities": [
+    "content-analysis",
+    "key-idea-extraction",
+    "insight-identification",
+    "model-recognition",
+    "terminology-extraction"
+  ],
+  "systemInstructions": {
+    "primary": "Ты — Insight Extractor Agent. Твоя задача: вытащить СУТЬ лекции.",
+    "requirements": [
+      "выдели 10 ключевых идей",
+      "определи 5 главных инсайтов",
+      "найди 3 модели или подхода (если есть)",
+      "собери важные термины с определениями"
+    ],
+    "outputFormat": "Структурированный анализ с разделами: КЛЮЧЕВЫЕ ИДЕИ, ИНСАЙТЫ, МОДЕЛИ, ТЕРМИНЫ"
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0.3,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "content-analysis",
+    "contentType": "lectures",
+    "stage": "analysis"
+  },
+  "inputs": {
+    "cleanText": {
+      "type": "string",
+      "description": "Чистый текст от Cleaner Agent"
+    }
+  },
+  "outputs": {
+    "keyIdeas": {
+      "type": "array",
+      "count": 10,
+      "description": "10 ключевых идей"
+    },
+    "insights": {
+      "type": "array",
+      "count": 5,
+      "description": "5 главных инсайтов"
+    },
+    "models": {
+      "type": "array",
+      "count": 3,
+      "description": "3 модели или подхода"
+    },
+    "terminology": {
+      "type": "object",
+      "description": "Важные термины с определениями"
+    }
+  }
+}

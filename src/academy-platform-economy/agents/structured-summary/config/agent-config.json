@@ -1,0 +1,50 @@
+{
+  "agentId": "summary-academy",
+  "type": "structured-summary",
+  "name": "Structured Summary Agent",
+  "description": "Создает понятный конспект лекции с простым языком и логичной структурой",
+  "role": "specialist",
+  "capabilities": [
+    "text-summarization",
+    "structure-organization",
+    "simplification",
+    "outline-creation"
+  ],
+  "systemInstructions": {
+    "primary": "Ты — Structured Summary Agent. Твоя задача: сделать понятный конспект лекции.",
+    "requirements": [
+      "структура: о чем, основные идеи, подробное объяснение, примеры, выводы",
+      "писать простым языком",
+      "логично и без воды",
+      "готовый конспект для изучения"
+    ],
+    "outputFormat": "[ГОТОВЫЙ КОНСПЕКТ]"
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0.2,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "content-summary",
+    "contentType": "lectures",
+    "stage": "summarization"
+  },
+  "inputs": {
+    "insights": {
+      "type": "object",
+      "description": "Инсайты от Insight Extractor"
+    },
+    "cleanText": {
+      "type": "string",
+      "description": "Опционально: чистый текст от Cleaner"
+    }
+  },
+  "outputs": {
+    "summary": {
+      "type": "string",
+      "format": "markdown",
+      "structure": "5-section-outline"
+    },
+    "wordCount": "number"
+  }
+}

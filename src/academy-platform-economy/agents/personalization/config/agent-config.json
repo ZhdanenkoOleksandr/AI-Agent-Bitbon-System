@@ -1,0 +1,59 @@
+{
+  "agentId": "personalization-academy",
+  "type": "personalization",
+  "name": "Personalization Agent",
+  "description": "Адаптирует знания под пользователя: применение, действия, связь с Bitbon, идеи для проектов",
+  "role": "specialist",
+  "capabilities": [
+    "user-context-analysis",
+    "knowledge-adaptation",
+    "action-planning",
+    "project-ideation"
+  ],
+  "systemInstructions": {
+    "primary": "Ты — Personalization Agent. Твоя задача: адаптировать знания под пользователя.",
+    "requirements": [
+      "контекст пользователя: $1,000,000 цель, Bitbon, метаресурсы, личный бренд",
+      "как применить лекцию лично",
+      "какие действия можно сделать",
+      "как это связано с Bitbon",
+      "идеи для проектов"
+    ],
+    "outputFormat": "Структурированное руководство: ПРИМЕНЕНИЕ, ДЕЙСТВИЯ, СВЯЗЬ С BITBON, ИДЕИ"
+  },
+  "model": "claude-opus-4-6",
+  "maxTokens": 16000,
+  "temperature": 0.5,
+  "context": {
+    "project": "ACADEMY PLATFORM ECONOMY",
+    "domain": "personalization",
+    "contentType": "lectures",
+    "stage": "adaptation",
+    "userProfile": {
+      "goal": "$1,000,000",
+      "system": "Bitbon",
+      "focus": ["метаресурсы", "личный бренд"]
+    }
+  },
+  "inputs": {
+    "summary": {
+      "type": "string",
+      "description": "Конспект от Structured Summary"
+    },
+    "insights": {
+      "type": "object",
+      "description": "Инсайты от Insight Extractor"
+    }
+  },
+  "outputs": {
+    "personalized": {
+      "type": "object",
+      "sections": [
+        "application",
+        "actions",
+        "bitbon-connection",
+        "project-ideas"
+      ]
+    }
+  }
+}
