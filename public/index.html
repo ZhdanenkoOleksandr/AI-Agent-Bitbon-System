@@ -808,9 +808,9 @@ textarea::placeholder{color:var(--text3)}
           style="flex:1;padding:13px 16px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;color:var(--text1);font-size:18px;letter-spacing:4px;text-align:center;outline:none;font-family:'Onest',sans-serif"
           onfocus="this.style.borderColor='var(--accent)'"
           onblur="this.style.borderColor='var(--border2)'"
-          onkeydown="if(event.key==='Enter') loginWithPin()"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();loginWithPin();}"
           oninput="document.getElementById('login-pin-error').style.display='none'">
-        <button onclick="loginWithPin()"
+        <button id="login-pin-btn" onclick="loginWithPin()"
           style="padding:13px 22px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-weight:600;font-size:15px;font-family:'Onest',sans-serif;cursor:pointer;white-space:nowrap;transition:opacity 0.2s"
           onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
           Войти
@@ -1847,13 +1847,15 @@ function closeLoginModal() {
 function loginWithPin() {
   var pin = document.getElementById('login-pin-input').value.trim();
   var errorEl = document.getElementById('login-pin-error');
-  var btn = event && event.target;
+  var btn = document.getElementById('login-pin-btn');
 
   if (!pin) {
     errorEl.textContent = 'Введите PIN-код';
     errorEl.style.display = 'block';
     return;
   }
+  // Предотвратить двойной вызов (напр. если кнопка уже в состоянии загрузки)
+  if (btn && btn.disabled) return;
 
   if (btn) { btn.textContent = '...'; btn.disabled = true; }
 
@@ -1873,6 +1875,20 @@ function loginWithPin() {
       // Войти в кабинет
       userMode = 'partner';
       currentPartnerData = data.user;
+      // Заполнить partnerInfo и currentPlan из данных пользователя
+      partnerInfo = {
+        id: data.user.id,
+        firstName: data.user.fullName ? data.user.fullName.split(' ')[0] : '',
+        lastName:  data.user.fullName ? data.user.fullName.split(' ').slice(1).join(' ') : '',
+        fullName:  data.user.fullName || '',
+        email:     data.user.email,
+        telegram:  data.user.telegram
+      };
+      if (data.user.packageType && PLANS[data.user.packageType]) {
+        currentPlan = data.user.packageType;
+        usedRequests = data.user.requestsUsed || 0;
+        usedMeta = data.user.metaresourcesUsed || 0;
+      }
       setTimeout(function() { openCabinet(); }, 100);
     } else {
       errorEl.textContent = data.error || 'Неверный PIN-код';
@@ -3101,7 +3117,10 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
     var loginModal = document.getElementById('login-required-modal');
     if (loginModal && !loginModal.classList.contains('hidden')) {
-      loginWithPin();
+      // Не вызываем если PIN-input уже обработал Enter через свой onkeydown
+      if (document.activeElement.id !== 'login-pin-input') {
+        loginWithPin();
+      }
     }
   }
 });
