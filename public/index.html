@@ -641,6 +641,11 @@ textarea::placeholder{color:var(--text3)}
       <span class="level-icon">🤝</span>
       <div><div class="level-card-title">Стать Партнёром</div><div class="level-card-desc">Зарегистрироваться, получить API и зарабатывать с Bitbon</div></div>
     </button>
+    <hr class="level-divider">
+    <button class="level-card" onclick="openAdminLogin()">
+      <span class="level-icon">🔐</span>
+      <div><div class="level-card-title">Вход Администратора</div><div class="level-card-desc">Вход в кабинет с паролем администратора</div></div>
+    </button>
   </div>
   <div class="level-note">Партнёры Системы Bitbon получают API-доступ к AI агенту для своих клиентов</div>
 </div>
@@ -1058,6 +1063,23 @@ textarea::placeholder{color:var(--text3)}
         <button class="form-btn" onclick="adminLogout()" style="flex:1;min-width:150px;background:rgba(239,68,68,0.15);color:var(--red)">🚪 Выход</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN CABINET LOGIN ═══ -->
+<div class="overlay hidden" id="admin-login-overlay">
+  <div class="modal" style="max-width:420px">
+    <button class="close-btn" onclick="closeAdminLogin()">×</button>
+    <div class="modal-title">🔐 Вход Администратора</div>
+    <div class="modal-sub">Введите пароль администратора для входа в основной кабинет</div>
+
+    <div class="form-group">
+      <label class="form-label">Пароль администратора</label>
+      <input type="password" id="admin-cabinet-pass" class="form-input" placeholder="Пароль" onkeydown="if(event.key==='Enter')adminCabinetLogin()">
+    </div>
+
+    <button class="form-btn primary" onclick="adminCabinetLogin()">🔓 Войти в кабинет</button>
+    <div id="admin-login-error" style="margin-top:12px;font-size:13px;color:var(--red);text-align:center"></div>
   </div>
 </div>
 
@@ -1915,6 +1937,62 @@ function getFetchOptions(method, body) {
     }
   }
 })();
+
+// ── Admin Cabinet Login ────────────────────────────────────────────────
+function openAdminLogin() {
+  var overlay = document.getElementById('admin-login-overlay');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    document.getElementById('admin-cabinet-pass').focus();
+    document.getElementById('admin-login-error').textContent = '';
+  }
+}
+
+function closeAdminLogin() {
+  var overlay = document.getElementById('admin-login-overlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+    document.getElementById('admin-cabinet-pass').value = '';
+    document.getElementById('admin-login-error').textContent = '';
+  }
+}
+
+function adminCabinetLogin() {
+  var password = document.getElementById('admin-cabinet-pass').value;
+  var errorDiv = document.getElementById('admin-login-error');
+
+  if (!password) {
+    errorDiv.textContent = '❌ Введите пароль';
+    return;
+  }
+
+  fetch(API_BASE + '/api/admin/cabinet-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: password })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        // Store JWT session token
+        localStorage.setItem('jwt', d.jwt);
+        // Store user data and role
+        localStorage.setItem('user', JSON.stringify(d.user));
+        localStorage.setItem('role', 'admin');
+        // Set jwtToken for API calls
+        jwtToken = d.jwt;
+        // Close overlay and redirect to admin panel
+        closeAdminLogin();
+        window.location.href = '/admin';
+      } else {
+        errorDiv.textContent = '❌ ' + (d.error || 'Неверный пароль');
+      }
+    })
+    .catch(function(e) {
+      console.error('Admin login error:', e);
+      errorDiv.textContent = '❌ Ошибка при входе';
+    });
+}
 
 // ── Настройки видимости кнопок для клиентов ──────────────────────────
 function loadClientSettings() {

@@ -182,7 +182,7 @@ function persistData() {
 // ADMIN ENDPOINTS
 // ══════════════════════════════════════════════════════════════════════
 
-// Admin Login
+// Admin Login (for admin panel)
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -190,6 +190,61 @@ app.post('/api/admin/login', (req, res) => {
   }
   const token = jwt.sign({ role: 'admin', iat: Date.now() }, JWT_SECRET, { expiresIn: '24h' });
   res.json({ success: true, token });
+});
+
+// Admin Cabinet Login (для входа админа в основной кабинет)
+app.post('/api/admin/cabinet-login', (req, res) => {
+  const { password } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Неверный пароль' });
+  }
+
+  // Создаём временного админ-партнёра в системе
+  const adminPartner = {
+    id: 'adm_' + Date.now(),
+    firstName: 'Administrator',
+    lastName: 'Cabinet',
+    email: 'admin@bitbon.system',
+    telegram: '@admin',
+    phone: '',
+    walletAddress: '',
+    status: 'active',
+    packageType: 'expert',
+    apiKey: null,
+    requestsLimit: Infinity,
+    requestsUsed: 0,
+    metaresourcesLimit: Infinity,
+    metaresourcesUsed: 0,
+    createdAt: new Date().toISOString(),
+    activatedAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+    role: 'admin'
+  };
+
+  const token = jwt.sign(
+    { role: 'partner', partnerId: adminPartner.id, name: 'Administrator Cabinet' },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  res.json({
+    success: true,
+    jwt: token,
+    user: {
+      id: adminPartner.id,
+      fullName: 'Administrator Cabinet',
+      email: adminPartner.email,
+      telegram: adminPartner.telegram,
+      status: 'active',
+      packageType: 'expert',
+      requestsUsed: 0,
+      requestsLimit: '∞',
+      metaresourcesUsed: 0,
+      metaresourcesLimit: '∞',
+      expiresAt: adminPartner.expiresAt,
+      role: 'admin'
+    }
+  });
 });
 
 // Admin: List all partners
