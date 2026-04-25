@@ -776,6 +776,29 @@ textarea::placeholder{color:var(--text3)}
   </div>
 </div>
 
+<!-- ═══ LOGIN REQUIRED MODAL ═══ -->
+<div class="overlay hidden" id="login-required-modal">
+  <div class="modal" style="max-width:480px">
+    <button class="close-btn" onclick="closeLoginModal()">×</button>
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:48px;margin-bottom:12px">🔐</div>
+      <div class="modal-title">Требуется вход в систему</div>
+      <div class="modal-sub" style="margin-bottom:20px">Кабинет партнёра доступен только после входа через Telegram</div>
+    </div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center">
+      <div style="font-size:14px;color:var(--text2);line-height:1.6">
+        ✈️ Используйте Telegram для безопасного входа<br/>
+        <span style="font-size:12px;color:var(--text3)">Ваши данные защищены и верифицированы</span>
+      </div>
+    </div>
+
+    <a href="https://t.me/BitbonPartnerBot" target="_blank" rel="noopener" style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,rgba(0,136,204,0.2),rgba(0,136,204,0.05));border:1.5px solid rgba(0,136,204,0.4);border-radius:10px;color:var(--text1);text-decoration:none;font-weight:500;font-size:15px;font-family:'Onest',sans-serif;transition:all 0.2s;cursor:pointer" onmouseover="this.style.background='linear-gradient(135deg,rgba(0,136,204,0.3),rgba(0,136,204,0.1))';this.style.borderColor='rgba(0,136,204,0.6)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(0,136,204,0.2),rgba(0,136,204,0.05))';this.style.borderColor='rgba(0,136,204,0.4)'">
+      ✈️ Войти через Telegram
+    </a>
+  </div>
+</div>
+
 <div class="overlay hidden" id="cabinet-overlay">
   <div class="modal" style="max-width:620px">
     <button class="close-btn" onclick="closeCabinet()">×</button>
@@ -1736,7 +1759,8 @@ function openCabinet() {
 
   if (!jwt) {
     // Нет JWT - пользователь не залогинен через Telegram
-    alert('🔐 Доступ к кабинету только через Telegram!\n\nНажмите кнопку "✈️ Войти через Telegram" на главной странице.');
+    // Показываем красивое модальное окно вместо alert
+    openLoginModal();
     return;
   }
 
@@ -1835,6 +1859,14 @@ function closePinModal() {
 }
 
 function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
+
+function openLoginModal() {
+  document.getElementById('login-required-modal').classList.remove('hidden');
+}
+
+function closeLoginModal() {
+  document.getElementById('login-required-modal').classList.add('hidden');
+}
 
 // ═══ ADMIN PANEL ═══
 function openAdmin() {
