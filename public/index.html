@@ -1737,6 +1737,15 @@ function openCabinet() {
   console.log('OpenCabinet - telegram field:', userData ? userData.telegram : 'no userData');
   console.log('OpenCabinet - telegram lowercase:', userData && userData.telegram ? userData.telegram.toLowerCase() : 'N/A');
 
+  // Show alert with actual values for debugging
+  var debugMsg = 'userData: ' + (userData ? 'yes' : 'no') + '\n';
+  if (userData) {
+    debugMsg += 'telegram: ' + (userData.telegram || 'undefined') + '\n';
+    debugMsg += 'telegram.toLowerCase(): ' + (userData.telegram ? userData.telegram.toLowerCase() : 'N/A') + '\n';
+    debugMsg += 'is @vikingolzh?: ' + (userData.telegram && userData.telegram.toLowerCase() === '@vikingolzh' ? 'YES' : 'NO');
+  }
+  console.log('[DEBUG] ' + debugMsg);
+
   // Check if this is the zero user (@VikingOLZH) - require PIN verification
   if (userData && userData.telegram && userData.telegram.toLowerCase() === '@vikingolzh') {
     console.log('✓ PIN modal should show now');
