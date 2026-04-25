@@ -451,26 +451,32 @@ app.get('/api/auth/web-token', (req, res) => {
     return res.status(401).json({ error: 'Token expired' });
   }
 
-  // Find partner by Telegram username
-  const partner = Object.values(DB.partners).find(
-    p => p.telegram === tokenData.username || p.telegram === '@' + tokenData.username
-  );
+  // Find partner by Telegram username (skip for admin tokens)
+  let partner = null;
+  if (!tokenData.isAdmin) {
+    partner = Object.values(DB.partners).find(
+      p => p.telegram === tokenData.username || p.telegram === '@' + tokenData.username
+    );
 
-  if (!partner) {
-    return res.status(404).json({ error: 'Partner not found' });
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
   }
 
-  // Generate JWT session token
-  const sessionToken = jwt.sign(
-    {
-      role: 'partner',
-      partnerId: partner.id,
-      name: `${partner.firstName} ${partner.lastName}`,
-      telegram: tokenData.username
-    },
-    JWT_SECRET,
-    { expiresIn: '7d' }
-  );
+  // Generate JWT session token (admin or partner)
+  const jwtPayload = {
+    role: tokenData.isAdmin ? 'admin' : 'partner',
+    telegram: tokenData.username
+  };
+
+  if (tokenData.isAdmin) {
+    jwtPayload.adminName = tokenData.username;
+  } else {
+    jwtPayload.partnerId = partner.id;
+    jwtPayload.name = `${partner.firstName} ${partner.lastName}`;
+  }
+
+  const sessionToken = jwt.sign(jwtPayload, JWT_SECRET, { expiresIn: '7d' });
 
   // Clean up used web token
   delete DB.webTokens[wt];
@@ -479,8 +485,14 @@ app.get('/api/auth/web-token', (req, res) => {
   res.json({
     success: true,
     jwt: sessionToken,
-    user: {
+    user: tokenData.isAdmin ? {
+      id: 'admin',
+      role: 'admin',
+      username: tokenData.username,
+      fullName: 'Administrator'
+    } : {
       id: partner.id,
+      role: 'partner',
       fullName: `${partner.firstName} ${partner.lastName}`,
       email: partner.email,
       telegram: partner.telegram,

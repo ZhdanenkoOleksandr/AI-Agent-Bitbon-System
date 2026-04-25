@@ -11,10 +11,12 @@
 
 const TelegramBot = require('node-telegram-bot-api');
 
-const BOT_TOKEN      = process.env.TELEGRAM_BOT_TOKEN;
-const BOT_USERNAME   = process.env.TELEGRAM_BOT_USERNAME; // без @, напр: BitbonPartnerBot
-const ADMIN_CHAT_ID  = process.env.TELEGRAM_ADMIN_CHAT_ID;
-const SHEETS_WEBHOOK = process.env.GOOGLE_SHEETS_WEBHOOK;
+const BOT_TOKEN        = process.env.TELEGRAM_BOT_TOKEN;
+const BOT_USERNAME     = process.env.TELEGRAM_BOT_USERNAME; // без @, напр: BitbonPartnerBot
+const ADMIN_CHAT_ID    = process.env.TELEGRAM_ADMIN_CHAT_ID;
+const SHEETS_WEBHOOK   = process.env.GOOGLE_SHEETS_WEBHOOK;
+const ADMIN_USERNAME   = process.env.ADMIN_USERNAME || '@VikingOLZ';
+const ADMIN_PASSWORD   = process.env.ADMIN_PASSWORD || 'admin123';
 
 const PLAN_LABELS = {
   starter: '🌱 Стартер — 10 BB/мес (100 запросов)',
@@ -34,6 +36,10 @@ const PLAN_KEYBOARD = {
 
 // Сессии регистрации: { chatId: { token, step, data } }
 const sessions = {};
+
+// Admin sessions: { chatId: { step, attempts } }
+// step: 'password' = ожидает пароля
+const adminSessions = {};
 
 // Шаги сбора данных после deep link
 const STEPS = ['firstName', 'lastName', 'email', 'phone'];
@@ -219,6 +225,30 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     );
   });
 
+  // ── /login (для админа) ────────────────────────────────────────────
+  bot.onText(/\/login/, (msg) => {
+    const chatId = msg.chat.id;
+    const username = msg.from.username ? '@' + msg.from.username : null;
+
+    // Проверка username админа
+    if (!username || username.toLowerCase() !== ADMIN_USERNAME.toLowerCase()) {
+      bot.sendMessage(chatId,
+        `❌ *Вход запрещён.*\n\n` +
+        `Эта команда доступна только для администратора.`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    // Начать сессию ввода пароля
+    adminSessions[chatId] = { step: 'password', attempts: 0 };
+    bot.sendMessage(chatId,
+      `🔐 *Введите пароль администратора:*\n\n` +
+      `(У вас есть 3 попытки)`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
   // ── Выбор пакета (inline keyboard) ────────────────────────────────
   bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
@@ -239,6 +269,60 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     const text = msg.text?.trim();
     if (!text || text.startsWith('/')) return;
 
+    // ── Проверка админ сессии (ввод пароля) ──────────────────────────
+    const adminSess = adminSessions[chatId];
+    if (adminSess && adminSess.step === 'password') {
+      if (text === ADMIN_PASSWORD) {
+        // Пароль верный — генерируем admin web_token
+        delete adminSessions[chatId];
+
+        const webToken = generateWebToken();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        const adminUsername = msg.from.username ? '@' + msg.from.username : '@admin';
+
+        db.webTokens[webToken] = {
+          username: adminUsername,
+          isAdmin: true,
+          createdAt: new Date().toISOString(),
+          expiresAt: expiresAt.toISOString()
+        };
+        persistWebTokens();
+
+        const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+        const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(adminUsername)}&role=admin`;
+
+        bot.sendMessage(chatId,
+          `✅ *Добро пожаловать, Администратор!*\n\n` +
+          `⏱️ Ссылка действует 10 минут\n\n`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: '🔑 Войти в админ панель', url: loginUrl }]
+              ]
+            }
+          }
+        );
+      } else {
+        // Пароль неверный
+        adminSess.attempts++;
+        if (adminSess.attempts >= 3) {
+          delete adminSessions[chatId];
+          bot.sendMessage(chatId, `❌ Исчерпаны попытки входа. Используйте /login для нового входа.`);
+        } else {
+          const remaining = 3 - adminSess.attempts;
+          bot.sendMessage(chatId,
+            `❌ *Неверный пароль.*\n\n` +
+            `Осталось попыток: ${remaining}\n\n` +
+            `Введите пароль:`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+      }
+      return;
+    }
+
+    // ── Регулярная сессия партнёра ────────────────────────────────────
     const sess = sessions[chatId];
     if (!sess || typeof sess.step === 'string') return; // ждём inline keyboard
 

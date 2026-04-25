@@ -1019,6 +1019,48 @@ textarea::placeholder{color:var(--text3)}
   </div>
 </div>
 
+<!-- ═══ ADMIN OVERLAY ═══ -->
+<div class="overlay hidden" id="admin-overlay">
+  <div class="modal" style="max-width:720px">
+    <button class="close-btn" onclick="closeAdmin()">×</button>
+    <div class="modal-title">⚙️ Панель администратора</div>
+    <div class="modal-sub" id="admin-username">Управление системой Bitbon</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:20px;margin-bottom:20px">
+      <div class="stat-box">
+        <div class="stat-val" id="admin-stat-partners">0</div>
+        <div class="stat-label">Партнёров</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="admin-stat-users">0</div>
+        <div class="stat-label">Пользователей</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="admin-stat-sessions">0</div>
+        <div class="stat-label">Активных сессий</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="font-weight:600;color:var(--accent2);margin-bottom:12px;font-size:14px">📊 Быстрые действия</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button class="form-btn" onclick="ask('Покажи список всех партнёров с деталями')">📋 Список партнёров</button>
+        <button class="form-btn" onclick="ask('Какая статистика запросов за последние 7 дней?')">📈 Статистика</button>
+        <button class="form-btn" onclick="ask('Покажи активные сессии пользователей')">👥 Активные сессии</button>
+        <button class="form-btn" onclick="ask('Статус системы - все ли компоненты работают?')">✅ Статус</button>
+      </div>
+    </div>
+
+    <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:16px">
+      <div style="font-weight:600;color:var(--purple);margin-bottom:12px;font-size:14px">🔐 Управление</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="form-btn" onclick="ask('Создай новый тестовый партнёр с активным статусом')" style="flex:1;min-width:150px">➕ Новый партнёр</button>
+        <button class="form-btn" onclick="adminLogout()" style="flex:1;min-width:150px;background:rgba(239,68,68,0.15);color:var(--red)">🚪 Выход</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ APP ═══ -->
 <div class="app">
   <!-- SIDEBAR -->
@@ -1069,6 +1111,7 @@ textarea::placeholder{color:var(--text3)}
         <button id="hbtn-partner" class="header-btn" onclick="openRegister()" title="Зарегистрировать партнёра" style="border-color:rgba(139,92,246,0.4);color:var(--purple)">🤝 Партнёр</button>
         <button id="hbtn-meta" class="header-btn meta-btn" onclick="startMetaWizard()">🏗️ Метаресурс</button>
         <button id="hbtn-cabinet" class="header-btn cabinet-btn" onclick="openCabinet()">🏛️ Кабинет</button>
+        <button id="hbtn-admin" class="header-btn" onclick="openAdmin()" style="border-color:rgba(239,68,68,0.4);color:var(--red);display:none">🔧 Админ</button>
         <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
       </div>
@@ -1356,16 +1399,18 @@ function closeModeSwitch() {
 // ── Показать/скрыть кнопки хедера в зависимости от режима ─────────────
 function updateHeaderButtons(mode) {
   var s = loadClientSettings();
+  // admin:   только админ-панель
   // partner: всё видно
   // business: метаресурс + economy/brand по настройкам
   // user:    только economy/brand по настройкам
   var show = {
-    'hbtn-economy': mode === 'partner' || (mode === 'business' && s.showEconomy) || (mode === 'user' && s.showEconomy),
-    'hbtn-brand':   mode === 'partner' || (mode === 'business' && s.showBrand)   || (mode === 'user' && s.showBrand),
+    'hbtn-economy': mode !== 'admin' && (mode === 'partner' || (mode === 'business' && s.showEconomy) || (mode === 'user' && s.showEconomy)),
+    'hbtn-brand':   mode !== 'admin' && (mode === 'partner' || (mode === 'business' && s.showBrand)   || (mode === 'user' && s.showBrand)),
     'hbtn-client':  false,
     'hbtn-partner': false,
-    'hbtn-meta':    mode === 'partner' || ((mode === 'business' || mode === 'user') && s.showMeta),
-    'hbtn-cabinet': mode === 'partner'
+    'hbtn-meta':    mode !== 'admin' && (mode === 'partner' || ((mode === 'business' || mode === 'user') && s.showMeta)),
+    'hbtn-cabinet': mode === 'partner',
+    'hbtn-admin':   mode === 'admin'
   };
   Object.keys(show).forEach(function(id) {
     var el = document.getElementById(id);
@@ -1385,7 +1430,11 @@ function switchLevel(level) {
   userMode = level;
 
   // Update level and suggestions
-  if (level === 'partner') {
+  if (level === 'admin') {
+    userLevel = 'admin';
+    updateSuggestionsBar('admin');
+    addMessage('bot', '⚙️ Добро пожаловать, **Администратор**. Перейдите на панель управления по кнопке 🔧 Админ.', null, false);
+  } else if (level === 'partner') {
     userLevel = 'expert';
     updateSuggestionsBar('business');
     addMessage('bot', '🤝 Вы переключились на режим **Партнёра**. Нажмите кнопку 🏛️ Кабинет для управления API и подписками.', null, false);
@@ -1401,7 +1450,7 @@ function switchLevel(level) {
 
   // Update badge
   var badge = document.getElementById('level-badge');
-  badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
+  badge.textContent = level === 'admin' ? '⚙️ Администратор' : level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
   badge.style.display = 'inline-flex';
 
   // Update header buttons visibility
@@ -1416,7 +1465,14 @@ function switchLevel(level) {
 
 function updateSuggestionsBar(mode) {
   var bar = document.getElementById('suggestions-bar');
-  if (mode === 'business') {
+  if (mode === 'admin') {
+    bar.innerHTML =
+      '<button class="suggestion-btn" onclick="ask(\'Покажи статистику пользователей\')">📊 Статистика</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'Список всех партнёров\')">🤝 Партнёры</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'Проверить статус системы\')">✅ Статус</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'Последние логи\')">📋 Логи</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'Список активных сессий\')">👥 Сессии</button>';
+  } else if (mode === 'business') {
     bar.innerHTML =
       '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">🏗️ Создать Метаресурс</button>' +
       '<button class="suggestion-btn biz-suggest" onclick="ask(\'Как подключить бизнес к Bitbon?\')">Подключить бизнес</button>' +
@@ -1587,6 +1643,29 @@ function openCabinet() {
   loadClientSettings();
 }
 function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
+
+// ═══ ADMIN PANEL ═══
+function openAdmin() {
+  var user = localStorage.getItem('user');
+  if (user) {
+    try {
+      var userData = JSON.parse(user);
+      document.getElementById('admin-username').textContent = 'Вход как ' + (userData.username || userData.fullName);
+    } catch(e) {}
+  }
+  // Update stats (in a real app, these would come from API)
+  document.getElementById('admin-stat-partners').textContent = '—';
+  document.getElementById('admin-stat-users').textContent = '—';
+  document.getElementById('admin-stat-sessions').textContent = '—';
+  document.getElementById('admin-overlay').classList.remove('hidden');
+}
+function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); }
+function adminLogout() {
+  localStorage.removeItem('jwt');
+  localStorage.removeItem('user');
+  localStorage.removeItem('role');
+  window.location.href = '/';
+}
 
 var CAB_TABS = ['info','payment','plans','economy','brand','tools'];
 function switchCabTab(tab) {
@@ -1794,11 +1873,13 @@ function getFetchOptions(method, body) {
       if (d.success) {
         // Store JWT session token
         localStorage.setItem('jwt', d.jwt);
-        // Store user data
+        // Store user data and role
         localStorage.setItem('user', JSON.stringify(d.user));
-        // Clean URL and redirect to cabinet
-        window.history.replaceState({}, document.title, '/cabinet');
-        window.location.href = '/cabinet';
+        localStorage.setItem('role', d.user.role || 'partner');
+        // Clean URL and redirect based on role
+        var redirectPath = (d.user.role === 'admin') ? '/admin' : '/cabinet';
+        window.history.replaceState({}, document.title, redirectPath);
+        window.location.href = redirectPath;
       } else {
         console.error('Telegram auth failed:', d.error);
         alert('❌ ' + (d.error || 'Ошибка при входе'));
@@ -1818,11 +1899,16 @@ function getFetchOptions(method, body) {
   if (stored) {
     jwtToken = stored;
     var userData = localStorage.getItem('user');
+    var userRole = localStorage.getItem('role');
     if (userData) {
       try {
         var user = JSON.parse(userData);
+        // Set admin mode if this is an admin
+        if (userRole === 'admin') {
+          switchLevel('admin');
+        }
         // Set partner mode if this is a partner
-        if (user && (user.status === 'active' || user.packageType)) {
+        else if (user && (user.status === 'active' || user.packageType)) {
           switchLevel('partner');
         }
       } catch(e) {}
