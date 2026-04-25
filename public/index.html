@@ -641,11 +641,6 @@ textarea::placeholder{color:var(--text3)}
       <span class="level-icon">🤝</span>
       <div><div class="level-card-title">Стать Партнёром</div><div class="level-card-desc">Зарегистрироваться, получить API и зарабатывать с Bitbon</div></div>
     </button>
-    <hr class="level-divider">
-    <button class="level-card" onclick="openAdminLogin()">
-      <span class="level-icon">🔐</span>
-      <div><div class="level-card-title">Вход Администратора</div><div class="level-card-desc">Вход в кабинет с паролем администратора</div></div>
-    </button>
   </div>
   <div class="level-note">Партнёры Системы Bitbon получают API-доступ к AI агенту для своих клиентов</div>
 </div>
@@ -1127,6 +1122,7 @@ textarea::placeholder{color:var(--text3)}
       <div class="header-right">
         <span class="level-badge" id="level-badge" style="display:none"></span>
         <span class="req-counter" id="req-counter" style="display:none"></span>
+        <button id="hbtn-admin-login" class="header-btn" onclick="openAdminLogin()" title="Вход администратора" style="display:none;border-color:rgba(220,38,38,0.4);color:#dc2626">🔐 Вход</button>
         <button id="hbtn-economy" class="header-btn" onclick="window.location.href='https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app'" title="Viking Economy калькулятор">📈 Экономика</button>
         <button id="hbtn-brand" class="header-btn" onclick="window.location.href='https://parner.vercel.app/ru'" title="Личный бренд партнёра">👤 Бренд</button>
         <button id="hbtn-client" class="header-btn" onclick="openShareClient()" title="Поделиться с клиентом" style="border-color:rgba(16,185,129,0.4);color:var(--green)">👤 Клиент</button>
@@ -1398,6 +1394,7 @@ function setLevel(level) {
 
   // Update header buttons visibility
   updateHeaderButtons(level);
+  updateAdminLoginButton();
 
   // Load knowledge base
   loadKnowledgeBase();
@@ -1936,9 +1933,20 @@ function getFetchOptions(method, body) {
       } catch(e) {}
     }
   }
+  // Update admin login button visibility
+  updateAdminLoginButton();
 })();
 
 // ── Admin Cabinet Login ────────────────────────────────────────────────
+function updateAdminLoginButton() {
+  var btn = document.getElementById('hbtn-admin-login');
+  var levelScreen = document.getElementById('level-screen');
+  if (btn && levelScreen) {
+    // Показываем кнопку ВХОД только если виден экран уровней и пользователь не залогинен
+    btn.style.display = (!levelScreen.classList.contains('hidden') && !jwtToken) ? 'block' : 'none';
+  }
+}
+
 function openAdminLogin() {
   var overlay = document.getElementById('admin-login-overlay');
   if (overlay) {
@@ -1981,6 +1989,8 @@ function adminCabinetLogin() {
         localStorage.setItem('role', 'admin');
         // Set jwtToken for API calls
         jwtToken = d.jwt;
+        // Update button visibility
+        updateAdminLoginButton();
         // Close overlay and redirect to admin panel
         closeAdminLogin();
         window.location.href = '/admin';
