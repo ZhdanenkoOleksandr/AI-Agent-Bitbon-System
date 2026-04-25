@@ -469,48 +469,48 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     }
 
     // ── Регулярная сессия партнёра ────────────────────────────────────
-    const sess = sessions[chatId];
+    const partnerSess = sessions[chatId];
 
-    console.log(`📌 [BOT] Session check: exists=${!!sess}, step=${sess?.step}, type=${typeof sess?.step}`);
+    console.log(`📌 [BOT] Session check: exists=${!!partnerSess}, step=${partnerSess?.step}, type=${typeof partnerSess?.step}`);
 
-    if (!sess) {
+    if (!partnerSess) {
       console.log(`❌ [BOT] No session found for chat ${chatId}. Active sessions:`, Object.keys(sessions));
       return;
     }
 
-    if (typeof sess.step === 'string') {
+    if (typeof partnerSess.step === 'string') {
       console.log(`⏸️  [BOT] Waiting for inline keyboard callback, not processing text input`);
       return; // ждём inline keyboard
     }
 
-    const field = STEPS[sess.step];
-    console.log(`📋 [BOT] Processing field: ${field} (step ${sess.step}/${STEPS.length})`);
+    const field = STEPS[partnerSess.step];
+    console.log(`📋 [BOT] Processing field: ${field} (step ${partnerSess.step}/${STEPS.length})`);
 
     if (!field) {
-      console.log(`⚠️  [BOT] No field for step ${sess.step}`);
+      console.log(`⚠️  [BOT] No field for step ${partnerSess.step}`);
       return;
     }
 
     // Пропуск необязательных полей
     if (text === '.' && field === 'phone') {
-      sess.data.phone = '';
+      partnerSess.data.phone = '';
     } else {
       // Валидация email
       if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
         bot.sendMessage(chatId, '❌ Некорректный email. Попробуйте ещё раз:');
         return;
       }
-      sess.data[field] = text;
+      partnerSess.data[field] = text;
     }
 
-    sess.step++;
+    partnerSess.step++;
 
-    if (sess.step < STEPS.length) {
+    if (partnerSess.step < STEPS.length) {
       // Следующий шаг
-      bot.sendMessage(chatId, PROMPTS[STEPS[sess.step]], { parse_mode: 'Markdown' });
+      bot.sendMessage(chatId, PROMPTS[STEPS[partnerSess.step]], { parse_mode: 'Markdown' });
     } else {
       // Все поля заполнены — выбор пакета
-      sess.step = 'plan';
+      partnerSess.step = 'plan';
       bot.sendMessage(chatId, '📦 Выберите *пакет партнёра*:', { parse_mode: 'Markdown', ...PLAN_KEYBOARD });
     }
   });
