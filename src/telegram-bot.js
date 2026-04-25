@@ -76,21 +76,35 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     };
     persistWebTokens();
 
-    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    const siteUrl = (process.env.SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
     const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(normalizedUsername)}`;
+    const isLocalhost = siteUrl.includes('localhost') || siteUrl.includes('127.0.0.1');
 
-    const message = extraText
-      ? `${extraText}\n\n⏱️ Ссылка действует *10 минут*`
-      : `🎉 *Добро пожаловать!*\n\nНажмите кнопку ниже чтобы войти в кабинет.\n\n⏱️ Ссылка действует *10 минут*`;
+    const intro = extraText || `🎉 *Добро пожаловать!*`;
 
-    bot.sendMessage(chatId, message, {
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [[{ text: '🔑 Войти в кабинет', url: loginUrl }]]
-      }
-    });
+    if (isLocalhost) {
+      // Localhost: Telegram не принимает inline кнопки — шлём ссылку текстом
+      bot.sendMessage(chatId,
+        `${intro}\n\n` +
+        `🔑 Нажмите ссылку для входа в кабинет:\n` +
+        `${loginUrl}\n\n` +
+        `⏱️ Действует 10 минут`,
+        { parse_mode: 'Markdown' }
+      );
+    } else {
+      // Production (HTTPS) — inline кнопка
+      bot.sendMessage(chatId,
+        `${intro}\n\n⏱️ Ссылка действует *10 минут*`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[{ text: '🔑 Войти в кабинет', url: loginUrl }]]
+          }
+        }
+      );
+    }
 
-    console.log(`🔗 [BOT] Login link sent to ${normalizedUsername} (chat ${chatId})`);
+    console.log(`🔗 [BOT] Login link sent to ${normalizedUsername} (chat ${chatId}), localhost=${isLocalhost}`);
   }
 
   // ── /start с токеном (invite deep link из кабинета) ───────────────
