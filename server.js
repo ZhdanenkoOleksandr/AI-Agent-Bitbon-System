@@ -41,18 +41,20 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (() => {
 })();
 
 // ── MIDDLEWARE ────────────────────────────────────────────────────────
-// CSP: unsafe-inline required because frontend uses inline scripts/styles
+// CSP: frontend uses inline scripts, styles and event handlers extensively
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc:  ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net"],
-      styleSrc:   ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
-      fontSrc:    ["'self'", "fonts.gstatic.com"],
-      imgSrc:     ["'self'", "data:", "https:"],
-      connectSrc: ["'self'"],
-      objectSrc:  ["'none'"],
-      baseUri:    ["'self'"],
+      defaultSrc:    ["'self'"],
+      scriptSrc:     ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net"],
+      // Required for onclick/onkeydown/onfocus/etc. attributes throughout the frontend
+      scriptSrcAttr: ["'unsafe-inline'"],
+      styleSrc:      ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+      fontSrc:       ["'self'", "fonts.gstatic.com", "https:"],
+      imgSrc:        ["'self'", "data:", "https:"],
+      connectSrc:    ["'self'", "https:"],
+      objectSrc:     ["'none'"],
+      baseUri:       ["'self'"],
     }
   }
 }));
