@@ -754,6 +754,20 @@ textarea::placeholder{color:var(--text3)}
 </div>
 
 <!-- ═══ CABINET OVERLAY ═══ -->
+<!-- PIN Input Modal for Zero User -->
+<div class="overlay hidden" id="pin-modal-overlay">
+  <div class="modal" style="max-width:420px">
+    <button class="close-btn" onclick="closePinModal()">×</button>
+    <div class="modal-title">🔐 Введите PIN-код</div>
+    <div class="modal-sub" style="margin-bottom:20px">Для входа в кабинет введите PIN-код доступа</div>
+    <div class="form-group">
+      <input type="password" class="form-input" id="pin-input" placeholder="PIN-код" style="font-size:16px;letter-spacing:2px;text-align:center" onkeypress="if(event.key==='Enter') verifyPinCode()">
+    </div>
+    <div id="pin-error" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none"></div>
+    <button onclick="verifyPinCode()" class="form-btn primary">Войти</button>
+  </div>
+</div>
+
 <div class="overlay hidden" id="cabinet-overlay">
   <div class="modal" style="max-width:620px">
     <button class="close-btn" onclick="closeCabinet()">×</button>
@@ -1709,10 +1723,44 @@ async function submitPayment() {
 
 // ═══ CABINET ═══
 function openCabinet() {
+  var user = localStorage.getItem('user');
+  var userData = null;
+
+  if (user) {
+    try {
+      userData = JSON.parse(user);
+    } catch(e) {}
+  }
+
+  // Check if this is the zero user (@VikingOLZH) - require PIN verification
+  if (userData && userData.telegram && userData.telegram.toLowerCase() === '@vikingolzh') {
+    // Show PIN modal
+    document.getElementById('pin-modal-overlay').classList.remove('hidden');
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-error').style.display = 'none';
+    document.getElementById('pin-input').focus();
+    return;
+  }
+
+  // For other users, open cabinet directly
+  _openCabinetContent(userData);
+}
+
+function _openCabinetContent(userData) {
   updateCabinetStats();
   document.getElementById('cabinet-overlay').classList.remove('hidden');
+
+  // Show user's full name
+  var displayName = 'Кабинет партнёра';
+  if (userData && userData.firstName && userData.lastName) {
+    displayName = userData.firstName + ' ' + userData.lastName + ' · Партнёр Система Bitbon';
+  } else if (partnerInfo && partnerInfo.fullName) {
+    displayName = partnerInfo.fullName + ' · Партнёр Система Bitbon';
+  }
+
+  document.getElementById('cab-partner-name').textContent = displayName;
+
   if (partnerInfo) {
-    document.getElementById('cab-partner-name').textContent = partnerInfo.fullName + ' · Партнёр Система Bitbon';
     document.getElementById('pay-partner-id').value = partnerInfo.id || '';
   }
   // Fill share URL in tools tab
@@ -1720,6 +1768,40 @@ function openCabinet() {
   // Load toggle settings
   loadClientSettings();
 }
+
+function verifyPinCode() {
+  var pinInput = document.getElementById('pin-input').value;
+  var pinError = document.getElementById('pin-error');
+
+  // Correct PIN is 8387 (for zero user @VikingOLZH)
+  if (pinInput === '8387') {
+    // PIN is correct
+    document.getElementById('pin-modal-overlay').classList.add('hidden');
+
+    var user = localStorage.getItem('user');
+    var userData = null;
+    if (user) {
+      try {
+        userData = JSON.parse(user);
+      } catch(e) {}
+    }
+
+    _openCabinetContent(userData);
+  } else {
+    // PIN is wrong
+    pinError.textContent = '❌ Неверный PIN-код';
+    pinError.style.display = 'block';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+}
+
+function closePinModal() {
+  document.getElementById('pin-modal-overlay').classList.add('hidden');
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+}
+
 function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
 
 // ═══ ADMIN PANEL ═══
