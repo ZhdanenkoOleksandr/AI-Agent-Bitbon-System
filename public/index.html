@@ -1732,8 +1732,14 @@ function openCabinet() {
     } catch(e) {}
   }
 
+  // DEBUG: Check what's in localStorage
+  console.log('OpenCabinet - userData:', userData);
+  console.log('OpenCabinet - telegram field:', userData ? userData.telegram : 'no userData');
+  console.log('OpenCabinet - telegram lowercase:', userData && userData.telegram ? userData.telegram.toLowerCase() : 'N/A');
+
   // Check if this is the zero user (@VikingOLZH) - require PIN verification
   if (userData && userData.telegram && userData.telegram.toLowerCase() === '@vikingolzh') {
+    console.log('✓ PIN modal should show now');
     // Show PIN modal
     document.getElementById('pin-modal-overlay').classList.remove('hidden');
     document.getElementById('pin-input').value = '';
