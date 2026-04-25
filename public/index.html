@@ -1780,7 +1780,7 @@ async function submitPayment() {
 
 // ═══ CABINET ═══
 function openCabinet() {
-  var jwt = localStorage.getItem('jwt');
+  var jwt = sessionStorage.getItem('jwt');
 
   if (!jwt) {
     // JWT нет — показать модалку входа (Telegram или PIN)
@@ -1790,7 +1790,7 @@ function openCabinet() {
 
   // JWT есть — пользователь уже авторизован, открываем кабинет
   var userData = null;
-  try { userData = JSON.parse(localStorage.getItem('user')); } catch(e) {}
+  try { userData = JSON.parse(sessionStorage.getItem('user')); } catch(e) {}
   _openCabinetContent(userData);
 }
 
@@ -1826,7 +1826,7 @@ function verifyPinCode() {
     // PIN is correct
     document.getElementById('pin-modal-overlay').classList.add('hidden');
 
-    var user = localStorage.getItem('user');
+    var user = sessionStorage.getItem('user');
     var userData = null;
     if (user) {
       try {
@@ -1887,8 +1887,8 @@ function loginWithPin() {
   .then(function(data) {
     if (btn) { btn.textContent = 'Войти'; btn.disabled = false; }
     if (data.success && data.jwt) {
-      localStorage.setItem('jwt', data.jwt);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      sessionStorage.setItem('jwt', data.jwt);
+      sessionStorage.setItem('user', JSON.stringify(data.user));
       jwtToken = data.jwt;
       closeLoginModal();
       // Войти в кабинет
@@ -1910,7 +1910,7 @@ function loginWithPin() {
 
 // ═══ ADMIN PANEL ═══
 function openAdmin() {
-  var user = localStorage.getItem('user');
+  var user = sessionStorage.getItem('user');
   if (user) {
     try {
       var userData = JSON.parse(user);
@@ -1991,15 +1991,15 @@ function loadAdminStats() {
 
 function adminLogout() {
   if (confirm('Вы уверены? Это завершит вашу сессию администратора.')) {
-    localStorage.removeItem('jwt');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('jwt');
+    sessionStorage.removeItem('user');
     localStorage.removeItem('role');
     window.location.href = '/';
   }
 }
 function adminLogout() {
-  localStorage.removeItem('jwt');
-  localStorage.removeItem('user');
+  sessionStorage.removeItem('jwt');
+  sessionStorage.removeItem('user');
   localStorage.removeItem('role');
   window.location.href = '/';
 }
@@ -2209,9 +2209,9 @@ function getFetchOptions(method, body) {
     .then(function(d) {
       if (d.success) {
         // Store JWT session token
-        localStorage.setItem('jwt', d.jwt);
+        sessionStorage.setItem('jwt', d.jwt);
         // Store user data and role
-        localStorage.setItem('user', JSON.stringify(d.user));
+        sessionStorage.setItem('user', JSON.stringify(d.user));
         localStorage.setItem('role', d.user.role || 'partner');
         // Clean URL and redirect based on role
         var redirectPath = (d.user.role === 'admin') ? '/admin' : '/cabinet';
@@ -2232,10 +2232,10 @@ function getFetchOptions(method, body) {
 
 // ── Initialize JWT from localStorage on page load ───────────────────────
 (function initJWT() {
-  var stored = localStorage.getItem('jwt');
+  var stored = sessionStorage.getItem('jwt');
   if (stored) {
     jwtToken = stored;
-    var userData = localStorage.getItem('user');
+    var userData = sessionStorage.getItem('user');
     var userRole = localStorage.getItem('role');
     if (userData) {
       try {
@@ -2301,9 +2301,9 @@ function adminCabinetLogin() {
     .then(function(d) {
       if (d.success) {
         // Store JWT session token
-        localStorage.setItem('jwt', d.jwt);
+        sessionStorage.setItem('jwt', d.jwt);
         // Store user data and role
-        localStorage.setItem('user', JSON.stringify(d.user));
+        sessionStorage.setItem('user', JSON.stringify(d.user));
         localStorage.setItem('role', 'admin');
         // Set jwtToken for API calls
         jwtToken = d.jwt;
