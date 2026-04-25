@@ -18,6 +18,12 @@ const SHEETS_WEBHOOK   = process.env.GOOGLE_SHEETS_WEBHOOK;
 const ADMIN_USERNAME   = process.env.ADMIN_USERNAME || '@VikingOLZ';
 const ADMIN_PASSWORD   = process.env.ADMIN_PASSWORD || 'admin123';
 
+// Данные нулевого пользователя (для PIN верификации)
+const ZERO_USER_TELEGRAM = process.env.ZERO_USER_TELEGRAM || '@VikingOLZH';
+const ZERO_USER_PIN      = process.env.ZERO_USER_PIN || '8387';
+const ZERO_USER_EMAIL    = process.env.ZERO_USER_EMAIL || 'Alex.zhdanenko@gmail.com';
+const ZERO_USER_PHONE    = process.env.ZERO_USER_PHONE || '+380969519149';
+
 const PLAN_LABELS = {
   starter: '🌱 Стартер — 10 BB/мес (100 запросов)',
   pro:     '📖 Про — 50 BB/мес (500 запросов)',
@@ -142,33 +148,43 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     );
 
     if (existingPartner && existingPartner.status === 'active') {
-      // Уже активирован — генерировать web_token для входа в кабинет
-      const webToken = generateWebToken();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 минут
+      // Уже активирован — проверяем нужна ли PIN верификация (для нулевого пользователя)
+      if (username.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()) {
+        // Нулевой пользователь — требуем PIN код
+        sessions[chatId] = { step: 'pin_verification', username, attempts: 0 };
+        bot.sendMessage(chatId,
+          `🔐 *Введите PIN-код доступа к кабинету:*`,
+          { parse_mode: 'Markdown' }
+        );
+      } else {
+        // Обычный партнёр — генерируем web_token сразу
+        const webToken = generateWebToken();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 минут
 
-      db.webTokens[webToken] = {
-        username: username.startsWith('@') ? username : '@' + username,
-        createdAt: new Date().toISOString(),
-        expiresAt: expiresAt.toISOString()
-      };
-      persistWebTokens();
+        db.webTokens[webToken] = {
+          username: username.startsWith('@') ? username : '@' + username,
+          createdAt: new Date().toISOString(),
+          expiresAt: expiresAt.toISOString()
+        };
+        persistWebTokens();
 
-      // Отправить inline кнопку для входа на сайт
-      const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
-      const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(username)}`;
+        // Отправить inline кнопку для входа на сайт
+        const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+        const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(username)}`;
 
-      bot.sendMessage(chatId,
-        `🎉 *Добро пожаловать!* Нажмите кнопку ниже чтобы войти в личный кабинет.\n\n` +
-        `⏱️ Ссылка действует 10 минут`,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: '🔑 Войти в кабинет', url: loginUrl }]
-            ]
+        bot.sendMessage(chatId,
+          `🎉 *Добро пожаловать!* Нажмите кнопку ниже чтобы войти в личный кабинет.\n\n` +
+          `⏱️ Ссылка действует 10 минут`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: '🔑 Войти в кабинет', url: loginUrl }]
+              ]
+            }
           }
-        }
-      );
+        );
+      }
     } else if (existingPartner) {
       // Есть партнёр, но статус не активен — показать статус
       bot.sendMessage(chatId,
@@ -344,6 +360,58 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
 
     if (!text || text.startsWith('/')) {
       console.log(`⏭️  [BOT] Skipping: empty text or command`);
+      return;
+    }
+
+    // ── Проверка PIN верификации (для нулевого пользователя) ─────────
+    const sess = sessions[chatId];
+    if (sess && sess.step === 'pin_verification') {
+      if (text === ZERO_USER_PIN) {
+        // PIN верный — генерируем web_token для нулевого пользователя
+        delete sessions[chatId];
+
+        const webToken = generateWebToken();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        const username = sess.username;
+
+        db.webTokens[webToken] = {
+          username: username.startsWith('@') ? username : '@' + username,
+          createdAt: new Date().toISOString(),
+          expiresAt: expiresAt.toISOString()
+        };
+        persistWebTokens();
+
+        const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+        const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(username)}`;
+
+        bot.sendMessage(chatId,
+          `✅ *PIN верен!* Нажмите кнопку ниже чтобы войти в личный кабинет.\n\n` +
+          `⏱️ Ссылка действует 10 минут`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: '🔑 Войти в кабинет', url: loginUrl }]
+              ]
+            }
+          }
+        );
+      } else {
+        // PIN неверный
+        sess.attempts++;
+        if (sess.attempts >= 3) {
+          delete sessions[chatId];
+          bot.sendMessage(chatId, `❌ Исчерпаны попытки входа. Используйте /start для нового входа.`);
+        } else {
+          const remaining = 3 - sess.attempts;
+          bot.sendMessage(chatId,
+            `❌ *Неверный PIN-код.*\n\n` +
+            `Осталось попыток: ${remaining}\n\n` +
+            `Введите PIN-код:`,
+            { parse_mode: 'Markdown' }
+          );
+        }
+      }
       return;
     }
 
