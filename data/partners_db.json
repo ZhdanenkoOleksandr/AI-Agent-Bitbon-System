@@ -131,5 +131,27 @@
     "activatedAt": null,
     "expiresAt": null,
     "source": "cabinet_invite"
+  },
+  "prt_bef5592bb42a4d30": {
+    "id": "prt_bef5592bb42a4d30",
+    "firstName": "",
+    "lastName": "",
+    "email": "",
+    "telegram": "@VikingOLZ",
+    "phone": "",
+    "walletAddress": "",
+    "inviteToken": "e1d96e5dc3ac4cdda942",
+    "telegramChatId": null,
+    "status": "invited",
+    "packageType": null,
+    "apiKey": null,
+    "requestsLimit": 0,
+    "requestsUsed": 0,
+    "metaresourcesLimit": 0,
+    "metaresourcesUsed": 0,
+    "createdAt": "2026-04-25T13:35:16.559Z",
+    "activatedAt": null,
+    "expiresAt": null,
+    "source": "cabinet_invite"
   }
 }

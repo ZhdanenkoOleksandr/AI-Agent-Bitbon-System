@@ -26,7 +26,11 @@
       "Bash(lsof -ti:3000)",
       "Bash(xargs kill:*)",
       "Bash(npm start:*)",
-      "Bash(curl -s http://localhost:3000)"
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/api/auth/web-token?wt=test)",
+      "Bash(curl -s 'http://localhost:3000/api/auth/web-token?wt=test')",
+      "Bash(curl -s 'http://localhost:3000/')"
     ],
     "additionalDirectories": [
       "/tmp/Expert-colorist/src/components",
