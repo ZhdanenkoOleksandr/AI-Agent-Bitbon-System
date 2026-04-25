@@ -2,27 +2,24 @@
 // Bitbon Partner — Telegram Registration Bot
 //
 // FLOW:
-// 1. Кабинет создаёт предварительную запись партнёра (status: invited)
-// 2. Кабинет показывает deep link: t.me/BOT?start=TOKEN
-// 3. Клиент нажимает ссылку → бот пишет первым → собирает данные
-// 4. Данные сохраняются в DB + Google Sheets
-// 5. Админ получает уведомление в Telegram
+// 1. Нулевой партнёр (@VikingOLZH): /start → PIN → кабинет
+// 2. Новый партнёр: /start → регистрация (имя, email, телефон, пакет)
+// 3. Приглашённый: /start TOKEN → регистрация по invite-токену
+// 4. Активный партнёр: /start → ссылка для входа
 // ══════════════════════════════════════════════════════════════════════
 
 const TelegramBot = require('node-telegram-bot-api');
 
 const BOT_TOKEN        = process.env.TELEGRAM_BOT_TOKEN;
-const BOT_USERNAME     = process.env.TELEGRAM_BOT_USERNAME; // без @, напр: BitbonPartnerBot
+const BOT_USERNAME     = process.env.TELEGRAM_BOT_USERNAME;
 const ADMIN_CHAT_ID    = process.env.TELEGRAM_ADMIN_CHAT_ID;
 const SHEETS_WEBHOOK   = process.env.GOOGLE_SHEETS_WEBHOOK;
-const ADMIN_USERNAME   = process.env.ADMIN_USERNAME || '@VikingOLZ';
-const ADMIN_PASSWORD   = process.env.ADMIN_PASSWORD || 'admin123';
 
-// Данные нулевого пользователя (для PIN верификации)
+// Нулевой пользователь — фиксированный администратор
 const ZERO_USER_TELEGRAM = process.env.ZERO_USER_TELEGRAM || '@VikingOLZH';
-const ZERO_USER_PIN      = process.env.ZERO_USER_PIN || '8387';
-const ZERO_USER_EMAIL    = process.env.ZERO_USER_EMAIL || 'Alex.zhdanenko@gmail.com';
-const ZERO_USER_PHONE    = process.env.ZERO_USER_PHONE || '+380969519149';
+const ZERO_USER_PIN      = process.env.ZERO_USER_PIN      || '8387';
+const ZERO_USER_EMAIL    = process.env.ZERO_USER_EMAIL    || 'Alex.zhdanenko@gmail.com';
+const ZERO_USER_PHONE    = process.env.ZERO_USER_PHONE    || '+380969519149';
 
 const PLAN_LABELS = {
   starter: '🌱 Стартер — 10 BB/мес (100 запросов)',
@@ -40,14 +37,7 @@ const PLAN_KEYBOARD = {
   }
 };
 
-// Сессии регистрации: { chatId: { token, step, data } }
-const sessions = {};
-
-// Admin sessions: { chatId: { step, attempts } }
-// step: 'password' = ожидает пароля
-const adminSessions = {};
-
-// Шаги сбора данных после deep link
+// Шаги регистрации
 const STEPS = ['firstName', 'lastName', 'email', 'phone'];
 const PROMPTS = {
   firstName: '👤 Введите ваше *Имя*:',
@@ -55,6 +45,10 @@ const PROMPTS = {
   email:     '📧 Введите *Email*:',
   phone:     '📱 Введите *телефон* (или отправьте . чтобы пропустить):'
 };
+
+// Сессии в памяти: chatId → { step, ... }
+// step: 'pin_verification' | 'pin_setup' | 0..3 | 'plan'
+const sessions = {};
 
 let botInstance = null;
 
@@ -69,236 +63,264 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
   botInstance = bot;
   console.log('🤖 Telegram бот запущен');
 
-  // ── /start с токеном (deep link из кабинета) ───────────────────────
+  // ── Вспомогательная: сгенерировать и отправить ссылку для входа ────
+  function sendLoginLink(chatId, username, extraText) {
+    const webToken = generateWebToken();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const normalizedUsername = username.startsWith('@') ? username : '@' + username;
+
+    db.webTokens[webToken] = {
+      username: normalizedUsername,
+      createdAt: new Date().toISOString(),
+      expiresAt: expiresAt.toISOString()
+    };
+    persistWebTokens();
+
+    const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
+    const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(normalizedUsername)}`;
+
+    const message = extraText
+      ? `${extraText}\n\n⏱️ Ссылка действует *10 минут*`
+      : `🎉 *Добро пожаловать!*\n\nНажмите кнопку ниже чтобы войти в кабинет.\n\n⏱️ Ссылка действует *10 минут*`;
+
+    bot.sendMessage(chatId, message, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [[{ text: '🔑 Войти в кабинет', url: loginUrl }]]
+      }
+    });
+
+    console.log(`🔗 [BOT] Login link sent to ${normalizedUsername} (chat ${chatId})`);
+  }
+
+  // ── /start с токеном (invite deep link из кабинета) ───────────────
   bot.onText(/\/start (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const token  = match[1];
 
-    console.log(`🔗 [BOT] /start received with token: ${token.substring(0, 10)}... from chat ${chatId}`);
-    console.log(`📋 [BOT] Looking up partner with inviteToken...`);
-    console.log(`📊 [BOT] Total partners in DB: ${Object.keys(db.partners).length}`);
+    // Если это нулевой пользователь с токеном — игнорируем токен, используем PIN flow
+    const username = msg.from.username ? '@' + msg.from.username : null;
+    if (username && username.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()) {
+      handleZeroUserStart(chatId, msg);
+      return;
+    }
 
-    // Debug: log all inviteTokens
-    const allTokens = Object.values(db.partners).map(p => ({ id: p.id, token: p.inviteToken?.substring(0, 10), status: p.status }));
-    console.log(`🔑 [BOT] Available tokens:`, allTokens);
+    console.log(`🔗 [BOT] /start with invite token from chat ${chatId}`);
 
-    // Найти приглашение по токену
     const partner = Object.values(db.partners).find(p => p.inviteToken === token);
 
     if (!partner) {
-      console.log(`❌ [BOT] Partner NOT found for token: ${token}`);
       bot.sendMessage(chatId,
         `❌ *Ссылка устарела или недействительна.*\n\n` +
-        `Возможные причины:\n` +
-        `• Ссылка была создана давно и сервер перезапустился\n` +
-        `• Ссылка уже была использована\n\n` +
-        `📌 *Что делать:* попросите менеджера создать новое приглашение в кабинете (кнопка 🤝 Партнёр).`,
+        `Попросите администратора создать новое приглашение.`,
         { parse_mode: 'Markdown' }
       );
       return;
     }
 
-    console.log(`✅ [BOT] Partner found: ${partner.id}, status: ${partner.status}`);
-
-    // Если уже зарегистрирован — не начинать заново
     if (partner.status !== 'invited') {
-      console.log(`⚠️  [BOT] Partner already registered with status: ${partner.status}`);
-      bot.sendMessage(chatId,
-        `ℹ️ Вы уже зарегистрированы!\n\nИспользуйте /status для проверки статуса.`
-      );
+      if (partner.status === 'active') {
+        sendLoginLink(chatId, partner.telegram || username || ('@' + msg.from.username));
+      } else {
+        bot.sendMessage(chatId, `ℹ️ Статус вашей заявки: *${partner.status}*\n\nИспользуйте /status для подробностей.`, { parse_mode: 'Markdown' });
+      }
       return;
     }
 
-    // Сохранить chat_id к партнёру
+    // Сохранить chatId
     partner.telegramChatId = String(chatId);
-    partner.telegram = msg.from.username ? '@' + msg.from.username : partner.telegram;
+    if (msg.from.username) {
+      partner.telegram = '@' + msg.from.username;
+    }
     persistData();
 
-    // Начать сбор данных
-    sessions[chatId] = { token, partnerId: partner.id, step: 0, data: {} };
-    console.log(`📝 [BOT] Session created for chat ${chatId}, step 0`);
+    sessions[chatId] = { token, partnerId: partner.id, step: 0, data: {}, isInvited: true };
+    console.log(`📝 [BOT] Invited registration started for partner ${partner.id}`);
 
     bot.sendMessage(chatId,
       `👋 Привет, *${msg.from.first_name || 'партнёр'}*!\n\n` +
       `Вас приглашают стать партнёром *Системы Bitbon* 🌐\n\n` +
-      `Я задам несколько вопросов для оформления регистрации.\n` +
-      `Отмена: /cancel\n\n` +
+      `Заполним данные для регистрации. Отмена: /cancel\n\n` +
       PROMPTS.firstName,
       { parse_mode: 'Markdown' }
     );
   });
 
-  // ── /start без токена — либо вход, либо НУЛЕВАЯ РЕГИСТРАЦИЯ ───────────
+  // ── /start без токена ─────────────────────────────────────────────
   bot.onText(/\/start$/, (msg) => {
     const chatId = msg.chat.id;
+    handleStart(chatId, msg);
+  });
+
+  function handleStart(chatId, msg) {
     const username = msg.from.username ? '@' + msg.from.username : null;
 
+    // ── Нет @username ──────────────────────────────────────────────
     if (!username) {
       bot.sendMessage(chatId,
-        `❌ *Ошибка:* У вас не установлено имя пользователя (@username) в Telegram.\n\n` +
-        `Пожалуйста, установите имя пользователя в настройках аккаунта и попробуйте снова.`,
+        `❌ *Ошибка:* У вас не установлен @username в Telegram.\n\n` +
+        `Установите имя пользователя в настройках и попробуйте снова.`,
         { parse_mode: 'Markdown' }
       );
       return;
     }
 
-    // Проверить есть ли уже активный партнёр с этим username
-    const existingPartner = Object.values(db.partners).find(
-      p => p.telegram === username || p.telegram === username.substring(1)
+    // ── Нулевой пользователь (администратор) ──────────────────────
+    if (username.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()) {
+      handleZeroUserStart(chatId, msg);
+      return;
+    }
+
+    // ── Поиск партнёра по username ────────────────────────────────
+    const existingPartner = Object.values(db.partners).find(p =>
+      p.telegram && p.telegram.toLowerCase() === username.toLowerCase()
     );
 
-    if (existingPartner && existingPartner.status === 'active') {
-      // Уже активирован — проверяем нужна ли PIN верификация (для нулевого пользователя)
-      if (username.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()) {
-        // Нулевой пользователь — требуем PIN код
-        sessions[chatId] = { step: 'pin_verification', username, attempts: 0 };
-        bot.sendMessage(chatId,
-          `🔐 *Введите PIN-код доступа к кабинету:*`,
-          { parse_mode: 'Markdown' }
+    if (existingPartner) {
+      if (existingPartner.status === 'active') {
+        // Уже активен — отправить ссылку для входа
+        sendLoginLink(chatId, existingPartner.telegram || username,
+          `🎉 *Добро пожаловать обратно!*`
         );
       } else {
-        // Обычный партнёр — генерируем web_token сразу
-        const webToken = generateWebToken();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 минут
-
-        db.webTokens[webToken] = {
-          username: username.startsWith('@') ? username : '@' + username,
-          createdAt: new Date().toISOString(),
-          expiresAt: expiresAt.toISOString()
-        };
-        persistWebTokens();
-
-        // Отправить inline кнопку для входа на сайт
-        const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
-        const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(username)}`;
-
+        // Есть запись, но ещё не активирован
         bot.sendMessage(chatId,
-          `🎉 *Добро пожаловать!* Нажмите кнопку ниже чтобы войти в личный кабинет.\n\n` +
-          `⏱️ Ссылка действует 10 минут`,
-          {
-            parse_mode: 'Markdown',
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: '🔑 Войти в кабинет', url: loginUrl }]
-              ]
-            }
-          }
+          `ℹ️ *Ваша регистрация на проверке.*\n\n` +
+          `📌 Статус: *${existingPartner.status}*\n\n` +
+          `После активации вы получите уведомление.\n` +
+          `Используйте /status для подробностей.`,
+          { parse_mode: 'Markdown' }
         );
       }
-    } else if (existingPartner) {
-      // Есть партнёр, но статус не активен — показать статус
+      return;
+    }
+
+    // ── Новый пользователь — самостоятельная регистрация ─────────
+    console.log(`🆕 [BOT] New partner self-registration: ${username}`);
+
+    const partnerId = generatePartnerId();
+    const partner = {
+      id: partnerId,
+      firstName: msg.from.first_name || '',
+      lastName: msg.from.last_name || '',
+      email: '',
+      phone: '',
+      telegram: username,
+      walletAddress: '',
+      inviteToken: null,
+      telegramChatId: String(chatId),
+      status: 'invited',
+      packageType: null,
+      apiKey: null,
+      role: 'partner',
+      requestsLimit: 0,
+      requestsUsed: 0,
+      metaresourcesLimit: 0,
+      metaresourcesUsed: 0,
+      createdAt: new Date().toISOString(),
+      activatedAt: null,
+      expiresAt: null,
+      source: 'self_registration'
+    };
+
+    db.partners[partnerId] = partner;
+    persistData();
+
+    sessions[chatId] = { partnerId, step: 0, data: {} };
+
+    bot.sendMessage(chatId,
+      `👋 Привет, *${msg.from.first_name || username}*!\n\n` +
+      `Добро пожаловать в *Систему Bitbon* 🌐\n\n` +
+      `Для регистрации партнёра ответьте на несколько вопросов.\n` +
+      `Отмена: /cancel`,
+      { parse_mode: 'Markdown' }
+    );
+
+    bot.sendMessage(chatId, PROMPTS.firstName, { parse_mode: 'Markdown' });
+  }
+
+  // ── Логика нулевого пользователя ─────────────────────────────────
+  function handleZeroUserStart(chatId, msg) {
+    const username = msg.from.username ? '@' + msg.from.username : ZERO_USER_TELEGRAM;
+
+    // Проверить: есть ли уже активный аккаунт
+    const zeroPartner = Object.values(db.partners).find(p =>
+      p.telegram && p.telegram.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()
+      && p.status === 'active'
+    );
+
+    if (zeroPartner) {
+      // Аккаунт есть — запросить PIN для входа
+      sessions[chatId] = { step: 'pin_verification', username, attempts: 0 };
       bot.sendMessage(chatId,
-        `ℹ️ *Ваша регистрация в процессе.*\n\n` +
-        `📌 Статус: ${existingPartner.status}\n\n` +
-        `Используйте /status для подробностей.`,
+        `🔐 *Введите PIN-код для входа в кабинет:*`,
         { parse_mode: 'Markdown' }
       );
+      console.log(`🔐 [BOT] PIN verification requested for zero user (chat ${chatId})`);
     } else {
-      // Нет партнёра — проверяем: есть ли ВООБЩЕ активные партнеры?
-      const hasActivePartners = Object.values(db.partners).some(p => p.status === 'active');
-
-      if (!hasActivePartners) {
-        // ✅ НУЛЕВАЯ РЕГИСТРАЦИЯ — первый пользователь становится АДМИНОМ
-        console.log(`🆕 [BOT] Zero registration started: ${username} will become ADMIN`);
-
-        const partnerId = generatePartnerId();
-        const partner = {
-          id: partnerId,
-          firstName: msg.from.first_name || '',
-          lastName: msg.from.last_name || '',
-          email: '',
-          telegram: username,
-          phone: '',
-          walletAddress: '',
-          inviteToken: null,
-          telegramChatId: String(chatId),
-          status: 'invited',
-          packageType: null,
-          apiKey: null,
-          role: 'admin', // ✅ ПЕРВЫЙ ПОЛЬЗОВАТЕЛЬ = АДМИН
-          requestsLimit: 0,
-          requestsUsed: 0,
-          metaresourcesLimit: 0,
-          metaresourcesUsed: 0,
-          createdAt: new Date().toISOString(),
-          activatedAt: null,
-          expiresAt: null,
-          source: 'zero_registration'
-        };
-
-        db.partners[partnerId] = partner;
-        persistData();
-
-        // Начать сбор данных для админа
-        sessions[chatId] = { partnerId, step: 0, data: {}, isZeroReg: true };
-        console.log(`📝 [BOT] Admin session created for chat ${chatId}`);
-
-        bot.sendMessage(chatId,
-          `🎉 *Добро пожаловать!*\n\n` +
-          `Вы первый пользователь системы Bitbon! 👑\n\n` +
-          `Вы будете администратором и сможете приглашать партнеров.\n\n` +
-          `Заполните свои данные:`,
-          { parse_mode: 'Markdown' }
-        );
-
-        bot.sendMessage(chatId, PROMPTS.firstName, { parse_mode: 'Markdown' });
-      } else {
-        // Не активирован, НО уже есть активные партнеры — требуется приглашение
-        bot.sendMessage(chatId,
-          `👋 Привет! Это бот регистрации партнёров *Системы Bitbon*.\n\n` +
-          `Для регистрации используйте персональную ссылку-приглашение от администратора.\n\n` +
-          `🤝 *Уже партнёр?* Используйте /status для проверки статуса`,
-          { parse_mode: 'Markdown' }
-        );
-      }
+      // Первый запуск — настройка аккаунта через PIN
+      sessions[chatId] = { step: 'pin_setup', username, attempts: 0 };
+      bot.sendMessage(chatId,
+        `👑 *Привет, Администратор!*\n\n` +
+        `Это ваш первый вход в систему Bitbon.\n\n` +
+        `🔐 *Введите PIN-код для активации вашего аккаунта:*`,
+        { parse_mode: 'Markdown' }
+      );
+      console.log(`🆕 [BOT] Zero user first-time PIN setup (chat ${chatId})`);
     }
-  });
+  }
 
   // ── /cancel ────────────────────────────────────────────────────────
   bot.onText(/\/cancel/, (msg) => {
     delete sessions[msg.chat.id];
-    bot.sendMessage(msg.chat.id, '❌ Регистрация отменена. Для повторного старта используйте вашу ссылку-приглашение.');
+    bot.sendMessage(msg.chat.id, '❌ Операция отменена.\n\nДля начала используйте /start');
   });
 
   // ── /status ────────────────────────────────────────────────────────
   bot.onText(/\/status/, (msg) => {
     const chatId = msg.chat.id;
-    const partner = Object.values(db.partners).find(p => p.telegramChatId === String(chatId));
+    const username = msg.from.username ? '@' + msg.from.username : null;
+
+    const partner = Object.values(db.partners).find(
+      p => p.telegramChatId === String(chatId) ||
+           (username && p.telegram && p.telegram.toLowerCase() === username.toLowerCase())
+    );
+
     if (!partner) {
-      bot.sendMessage(chatId, '❌ Партнёр не найден. Используйте ссылку-приглашение для регистрации.');
+      bot.sendMessage(chatId,
+        '❌ Партнёр не найден.\n\nИспользуйте /start для регистрации.'
+      );
       return;
     }
+
     const statusText = {
-      invited:         '📩 Ожидает заполнения данных',
+      invited:         '📩 Заполняет данные',
       pending_payment: '⏳ Ожидает оплаты',
       pending_review:  '🔍 На проверке у администратора',
       active:          '✅ Активен',
       suspended:       '🚫 Приостановлен',
       expired:         '⌛ Истёк'
     };
-    const options = {
-      parse_mode: 'Markdown'
-    };
 
-    // Если партнёр активирован, добавить кнопку входа
+    const options = { parse_mode: 'Markdown' };
+
     if (partner.status === 'active') {
+      const targetUsername = partner.telegram || username;
       const webToken = generateWebToken();
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
       db.webTokens[webToken] = {
-        username: partner.telegram || ('@' + msg.from.username),
+        username: targetUsername,
         createdAt: new Date().toISOString(),
         expiresAt: expiresAt.toISOString()
       };
       persistWebTokens();
 
       const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
-      const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(partner.telegram || ('@' + msg.from.username))}`;
+      const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(targetUsername)}`;
 
       options.reply_markup = {
-        inline_keyboard: [
-          [{ text: '🔑 Войти в кабинет', url: loginUrl }]
-        ]
+        inline_keyboard: [[{ text: '🔑 Войти в кабинет', url: loginUrl }]]
       };
     }
 
@@ -306,34 +328,11 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
       `📋 *Статус партнёра:*\n\n` +
       `🆔 \`${partner.id}\`\n` +
       `👤 ${partner.firstName || '—'} ${partner.lastName || ''}\n` +
+      `💬 ${partner.telegram || '—'}\n` +
       `📦 ${partner.packageType ? PLAN_LABELS[partner.packageType] : 'пакет не выбран'}\n` +
       `${statusText[partner.status] || partner.status}\n` +
       (partner.apiKey ? `\n🔑 API: \`${partner.apiKey}\`` : ''),
       options
-    );
-  });
-
-  // ── /login (для админа) ────────────────────────────────────────────
-  bot.onText(/\/login/, (msg) => {
-    const chatId = msg.chat.id;
-    const username = msg.from.username ? '@' + msg.from.username : null;
-
-    // Проверка username админа
-    if (!username || username.toLowerCase() !== ADMIN_USERNAME.toLowerCase()) {
-      bot.sendMessage(chatId,
-        `❌ *Вход запрещён.*\n\n` +
-        `Эта команда доступна только для администратора.`,
-        { parse_mode: 'Markdown' }
-      );
-      return;
-    }
-
-    // Начать сессию ввода пароля
-    adminSessions[chatId] = { step: 'password', attempts: 0 };
-    bot.sendMessage(chatId,
-      `🔐 *Введите пароль администратора:*\n\n` +
-      `(У вас есть 3 попытки)`,
-      { parse_mode: 'Markdown' }
     );
   });
 
@@ -351,63 +350,29 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     delete sessions[chatId];
   });
 
-  // ── Ввод текста по шагам ───────────────────────────────────────────
+  // ── Обработка всех текстовых сообщений ───────────────────────────
   bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text?.trim();
 
-    console.log(`💬 [BOT] Message from chat ${chatId}: "${text?.substring(0, 30)}..."`);
+    if (!text || text.startsWith('/')) return;
 
-    if (!text || text.startsWith('/')) {
-      console.log(`⏭️  [BOT] Skipping: empty text or command`);
-      return;
-    }
-
-    // ── Проверка PIN верификации (для нулевого пользователя) ─────────
     const sess = sessions[chatId];
+
+    // ── PIN для нулевого пользователя: верификация входа ─────────
     if (sess && sess.step === 'pin_verification') {
       if (text === ZERO_USER_PIN) {
-        // PIN верный — генерируем web_token для нулевого пользователя
         delete sessions[chatId];
-
-        const webToken = generateWebToken();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-        const username = sess.username;
-
-        db.webTokens[webToken] = {
-          username: username.startsWith('@') ? username : '@' + username,
-          createdAt: new Date().toISOString(),
-          expiresAt: expiresAt.toISOString()
-        };
-        persistWebTokens();
-
-        const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
-        const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(username)}`;
-
-        bot.sendMessage(chatId,
-          `✅ *PIN верен!* Нажмите кнопку ниже чтобы войти в личный кабинет.\n\n` +
-          `⏱️ Ссылка действует 10 минут`,
-          {
-            parse_mode: 'Markdown',
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: '🔑 Войти в кабинет', url: loginUrl }]
-              ]
-            }
-          }
-        );
+        console.log(`✅ [BOT] PIN correct for zero user (chat ${chatId})`);
+        sendLoginLink(chatId, sess.username, `✅ *PIN верен!* Вход разрешён.`);
       } else {
-        // PIN неверный
-        sess.attempts++;
+        sess.attempts = (sess.attempts || 0) + 1;
         if (sess.attempts >= 3) {
           delete sessions[chatId];
-          bot.sendMessage(chatId, `❌ Исчерпаны попытки входа. Используйте /start для нового входа.`);
+          bot.sendMessage(chatId, `❌ Исчерпаны попытки. Используйте /start для нового входа.`);
         } else {
-          const remaining = 3 - sess.attempts;
           bot.sendMessage(chatId,
-            `❌ *Неверный PIN-код.*\n\n` +
-            `Осталось попыток: ${remaining}\n\n` +
-            `Введите PIN-код:`,
+            `❌ *Неверный PIN-код.* Осталось попыток: ${3 - sess.attempts}\n\nПовторите ввод:`,
             { parse_mode: 'Markdown' }
           );
         }
@@ -415,52 +380,61 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
       return;
     }
 
-    // ── Проверка админ сессии (ввод пароля) ──────────────────────────
-    const adminSess = adminSessions[chatId];
-    if (adminSess && adminSess.step === 'password') {
-      if (text === ADMIN_PASSWORD) {
-        // Пароль верный — генерируем admin web_token
-        delete adminSessions[chatId];
+    // ── PIN для нулевого пользователя: первоначальная настройка ──
+    if (sess && sess.step === 'pin_setup') {
+      if (text === ZERO_USER_PIN) {
+        delete sessions[chatId];
+        console.log(`✅ [BOT] PIN setup correct — creating admin account (chat ${chatId})`);
 
-        const webToken = generateWebToken();
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-        const adminUsername = msg.from.username ? '@' + msg.from.username : '@admin';
-
-        db.webTokens[webToken] = {
-          username: adminUsername,
-          isAdmin: true,
+        // Создать аккаунт администратора
+        const partnerId = generatePartnerId();
+        const partner = {
+          id: partnerId,
+          firstName: msg.from.first_name || 'Олександр',
+          lastName: msg.from.last_name || 'Жданенко',
+          email: ZERO_USER_EMAIL,
+          phone: ZERO_USER_PHONE,
+          telegram: ZERO_USER_TELEGRAM,
+          walletAddress: '',
+          inviteToken: null,
+          telegramChatId: String(chatId),
+          status: 'active',
+          packageType: 'expert',
+          apiKey: null,
+          role: 'admin',
+          requestsLimit: 999999,
+          requestsUsed: 0,
+          metaresourcesLimit: 999999,
+          metaresourcesUsed: 0,
           createdAt: new Date().toISOString(),
-          expiresAt: expiresAt.toISOString()
+          activatedAt: new Date().toISOString(),
+          expiresAt: null,
+          source: 'zero_registration'
         };
-        persistWebTokens();
 
-        const siteUrl = process.env.SITE_URL || 'http://localhost:3000';
-        const loginUrl = `${siteUrl}/?wt=${webToken}&username=${encodeURIComponent(adminUsername)}&role=admin`;
+        db.partners[partnerId] = partner;
+        persistData();
+
+        console.log(`🆕 [BOT] Admin account created: ${partnerId}`);
 
         bot.sendMessage(chatId,
-          `✅ *Добро пожаловать, Администратор!*\n\n` +
-          `⏱️ Ссылка действует 10 минут\n\n`,
-          {
-            parse_mode: 'Markdown',
-            reply_markup: {
-              inline_keyboard: [
-                [{ text: '🔑 Войти в админ панель', url: loginUrl }]
-              ]
-            }
-          }
+          `✅ *Аккаунт администратора создан!*\n\n` +
+          `👤 ${partner.firstName} ${partner.lastName}\n` +
+          `📧 ${partner.email}\n` +
+          `📦 Эксперт (безлимит)\n\n` +
+          `Теперь нажмите кнопку ниже для входа в кабинет:`,
+          { parse_mode: 'Markdown' }
         );
+
+        sendLoginLink(chatId, ZERO_USER_TELEGRAM);
       } else {
-        // Пароль неверный
-        adminSess.attempts++;
-        if (adminSess.attempts >= 3) {
-          delete adminSessions[chatId];
-          bot.sendMessage(chatId, `❌ Исчерпаны попытки входа. Используйте /login для нового входа.`);
+        sess.attempts = (sess.attempts || 0) + 1;
+        if (sess.attempts >= 3) {
+          delete sessions[chatId];
+          bot.sendMessage(chatId, `❌ Исчерпаны попытки. Используйте /start для повторной попытки.`);
         } else {
-          const remaining = 3 - adminSess.attempts;
           bot.sendMessage(chatId,
-            `❌ *Неверный пароль.*\n\n` +
-            `Осталось попыток: ${remaining}\n\n` +
-            `Введите пароль:`,
+            `❌ *Неверный PIN-код.* Осталось попыток: ${3 - sess.attempts}\n\nПовторите ввод:`,
             { parse_mode: 'Markdown' }
           );
         }
@@ -468,50 +442,37 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
       return;
     }
 
-    // ── Регулярная сессия партнёра ────────────────────────────────────
-    const partnerSess = sessions[chatId];
+    // ── Сбор данных для регистрации партнёра ─────────────────────
+    if (!sess) return;
 
-    console.log(`📌 [BOT] Session check: exists=${!!partnerSess}, step=${partnerSess?.step}, type=${typeof partnerSess?.step}`);
+    if (typeof sess.step === 'string' && sess.step !== 'plan') return;
 
-    if (!partnerSess) {
-      console.log(`❌ [BOT] No session found for chat ${chatId}. Active sessions:`, Object.keys(sessions));
+    const field = STEPS[sess.step];
+    if (!field) return;
+
+    // Валидация email
+    if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
+      bot.sendMessage(chatId, '❌ Некорректный email. Введите правильный адрес:');
       return;
     }
 
-    if (typeof partnerSess.step === 'string') {
-      console.log(`⏸️  [BOT] Waiting for inline keyboard callback, not processing text input`);
-      return; // ждём inline keyboard
-    }
-
-    const field = STEPS[partnerSess.step];
-    console.log(`📋 [BOT] Processing field: ${field} (step ${partnerSess.step}/${STEPS.length})`);
-
-    if (!field) {
-      console.log(`⚠️  [BOT] No field for step ${partnerSess.step}`);
-      return;
-    }
-
-    // Пропуск необязательных полей
+    // Пропуск необязательного телефона
     if (text === '.' && field === 'phone') {
-      partnerSess.data.phone = '';
+      sess.data.phone = '';
     } else {
-      // Валидация email
-      if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
-        bot.sendMessage(chatId, '❌ Некорректный email. Попробуйте ещё раз:');
-        return;
-      }
-      partnerSess.data[field] = text;
+      sess.data[field] = text;
     }
 
-    partnerSess.step++;
+    sess.step++;
 
-    if (partnerSess.step < STEPS.length) {
-      // Следующий шаг
-      bot.sendMessage(chatId, PROMPTS[STEPS[partnerSess.step]], { parse_mode: 'Markdown' });
+    if (sess.step < STEPS.length) {
+      bot.sendMessage(chatId, PROMPTS[STEPS[sess.step]], { parse_mode: 'Markdown' });
     } else {
-      // Все поля заполнены — выбор пакета
-      partnerSess.step = 'plan';
-      bot.sendMessage(chatId, '📦 Выберите *пакет партнёра*:', { parse_mode: 'Markdown', ...PLAN_KEYBOARD });
+      sess.step = 'plan';
+      bot.sendMessage(chatId,
+        '📦 Выберите *пакет партнёра*:',
+        { parse_mode: 'Markdown', ...PLAN_KEYBOARD }
+      );
     }
   });
 
@@ -523,70 +484,46 @@ async function completeRegistration(bot, chatId, sess, db, persistData) {
   const partner = db.partners[sess.partnerId];
   if (!partner) return;
 
-  // Обновить данные партнёра
-  partner.firstName     = sess.data.firstName?.trim();
-  partner.lastName      = sess.data.lastName?.trim();
-  partner.email         = sess.data.email?.trim().toLowerCase();
-  partner.phone         = sess.data.phone || '';
-  partner.packageType   = sess.data.plan;
-  partner.completedAt   = new Date().toISOString();
+  partner.firstName   = sess.data.firstName?.trim() || partner.firstName;
+  partner.lastName    = sess.data.lastName?.trim()  || partner.lastName;
+  partner.email       = sess.data.email?.trim().toLowerCase();
+  partner.phone       = sess.data.phone || '';
+  partner.packageType = sess.data.plan;
+  partner.completedAt = new Date().toISOString();
+  partner.status      = 'pending_payment';
+  persistData();
 
-  // НУЛЕВАЯ РЕГИСТРАЦИЯ: админ сразу активный
-  if (sess.isZeroReg) {
-    partner.status = 'active';
-    partner.activatedAt = new Date().toISOString();
-    partner.requestsLimit = Infinity;
-    persistData();
+  bot.sendMessage(chatId,
+    `✅ *Данные сохранены!*\n\n` +
+    `👤 ${partner.firstName} ${partner.lastName}\n` +
+    `📧 ${partner.email}\n` +
+    `📱 ${partner.phone || '—'}\n` +
+    `📦 ${PLAN_LABELS[partner.packageType]}\n\n` +
+    `🆔 *Ваш ID:* \`${partner.id}\`\n\n` +
+    `⏳ *Следующий шаг:*\n` +
+    `Отправьте оплату в Bitbon и сообщите администратору TX-хэш.\n` +
+    `После подтверждения вы получите API-ключ здесь в боте.\n\n` +
+    `/status — проверить статус`,
+    { parse_mode: 'Markdown' }
+  );
 
-    bot.sendMessage(chatId,
-      `✅ *Добро пожаловать, Администратор!*\n\n` +
-      `👤 ${partner.firstName} ${partner.lastName}\n` +
-      `📧 ${partner.email}\n\n` +
-      `🔑 Вы можете:\n` +
-      `• Создавать приглашения для партнёров\n` +
-      `• Управлять системой\n` +
-      `• Проверять платежи\n\n` +
-      `📱 Используйте /status для входа в кабинет\n\n`,
-      { parse_mode: 'Markdown' }
-    );
-
-    // Уведомление в консоль
-    console.log(`🆕 [BOT] ADMIN REGISTRATION COMPLETE: ${partner.id}`);
-  } else {
-    // Обычный партнер - требует платёж
-    partner.status = 'pending_payment';
-    persistData();
-
-    bot.sendMessage(chatId,
-      `✅ *Данные сохранены!*\n\n` +
+  // Уведомить администратора
+  if (ADMIN_CHAT_ID) {
+    const source = sess.isInvited ? '📩 По приглашению' : '🆕 Самостоятельная регистрация';
+    bot.sendMessage(ADMIN_CHAT_ID,
+      `🆕 *Новая регистрация партнёра!*\n\n` +
       `👤 ${partner.firstName} ${partner.lastName}\n` +
       `📧 ${partner.email}\n` +
       `📱 ${partner.phone || '—'}\n` +
-      `📦 ${PLAN_LABELS[partner.packageType]}\n\n` +
-      `🆔 *Ваш ID:* \`${partner.id}\`\n\n` +
-      `⏳ *Следующий шаг:* отправьте оплату Bitbon и сообщите менеджеру TX-хэш.\n` +
-      `После подтверждения вы получите API-ключ здесь в боте.\n\n` +
-      `/status — проверить статус`,
+      `💬 Telegram: ${partner.telegram || '—'}\n` +
+      `📦 ${PLAN_LABELS[partner.packageType]}\n` +
+      `🆔 \`${partner.id}\`\n` +
+      `📌 ${source}\n` +
+      `📅 ${new Date().toLocaleString('ru-RU')}`,
       { parse_mode: 'Markdown' }
     );
-
-    // Уведомление админу о новом партнере
-    if (ADMIN_CHAT_ID) {
-      bot.sendMessage(ADMIN_CHAT_ID,
-        `🆕 *Партнёр заполнил данные!*\n\n` +
-        `👤 ${partner.firstName} ${partner.lastName}\n` +
-        `📧 ${partner.email}\n` +
-        `📱 ${partner.phone || '—'}\n` +
-        `💬 Telegram: ${partner.telegram || '—'}\n` +
-        `📦 ${PLAN_LABELS[partner.packageType]}\n` +
-        `🆔 \`${partner.id}\`\n` +
-        `📅 ${new Date().toLocaleString('ru-RU')}`,
-        { parse_mode: 'Markdown' }
-      );
-    }
   }
 
-  // Google Sheets
   await appendToSheets(partner);
 }
 
@@ -623,8 +560,8 @@ async function notifyPartnerActivated(telegramChatId, partner) {
       `🎉 *Ваш аккаунт партнёра активирован!*\n\n` +
       `📦 ${PLAN_LABELS[partner.packageType] || partner.packageType}\n` +
       `🔑 *API ключ:*\n\`${partner.apiKey}\`\n\n` +
-      `Лимит: ${partner.requestsLimit === Infinity ? '∞ безлимит' : partner.requestsLimit + ' запросов/мес'}\n\n` +
-      `Удачи в работе! /status`,
+      `Лимит: ${partner.requestsLimit >= 999999 ? '∞ безлимит' : partner.requestsLimit + ' запросов/мес'}\n\n` +
+      `Используйте /status для входа в кабинет.`,
       { parse_mode: 'Markdown' }
     );
   } catch (e) {
@@ -632,7 +569,7 @@ async function notifyPartnerActivated(telegramChatId, partner) {
   }
 }
 
-// ── Получить deep link для нового партнёра ───────────────────────────
+// ── Deep link для приглашения нового партнёра ─────────────────────────
 function getInviteLink(inviteToken) {
   if (!BOT_USERNAME) return null;
   return `https://t.me/${BOT_USERNAME}?start=${inviteToken}`;
