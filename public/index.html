@@ -1493,15 +1493,29 @@ function switchLevel(level) {
 
   userMode = level;
 
+  // Hide level screen when switching to admin or partner (logged in users)
+  var levelScreen = document.getElementById('level-screen');
+  if ((level === 'admin' || level === 'partner') && levelScreen) {
+    levelScreen.classList.add('hidden');
+  }
+
   // Update level and suggestions
   if (level === 'admin') {
     userLevel = 'admin';
     updateSuggestionsBar('admin');
     addMessage('bot', '⚙️ Добро пожаловать, **Администратор**. Перейдите на панель управления по кнопке 🔧 Админ.', null, false);
+    // Auto-open admin panel
+    setTimeout(function() {
+      openAdmin();
+    }, 500);
   } else if (level === 'partner') {
     userLevel = 'expert';
     updateSuggestionsBar('business');
     addMessage('bot', '🤝 Вы переключились на режим **Партнёра**. Нажмите кнопку 🏛️ Кабинет для управления API и подписками.', null, false);
+    // Auto-open cabinet
+    setTimeout(function() {
+      openCabinet();
+    }, 500);
   } else if (level === 'business') {
     userLevel = 'intermediate';
     updateSuggestionsBar('business');
