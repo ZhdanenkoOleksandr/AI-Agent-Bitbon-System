@@ -1741,16 +1741,20 @@ function closeAdmin() {
 }
 
 function switchAdminTab(tab) {
-  // Hide all tabs
-  ['invites', 'partners', 'payments'].forEach(function(t) {
-    document.getElementById('admin-tab-' + t).classList.remove('active');
-    document.querySelector('.tab-row').querySelector('[onclick*="switchAdminTab(\'' + t + '\')"]).classList.remove('active');
+  // Hide all tabs and deactivate buttons
+  document.querySelectorAll('.tab-content').forEach(function(el) {
+    el.classList.remove('active');
   });
-  // Show selected tab
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.classList.remove('active');
+  });
+
+  // Show selected tab and activate button
   document.getElementById('admin-tab-' + tab).classList.add('active');
-  // Mark button as active (simple approach)
-  Array.from(document.querySelector('.tab-row').querySelectorAll('.tab-btn')).forEach(function(btn, idx) {
-    btn.classList.toggle('active', btn.getAttribute('onclick').includes(tab));
+  Array.from(document.querySelectorAll('.tab-btn')).forEach(function(btn) {
+    if (btn.getAttribute('onclick').includes(tab)) {
+      btn.classList.add('active');
+    }
   });
 }
 
