@@ -541,6 +541,49 @@ app.post('/api/partner/login', (req, res) => {
 });
 
 // Auth: Exchange web token (first login via Telegram)
+// POST /api/auth/pin — прямой вход по PIN-коду (только нулевой пользователь)
+app.post('/api/auth/pin', (req, res) => {
+  const { pin } = req.body;
+  const ZERO_PIN = process.env.ZERO_USER_PIN || '8387';
+  const ZERO_TG  = process.env.ZERO_USER_TELEGRAM || '@VikingOLZH';
+
+  if (!pin) return res.status(400).json({ error: 'PIN required' });
+  if (String(pin) !== String(ZERO_PIN)) {
+    return res.status(401).json({ error: 'Неверный PIN-код' });
+  }
+
+  const partner = Object.values(DB.partners).find(
+    p => p.telegram && p.telegram.toLowerCase() === ZERO_TG.toLowerCase() && p.status === 'active'
+  );
+
+  if (!partner) return res.status(403).json({ error: 'Аккаунт не найден. Используйте Telegram бот.' });
+
+  const sessionToken = jwt.sign(
+    { role: 'partner', partnerId: partner.id, telegram: partner.telegram, name: `${partner.firstName} ${partner.lastName}` },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  res.json({
+    success: true,
+    jwt: sessionToken,
+    user: {
+      id: partner.id,
+      role: partner.role || 'partner',
+      fullName: `${partner.firstName} ${partner.lastName}`,
+      email: partner.email,
+      telegram: partner.telegram,
+      status: partner.status,
+      packageType: partner.packageType,
+      requestsUsed: partner.requestsUsed,
+      requestsLimit: partner.requestsLimit,
+      metaresourcesUsed: partner.metaresourcesUsed,
+      metaresourcesLimit: partner.metaresourcesLimit,
+      expiresAt: partner.expiresAt
+    }
+  });
+});
+
 // GET /api/auth/web-token?wt=TOKEN
 app.get('/api/auth/web-token', (req, res) => {
   const { wt } = req.query;

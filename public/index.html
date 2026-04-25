@@ -796,6 +796,32 @@ textarea::placeholder{color:var(--text3)}
     <a href="https://t.me/BitbonPartnerBot" target="_blank" rel="noopener" style="display:block;text-align:center;padding:14px;background:linear-gradient(135deg,rgba(0,136,204,0.2),rgba(0,136,204,0.05));border:1.5px solid rgba(0,136,204,0.4);border-radius:10px;color:var(--text1);text-decoration:none;font-weight:500;font-size:15px;font-family:'Onest',sans-serif;transition:all 0.2s;cursor:pointer" onmouseover="this.style.background='linear-gradient(135deg,rgba(0,136,204,0.3),rgba(0,136,204,0.1))';this.style.borderColor='rgba(0,136,204,0.6)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(0,136,204,0.2),rgba(0,136,204,0.05))';this.style.borderColor='rgba(0,136,204,0.4)'">
       ✈️ Войти через Telegram
     </a>
+
+    <!-- PIN divider -->
+    <div style="display:flex;align-items:center;gap:10px;margin:20px 0">
+      <div style="flex:1;height:1px;background:var(--border2)"></div>
+      <span style="font-size:12px;color:var(--text3)">или</span>
+      <div style="flex:1;height:1px;background:var(--border2)"></div>
+    </div>
+
+    <!-- PIN login section -->
+    <div id="login-pin-section">
+      <div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:12px">Вход по PIN-коду</div>
+      <div style="display:flex;gap:10px">
+        <input type="password" id="login-pin-input" placeholder="Введите PIN" maxlength="8"
+          style="flex:1;padding:12px 16px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;color:var(--text1);font-size:16px;letter-spacing:3px;text-align:center;outline:none;font-family:'Onest',sans-serif"
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border2)'"
+          onkeydown="if(event.key==='Enter') loginWithPin()"
+          oninput="document.getElementById('login-pin-error').style.display='none'">
+        <button onclick="loginWithPin()"
+          style="padding:12px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-weight:600;font-size:14px;font-family:'Onest',sans-serif;cursor:pointer;white-space:nowrap;transition:opacity 0.2s"
+          onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+          Войти
+        </button>
+      </div>
+      <div id="login-pin-error" style="color:var(--red,#e74c3c);font-size:12px;text-align:center;margin-top:8px;display:none"></div>
+    </div>
   </div>
 </div>
 
@@ -1862,10 +1888,58 @@ function closeCabinet() { document.getElementById('cabinet-overlay').classList.a
 
 function openLoginModal() {
   document.getElementById('login-required-modal').classList.remove('hidden');
+  // Сбросить поле PIN при открытии
+  var pinInput = document.getElementById('login-pin-input');
+  if (pinInput) pinInput.value = '';
+  var pinError = document.getElementById('login-pin-error');
+  if (pinError) pinError.style.display = 'none';
 }
 
 function closeLoginModal() {
   document.getElementById('login-required-modal').classList.add('hidden');
+}
+
+function loginWithPin() {
+  var pin = document.getElementById('login-pin-input').value.trim();
+  var errorEl = document.getElementById('login-pin-error');
+  var btn = event && event.target;
+
+  if (!pin) {
+    errorEl.textContent = 'Введите PIN-код';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
+
+  fetch('/api/auth/pin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pin: pin })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (btn) { btn.textContent = 'Войти'; btn.disabled = false; }
+    if (data.success && data.jwt) {
+      localStorage.setItem('jwt', data.jwt);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      jwtToken = data.jwt;
+      closeLoginModal();
+      // Войти в кабинет
+      userMode = 'partner';
+      currentPartnerData = data.user;
+      setTimeout(function() { openCabinet(); }, 100);
+    } else {
+      errorEl.textContent = data.error || 'Неверный PIN-код';
+      errorEl.style.display = 'block';
+      document.getElementById('login-pin-input').value = '';
+    }
+  })
+  .catch(function() {
+    if (btn) { btn.textContent = 'Войти'; btn.disabled = false; }
+    errorEl.textContent = 'Ошибка подключения к серверу';
+    errorEl.style.display = 'block';
+  });
 }
 
 // ═══ ADMIN PANEL ═══
