@@ -1731,6 +1731,15 @@ async function submitPayment() {
 
 // ═══ CABINET ═══
 function openCabinet() {
+  // 🔐 ВАЖНО: Проверяем наличие JWT токена
+  var jwt = localStorage.getItem('jwt');
+
+  if (!jwt) {
+    // Нет JWT - пользователь не залогинен через Telegram
+    alert('🔐 Доступ к кабинету только через Telegram!\n\nНажмите кнопку "✈️ Войти через Telegram" на главной странице.');
+    return;
+  }
+
   var user = localStorage.getItem('user');
   var userData = null;
 
