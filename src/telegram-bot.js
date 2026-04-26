@@ -180,7 +180,7 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     }
 
     // Новый пользователь — начать самостоятельную регистрацию
-    console.log(`🆕 [BOT] Self-registration: ${username}`);
+    console.log(`🆕 [BOT] Self-registration: ${username}, chatId=${chatId}`);
 
     const partnerId = generatePartnerId();
     const newPartner = {
@@ -203,6 +203,7 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     db.partners[partnerId] = newPartner;
     persistData();
     sessions[chatId] = { partnerId, step: 0, data: {} };
+    console.log(`✅ [SES] session created for chatId=${chatId} partnerId=${partnerId}`);
 
     bot.sendMessage(chatId,
       `👋 Привет, *${msg.from.first_name || username}*!\n\n` +
@@ -299,6 +300,9 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
 
     const fromUsername = msg.from.username ? '@' + msg.from.username : null;
 
+    console.log(`📨 [MSG] chatId=${chatId} user=${fromUsername || 'no_username'} text="${text}"`);
+    console.log(`📋 [SES] session=`, sessions[chatId] ? `step=${sessions[chatId].step}` : 'NO SESSION');
+
     // ── PIN нулевого пользователя (без сессии, sessionless) ──────────
     if (fromUsername && fromUsername.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()) {
       if (/^\d{4,8}$/.test(text)) {
@@ -353,18 +357,30 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
 
     // Очистка устаревших PIN-сессий (теперь обрабатываются выше)
     if (sess && (sess.step === 'zero_pin' || sess.step === 'zero_pin_setup')) {
+      console.log(`🧹 [SES] clearing stale zero_pin session for chatId=${chatId}`);
       delete sessions[chatId];
       return;
     }
 
     // Нет сессии — игнорируем
-    if (!sess) return;
+    if (!sess) {
+      console.log(`⚠️  [SES] no session for chatId=${chatId} — ignoring message`);
+      return;
+    }
 
     // Ожидание inline keyboard
-    if (sess.step === 'plan') return;
+    if (sess.step === 'plan') {
+      console.log(`⏳ [SES] waiting for plan selection, ignoring text`);
+      return;
+    }
 
     const field = STEPS[sess.step];
-    if (!field) return;
+    if (!field) {
+      console.log(`❌ [SES] invalid step=${sess.step}, field=undefined`);
+      return;
+    }
+
+    console.log(`✏️  [SES] step=${sess.step} field="${field}" value="${text}"`);
 
     // ── Валидация полей ───────────────────────────────────────────
     if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
@@ -390,11 +406,14 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     }
 
     sess.step++;
+    console.log(`➡️  [SES] advanced to step=${sess.step}`);
 
     if (sess.step < STEPS.length) {
-      bot.sendMessage(chatId, PROMPTS[STEPS[sess.step]], { parse_mode: 'Markdown' });
+      const nextField = STEPS[sess.step];
+      console.log(`📤 [SES] asking for "${nextField}"`);
+      bot.sendMessage(chatId, PROMPTS[nextField], { parse_mode: 'Markdown' });
     } else {
-      // Все поля заполнены — выбор пакета
+      console.log(`📤 [SES] all fields done → asking for plan`);
       sess.step = 'plan';
       bot.sendMessage(chatId,
         '📦 Отлично! Выберите *пакет партнёра*:',
