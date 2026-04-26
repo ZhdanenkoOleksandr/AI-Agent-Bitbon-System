@@ -121,8 +121,8 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     );
   });
 
-  // ── /start без токена ─────────────────────────────────────────────
-  bot.onText(/\/start$/, (msg) => {
+  // ── /start без токена (также ловит /start@BotUsername в группах) ───
+  bot.onText(/^\/start(@\w+)?$/, (msg) => {
     handleStart(msg.chat.id, msg);
   });
 
@@ -151,25 +151,37 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     if (existing) {
       if (existing.status === 'active') {
         bot.sendMessage(chatId,
-          `✅ *Вы зарегистрированы!*\n\n` +
+          `✅ *Вы уже зарегистрированы!*\n\n` +
           `🔑 Войдите в кабинет на сайте используя ваш *PIN-код*.\n\n` +
           `Забыли PIN? Напишите администратору для сброса.`,
           { parse_mode: 'Markdown' }
         );
-      } else if (existing.status === 'pending_payment') {
+        return;
+      }
+
+      if (existing.status === 'pending_payment' || existing.status === 'pending_review') {
         bot.sendMessage(chatId,
-          `⏳ *Ваша заявка ожидает оплаты.*\n\n` +
-          `Отправьте оплату в Bitbon и сообщите администратору TX-хэш.\n` +
-          `После подтверждения вы получите уведомление.\n\n` +
+          `⏳ *Ваша заявка отправлена и ожидает проверки.*\n\n` +
+          `Администратор активирует ваш аккаунт после подтверждения оплаты.\n\n` +
           `/status — проверить статус`,
           { parse_mode: 'Markdown' }
         );
-      } else {
-        bot.sendMessage(chatId,
-          `ℹ️ Статус: *${existing.status}*\n\n/status — подробнее`,
-          { parse_mode: 'Markdown' }
-        );
+        return;
       }
+
+      // Статус 'invited' или любой другой незавершённый — перезапуск сбора данных
+      // (например, сессия была потеряна после рестарта сервера)
+      existing.telegramChatId = String(chatId);
+      if (msg.from.username) existing.telegram = '@' + msg.from.username;
+      persistData();
+
+      sessions[chatId] = { partnerId: existing.id, step: 0, data: {} };
+      bot.sendMessage(chatId,
+        `👋 *${msg.from.first_name || username}*, продолжаем регистрацию!\n\n` +
+        `Заполните данные заново. Отмена: /cancel`,
+        { parse_mode: 'Markdown' }
+      );
+      bot.sendMessage(chatId, PROMPTS.firstName, { parse_mode: 'Markdown' });
       return;
     }
 
