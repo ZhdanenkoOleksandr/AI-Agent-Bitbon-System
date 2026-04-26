@@ -96,14 +96,6 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .cab-subtab.st-meta{border-color:rgba(59,130,246,0.45);color:var(--accent2)}
 .cab-subtab.st-meta:hover{background:var(--product-ai-bg)}
 #cab-subtabs{min-height:0;transition:padding 0.2s}
-#footer-nav{display:flex;align-items:center;gap:8px;margin-bottom:8px;min-height:0}
-#footer-nav-center{display:flex;flex-wrap:wrap;gap:5px;align-items:center;flex:1;justify-content:center}
-#footer-nav-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;margin-left:4px}
-.fnav-role{font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
-.fnav-role.role-partner{color:var(--product-partner)}
-.fnav-role.role-business{color:var(--product-economy)}
-.fnav-role.role-user{color:var(--accent2)}
-.fnav-requests{font-size:10px;color:var(--text3);white-space:nowrap}
 .fnav-l1{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;border:1.5px solid var(--product-partner);background:var(--product-partner-bg);color:var(--product-partner);font-size:12px;font-weight:700;cursor:pointer;font-family:'Onest',sans-serif;transition:all 0.18s;white-space:nowrap}
 .fnav-l1:hover{background:rgba(16,185,129,0.2)}
 .fnav-sep{width:1px;height:16px;background:var(--border2);flex-shrink:0;align-self:center}
@@ -216,7 +208,14 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 
 /* HEADER */
 .header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);flex-shrink:0}
-.header-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.header-left{display:flex;align-items:center;gap:10px;flex-shrink:0;min-width:0}
+.header-center{display:flex;align-items:center;gap:5px;flex:1;justify-content:center;flex-wrap:wrap;min-width:0}
+.hdr-info-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.hdr-role{font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap;display:none}
+.hdr-role.role-partner{color:var(--product-partner)}
+.hdr-role.role-business{color:var(--product-economy)}
+.hdr-role.role-user{color:var(--accent2)}
+.hdr-requests{font-size:10px;color:var(--text3);white-space:nowrap;display:none}
 .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
 .header-info h1{font-size:13px;font-weight:600}
 .header-info p{font-size:11px;color:var(--text2)}
@@ -1267,7 +1266,16 @@ textarea::placeholder{color:var(--text3)}
           <p id="agent-sub" style="display:none">Партнёр Система Bitbon</p>
         </div>
       </div>
+      <!-- Центр: навигация (рендерится JS) -->
+      <div class="header-center" id="header-nav-center"></div>
+
       <div class="header-right">
+        <!-- Роль + запросы + Кабинет (левее стрелочки) -->
+        <div class="hdr-info-right" id="hdr-info-right">
+          <span class="hdr-role" id="hdr-role"></span>
+          <span class="hdr-requests" id="hdr-requests"></span>
+          <button id="hbtn-cabinet" class="header-btn" onclick="openCabinet()" style="display:none"></button>
+        </div>
         <span class="level-badge" id="level-badge" style="display:none"></span>
         <span class="req-counter" id="req-counter" style="display:none"></span>
         <button id="hbtn-admin" class="header-btn" onclick="openAdmin()" style="border-color:rgba(239,68,68,0.4);color:var(--red);display:none">🔧 Админ</button>
@@ -1308,7 +1316,6 @@ textarea::placeholder{color:var(--text3)}
     </div>
 
     <div class="input-area">
-      <div id="footer-nav"></div>
       <div class="input-row">
         <textarea id="input" placeholder="Задайте вопрос о Bitbon, Web 4.0 или создайте Метаресурс..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
         <button class="send-btn" id="send-btn" onclick="sendMessage()">
@@ -2353,33 +2360,33 @@ function renderCabSubtabs() {
   renderFooterNav();
 }
 
-function renderFooterNav() {
-  var nav = document.getElementById('footer-nav');
-  if (!nav) return;
+function renderFooterNav() { renderHeaderNav(); }
+
+function renderHeaderNav() {
+  var center = document.getElementById('header-nav-center');
+  if (!center) return;
   var s = loadClientSettings();
-  // Саб-таби керуються тумблерами для ВСІХ режимів
   var isPartner = (userMode === 'partner' || userMode === 'admin');
 
-  nav.innerHTML = '';
+  // ── Центр: навигационные кнопки ──────────────────────────────────────
+  center.innerHTML = '';
 
-  // ── Центр: Слой 1 + Слой 2 ──────────────────────────────────────────
-  var center = document.createElement('div');
-  center.id = 'footer-nav-center';
+  // Слой 1 — Консультация Партнёр (для всех) или ничего (для партнёра — есть кнопка Кабинет справа)
+  if (!isPartner) {
+    var cab = document.createElement('button');
+    cab.className = 'fnav-l1';
+    cab.innerHTML = '🤝 Консультация Партнёр';
+    cab.onclick = function() { openCabinet(); };
+    center.appendChild(cab);
+  }
 
-  // Слой 1 — Кабинет (партнёр) или Консультация Партнёр (клиент/бизнес)
-  var cab = document.createElement('button');
-  cab.id = 'hbtn-cabinet';
-  cab.className = 'fnav-l1';
-  cab.innerHTML = isPartner ? '🗂️ Кабинет' : '🤝 Консультация Партнёр';
-  cab.onclick = function() { openCabinet(); };
-  center.appendChild(cab);
-
-  // Показываем саб-таби только если хотя бы один тумблер включён
+  // Слой 2 — саб-таби по тумблерам
   if (s.showEconomy || s.showBrand || s.showMeta) {
-    var sep = document.createElement('span');
-    sep.className = 'fnav-sep';
-    center.appendChild(sep);
-
+    if (!isPartner && center.children.length) {
+      var sep = document.createElement('span');
+      sep.className = 'fnav-sep';
+      center.appendChild(sep);
+    }
     if (s.showEconomy) {
       var e = document.createElement('button');
       e.className = 'cab-subtab st-economy';
@@ -2403,35 +2410,37 @@ function renderFooterNav() {
     }
   }
 
-  nav.appendChild(center);
+  // ── Ліворуч від стрілочки: роль + запросы + Кабинет ─────────────────
+  var roleEl = document.getElementById('hdr-role');
+  var reqEl  = document.getElementById('hdr-requests');
+  var cabBtn = document.getElementById('hbtn-cabinet');
 
-  // ── Справа: роль + запросы ───────────────────────────────────────────
-  var right = document.createElement('div');
-  right.id = 'footer-nav-right';
-
-  var roleLabel = document.createElement('span');
-  roleLabel.className = 'fnav-role';
-  var roleName = 'Пользователь';
-  var roleClass = 'role-user';
-  if (userMode === 'partner' || userMode === 'admin') { roleName = 'Партнёр'; roleClass = 'role-partner'; }
-  else if (userMode === 'business') { roleName = 'Бизнес'; roleClass = 'role-business'; }
-  roleLabel.classList.add(roleClass);
-  roleLabel.textContent = roleName;
-  right.appendChild(roleLabel);
-
-  var reqLabel = document.createElement('span');
-  reqLabel.className = 'fnav-requests';
-  if (currentPlan && PLANS[currentPlan]) {
-    var p = PLANS[currentPlan];
-    var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
-    reqLabel.textContent = remain + ' запросов';
-  } else {
-    reqLabel.textContent = 'демо режим';
+  if (roleEl) {
+    var roleName = 'Пользователь'; var roleClass = 'role-user';
+    if (userMode === 'partner' || userMode === 'admin') { roleName = 'Партнёр'; roleClass = 'role-partner'; }
+    else if (userMode === 'business') { roleName = 'Бизнес'; roleClass = 'role-business'; }
+    roleEl.className = 'hdr-role ' + roleClass;
+    roleEl.textContent = roleName;
+    roleEl.style.display = 'inline';
   }
-  right.appendChild(reqLabel);
-
-  nav.appendChild(right);
-  nav.style.display = 'flex';
+  if (reqEl) {
+    if (currentPlan && PLANS[currentPlan]) {
+      var p = PLANS[currentPlan];
+      var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
+      reqEl.textContent = remain + ' запросов';
+    } else {
+      reqEl.textContent = 'демо режим';
+    }
+    reqEl.style.display = 'inline';
+  }
+  if (cabBtn) {
+    if (isPartner) {
+      cabBtn.innerHTML = '🗂️ Кабинет';
+      cabBtn.style.cssText = 'display:flex;border-color:var(--product-partner);color:var(--product-partner)';
+    } else {
+      cabBtn.style.display = 'none';
+    }
+  }
 }
 
 function selectPlan(plan) {
@@ -2465,9 +2474,8 @@ function updateRequestUI() {
   var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
   var counter = document.getElementById('req-counter');
   if (counter) { counter.textContent = remain + ' зап.'; counter.style.display = 'inline-flex'; counter.className = 'req-counter' + (p.requests !== Infinity && (p.requests - usedRequests) <= 3 ? ' warn' : ''); }
-  // Обновить счётчик в футер-навигации
-  var fnReq = document.querySelector('#footer-nav-right .fnav-requests');
-  if (fnReq) fnReq.textContent = remain + ' запросов';
+  var hdrReq = document.getElementById('hdr-requests');
+  if (hdrReq) hdrReq.textContent = remain + ' запросов';
   document.getElementById('mini-plan').textContent = p.name;
   document.getElementById('mini-count').textContent = (p.requests === Infinity ? 'Безлимит' : (p.requests - usedRequests) + ' из ' + p.requests);
   document.getElementById('mini-bar').style.width = (p.requests === Infinity ? 30 : Math.round((usedRequests / p.requests) * 100)) + '%';
@@ -2972,7 +2980,7 @@ async function sendMessage() {
 
 // ═══ MOBILE EVENT HANDLERS ═══
 document.addEventListener('DOMContentLoaded', function() {
-  renderFooterNav();
+  renderHeaderNav();
 
   const sidebar = document.getElementById('sidebar');
   const app = document.querySelector('.app');
