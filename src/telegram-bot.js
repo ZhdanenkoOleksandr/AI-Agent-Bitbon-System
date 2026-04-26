@@ -68,6 +68,43 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
   botInstance = bot;
   console.log('🤖 Telegram бот запущен');
 
+  // ── Конфигурация бота: описание + команды (видны ДО нажатия Start) ─
+  const apiBase = `https://api.telegram.org/bot${BOT_TOKEN}`;
+  Promise.all([
+    // Описание — отображается в окне чата при первом открытии
+    fetch(`${apiBase}/setMyDescription`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description:
+          '👋 Добро пожаловать в партнёрский бот Системы Bitbon!\n\n' +
+          '🌐 Здесь вы можете:\n' +
+          '• Зарегистрироваться как партнёр\n' +
+          '• Получить доступ к личному кабинету\n' +
+          '• Проверить статус своей заявки\n\n' +
+          '👇 Нажмите СТАРТ чтобы начать',
+        language_code: 'ru'
+      })
+    }),
+    // Короткое описание — в профиле бота
+    fetch(`${apiBase}/setMyShortDescription`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        short_description: 'Регистрация партнёров Системы Bitbon',
+        language_code: 'ru'
+      })
+    }),
+    // Меню команд — открывается кнопкой "/" в поле ввода
+    bot.setMyCommands([
+      { command: 'start',  description: '🚀 Начать / главное меню' },
+      { command: 'status', description: '📋 Проверить статус заявки' },
+      { command: 'cancel', description: '❌ Отменить текущее действие' }
+    ])
+  ])
+    .then(() => console.log('✅ Описание и команды бота обновлены'))
+    .catch(e => console.warn('⚠️  Bot config warn:', e.message));
+
   // ── /start с invite-токеном (deep link из кабинета) ───────────────
   bot.onText(/\/start (.+)/, (msg, match) => {
     const chatId  = msg.chat.id;
