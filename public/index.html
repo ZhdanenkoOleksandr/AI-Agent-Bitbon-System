@@ -96,6 +96,19 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .cab-subtab.st-meta{border-color:rgba(59,130,246,0.45);color:var(--accent2)}
 .cab-subtab.st-meta:hover{background:var(--product-ai-bg)}
 #cab-subtabs{min-height:0;transition:padding 0.2s}
+.cab-subtab.has-link{opacity:1;font-weight:700}
+#cab-link-editor{display:none;padding:10px 16px 12px;border-bottom:1px solid var(--border);background:var(--surface2);animation:fadeIn .15s ease}
+#cab-link-editor.open{display:block}
+.cab-link-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.cab-link-row{display:flex;gap:6px;align-items:center}
+.cab-link-input{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:8px 11px;font-size:12px;color:var(--text);font-family:'Onest',sans-serif;outline:none;transition:border-color .2s}
+.cab-link-input:focus{border-color:var(--accent)}
+.cab-link-input::placeholder{color:var(--text3)}
+.cab-link-save{padding:7px 14px;border-radius:8px;background:var(--accent);border:none;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Onest',sans-serif;white-space:nowrap;transition:background .2s}
+.cab-link-save:hover{background:var(--accent2)}
+.cab-link-open{padding:7px 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.cab-link-open:hover{border-color:var(--accent);color:var(--accent2)}
+.cab-link-hint{font-size:10px;color:var(--text3);margin-top:5px}
 .fnav-l1{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;border:1.5px solid var(--product-partner);background:var(--product-partner-bg);color:var(--product-partner);font-size:12px;font-weight:700;cursor:pointer;font-family:'Onest',sans-serif;transition:all 0.18s;white-space:nowrap}
 .fnav-l1:hover{background:rgba(16,185,129,0.2)}
 .fnav-sep{width:1px;height:16px;background:var(--border2);flex-shrink:0;align-self:center}
@@ -989,6 +1002,17 @@ textarea::placeholder{color:var(--text3)}
 
     <!-- Слой 2: Telegram (закреплён) + Экономика/Бренд/Метаресурс (по настройкам) -->
     <div id="cab-subtabs" style="display:flex;gap:6px;padding:8px 16px 0;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap"></div>
+
+    <!-- Редактор ссылки (открывается под sub-tabs) -->
+    <div id="cab-link-editor">
+      <div class="cab-link-label" id="cab-link-label">✈️ Telegram</div>
+      <div class="cab-link-row">
+        <input class="cab-link-input" id="cab-link-input" placeholder="https://t.me/yourname" type="url">
+        <button class="cab-link-open" id="cab-link-open-btn" onclick="cabLinkOpen()">↗ Открыть</button>
+        <button class="cab-link-save" onclick="cabLinkSave()">Сохранить</button>
+      </div>
+      <div class="cab-link-hint" id="cab-link-hint">Эта ссылка откроется у клиентов при нажатии кнопки</div>
+    </div>
 
     <div class="tab-content active" id="cab-tab-info">
       <div class="cabinet-stats">
@@ -2436,45 +2460,111 @@ function saveClientSettings() {
   renderCabSubtabs();
 }
 
+// ── Ключи localStorage для партнёрских ссылок ─────────────────────────
+var CAB_LINK_KEYS = {
+  telegram: 'partner-link-telegram',
+  economy:  'partner-link-economy',
+  brand:    'partner-link-brand',
+  meta:     'partner-link-meta'
+};
+var cabLinkCurrent = null; // какой ресурс редактируем сейчас
+
+function loadPartnerLinks() {
+  return {
+    telegram: localStorage.getItem(CAB_LINK_KEYS.telegram) || '',
+    economy:  localStorage.getItem(CAB_LINK_KEYS.economy)  || '',
+    brand:    localStorage.getItem(CAB_LINK_KEYS.brand)    || '',
+    meta:     localStorage.getItem(CAB_LINK_KEYS.meta)     || ''
+  };
+}
+
+function openCabLinkEditor(key, label, placeholder) {
+  var editor = document.getElementById('cab-link-editor');
+  var input  = document.getElementById('cab-link-input');
+  var lbl    = document.getElementById('cab-link-label');
+  var hint   = document.getElementById('cab-link-hint');
+  var openBtn = document.getElementById('cab-link-open-btn');
+  if (!editor) return;
+
+  // Если тот же таб — закрыть
+  if (cabLinkCurrent === key && editor.classList.contains('open')) {
+    editor.classList.remove('open');
+    cabLinkCurrent = null;
+    return;
+  }
+
+  cabLinkCurrent = key;
+  lbl.innerHTML = label;
+  input.placeholder = placeholder;
+  input.value = localStorage.getItem(CAB_LINK_KEYS[key]) || '';
+  hint.textContent = 'Эта ссылка откроется у клиентов при нажатии кнопки';
+  openBtn.style.display = input.value ? 'flex' : 'none';
+  editor.classList.add('open');
+  setTimeout(function(){ input.focus(); input.select(); }, 50);
+}
+
+function cabLinkSave() {
+  if (!cabLinkCurrent) return;
+  var val = document.getElementById('cab-link-input').value.trim();
+  if (val && !/^https?:\/\//i.test(val) && !/^tg:/i.test(val)) val = 'https://' + val;
+  localStorage.setItem(CAB_LINK_KEYS[cabLinkCurrent], val);
+  var hint = document.getElementById('cab-link-hint');
+  var openBtn = document.getElementById('cab-link-open-btn');
+  hint.textContent = val ? '✅ Ссылка сохранена' : '✅ Ссылка очищена (используется по умолчанию)';
+  openBtn.style.display = val ? 'flex' : 'none';
+  setTimeout(function(){
+    hint.textContent = 'Эта ссылка откроется у клиентов при нажатии кнопки';
+  }, 2000);
+  renderHeaderNav();
+}
+
+function cabLinkOpen() {
+  var val = document.getElementById('cab-link-input').value.trim();
+  if (val) window.open(val, '_blank');
+}
+
 function renderCabSubtabs() {
-  // Слой 2 внутри кабинета (переключение вкладок)
   var bar = document.getElementById('cab-subtabs');
   if (bar) {
     var s = loadClientSettings();
+    var links = loadPartnerLinks();
     bar.innerHTML = '';
 
+    // Telegram
     var tg = document.createElement('button');
-    tg.className = 'cab-subtab pinned';
-    tg.innerHTML = '✈️ Telegram';
-    tg.title = 'Открыть Telegram бот';
-    tg.onclick = function() { window.open('https://t.me/' + (window.BOT_USERNAME || 'BitbonPartnerBot'), '_blank'); };
+    tg.className = 'cab-subtab pinned' + (links.telegram ? ' has-link' : '');
+    tg.innerHTML = '✈️ Telegram' + (links.telegram ? ' ✏️' : ' ＋');
+    tg.title = links.telegram ? links.telegram : 'Установить ссылку';
+    tg.onclick = function() { openCabLinkEditor('telegram', '✈️ Telegram', 'https://t.me/yourname'); };
     bar.appendChild(tg);
 
     if (s.showEconomy) {
       var e = document.createElement('button');
-      e.className = 'cab-subtab st-economy';
-      e.innerHTML = '📈 Экономика';
-      e.onclick = function() { switchCabTab('economy'); };
+      e.className = 'cab-subtab st-economy' + (links.economy ? ' has-link' : '');
+      e.innerHTML = '📈 Экономика' + (links.economy ? ' ✏️' : ' ＋');
+      e.title = links.economy ? links.economy : 'Установить ссылку';
+      e.onclick = function() { openCabLinkEditor('economy', '📈 Экономика', 'https://yoursite.com/economy'); };
       bar.appendChild(e);
     }
     if (s.showBrand) {
       var b = document.createElement('button');
-      b.className = 'cab-subtab st-brand';
-      b.innerHTML = '👤 Бренд';
-      b.onclick = function() { switchCabTab('brand'); };
+      b.className = 'cab-subtab st-brand' + (links.brand ? ' has-link' : '');
+      b.innerHTML = '👤 Бренд' + (links.brand ? ' ✏️' : ' ＋');
+      b.title = links.brand ? links.brand : 'Установить ссылку';
+      b.onclick = function() { openCabLinkEditor('brand', '👤 Бренд', 'https://yoursite.com/brand'); };
       bar.appendChild(b);
     }
     if (s.showMeta) {
       var m = document.createElement('button');
-      m.className = 'cab-subtab st-meta';
-      m.innerHTML = '🏗️ Метаресурс';
-      m.onclick = function() { closeCabinet(); startMetaWizard(); };
+      m.className = 'cab-subtab st-meta' + (links.meta ? ' has-link' : '');
+      m.innerHTML = '🏗️ Метаресурс' + (links.meta ? ' ✏️' : ' ＋');
+      m.title = links.meta ? links.meta : 'Установить ссылку';
+      m.onclick = function() { openCabLinkEditor('meta', '🏗️ Метаресурс', 'https://yoursite.com/meta'); };
       bar.appendChild(m);
     }
     bar.style.padding = bar.children.length ? '8px 16px 0' : '0 16px';
   }
 
-  // Слой 1+2 в футере (над полем ввода)
   renderFooterNav();
 }
 
@@ -2498,7 +2588,8 @@ function renderHeaderNav() {
     center.appendChild(cab);
   }
 
-  // Слой 2 — саб-таби по тумблерам
+  // Слой 2 — саб-таби по тумблерам (используют партнёрские ссылки если заданы)
+  var links = loadPartnerLinks();
   if (s.showEconomy || s.showBrand || s.showMeta) {
     if (!isPartner && center.children.length) {
       var sep = document.createElement('span');
@@ -2509,21 +2600,27 @@ function renderHeaderNav() {
       var e = document.createElement('button');
       e.className = 'cab-subtab st-economy';
       e.innerHTML = '📈 Экономика';
-      e.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
+      e.onclick = links.economy
+        ? function() { window.open(links.economy, '_blank'); }
+        : function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
       center.appendChild(e);
     }
     if (s.showBrand) {
       var b = document.createElement('button');
       b.className = 'cab-subtab st-brand';
       b.innerHTML = '👤 Бренд';
-      b.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
+      b.onclick = links.brand
+        ? function() { window.open(links.brand, '_blank'); }
+        : function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
       center.appendChild(b);
     }
     if (s.showMeta) {
       var m = document.createElement('button');
       m.className = 'cab-subtab st-meta';
       m.innerHTML = '🏗️ Метаресурсы';
-      m.onclick = function() { startMetaWizard(); };
+      m.onclick = links.meta
+        ? function() { window.open(links.meta, '_blank'); }
+        : function() { startMetaWizard(); };
       center.appendChild(m);
     }
   }
