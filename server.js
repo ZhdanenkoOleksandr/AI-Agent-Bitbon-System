@@ -747,13 +747,55 @@ app.get('/api/partner/dashboard', authenticatePartner, (req, res) => {
 
 
 // ══════════════════════════════════════════════════════════════════════
-// METARESOURCE GENERATION — proxy to Anthropic (browser cannot call directly)
+// METARESOURCE GENERATION — proxy to Anthropic + KB v3.0 injection
 // ══════════════════════════════════════════════════════════════════════
+
+// Build full Bitbon KB context to inject into every metaresource generation
+function buildMetaKBContext() {
+  if (!knowledgeBaseV3 || !knowledgeBaseV3.segments) return '';
+  let ctx = '\n\n═══ БАЗА ЗНАНИЙ СИСТЕМЫ BITBON (используй эти концепции точно) ═══\n';
+  Object.values(knowledgeBaseV3.segments).forEach(seg => {
+    ctx += `\n▶ ${seg.name}\n`;
+    seg.facts.forEach(fact => {
+      const answer = fact.answer.length > 500 ? fact.answer.substring(0, 500) + '...' : fact.answer;
+      ctx += `  Q: ${fact.question}\n  A: ${answer}\n\n`;
+    });
+  });
+  return ctx;
+}
+
 app.post('/api/metaresource/generate', async (req, res) => {
   const { context, systemPrompt } = req.body;
   if (!context || !systemPrompt) return res.status(400).json({ error: 'Missing context or systemPrompt' });
-
   if (!ANTHROPIC_API_KEY) return res.status(503).json({ error: 'API key not configured' });
+
+  // Inject KB v3.0 into system prompt
+  const kbContext     = buildMetaKBContext();
+  const fullSystem    = systemPrompt + kbContext;
+  const segmentNames  = Object.values(knowledgeBaseV3.segments || {}).map(s => s.name);
+  const totalFacts    = Object.values(knowledgeBaseV3.segments || {}).reduce((n, s) => n + s.facts.length, 0);
+
+  // ── LOGIC LOG ──────────────────────────────────────────────────────
+  console.log('\n╔══════════════════════════════════════════════════════════╗');
+  console.log('║  🏗️  МЕТАРЕСУРС — ЛОГИКА СОЗДАНИЯ ОТВЕТА                ║');
+  console.log('╚══════════════════════════════════════════════════════════╝');
+  console.log('');
+  console.log('┌─ SYSTEM PROMPT ──────────────────────────────────────────');
+  console.log('│  Базовый промпт:  ' + systemPrompt.length + ' символов');
+  console.log('│  KB v3.0 добавлен: ' + kbContext.length + ' символов');
+  console.log('│  Итого system:    ' + fullSystem.length + ' символов');
+  console.log('│');
+  console.log('├─ БАЗА ЗНАНИЙ (KB v3.0) ─────────────────────────────────');
+  console.log('│  Сегментов: ' + segmentNames.length + ' | Фактов: ' + totalFacts);
+  segmentNames.forEach((n, i) => console.log('│   ' + (i+1) + '. ' + n));
+  console.log('│');
+  console.log('├─ USER CONTEXT (ответы мастера) ─────────────────────────');
+  context.split('\n').filter(l => l.trim()).forEach(l => console.log('│  ' + l));
+  console.log('│');
+  console.log('├─ API ЗАПРОС ─────────────────────────────────────────────');
+  console.log('│  Модель:      claude-sonnet-4-20250514');
+  console.log('│  max_tokens:  2000');
+  console.log('└──────────────────────────────────────────────────────────');
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -766,23 +808,52 @@ app.post('/api/metaresource/generate', async (req, res) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
-        system: systemPrompt,
+        system: fullSystem,
         messages: [{ role: 'user', content: context }]
       })
     });
 
     const data = await response.json();
-    if (!response.ok) return res.status(response.status).json({ error: data.error?.message || 'API Error' });
+    if (!response.ok) {
+      console.log('│  ❌ API Error:', data.error?.message);
+      return res.status(response.status).json({ error: data.error?.message || 'API Error' });
+    }
 
-    const text = data.content?.[0]?.text || '';
+    const text  = data.content?.[0]?.text || '';
     const usage = {
       input:  data.usage?.input_tokens  || 0,
       output: data.usage?.output_tokens || 0,
       total:  (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
     };
-    console.log(`🏗️  Metaresource gen — tokens: ${usage.input} in / ${usage.output} out`);
 
-    res.json({ success: true, text, usage });
+    // Try parse JSON from response to log field names
+    let parsedFields = [];
+    try {
+      const fb = text.indexOf('{'), lb = text.lastIndexOf('}');
+      if (fb !== -1 && lb !== -1) {
+        const meta = JSON.parse(text.substring(fb, lb + 1));
+        parsedFields = Object.keys(meta);
+      }
+    } catch (_) {}
+
+    console.log('');
+    console.log('┌─ ОТВЕТ CLAUDE ───────────────────────────────────────────');
+    console.log('│  Токены:  input=' + usage.input + '  output=' + usage.output + '  total=' + usage.total);
+    console.log('│  JSON поля: ' + parsedFields.join(', '));
+    console.log('│  Размер ответа: ' + text.length + ' символов');
+    console.log('└──────────────────────────────────────────────────────────\n');
+
+    res.json({ success: true, text, usage, logic: {
+      systemChars:   fullSystem.length,
+      kbCharsAdded:  kbContext.length,
+      kbSegments:    segmentNames.length,
+      kbFacts:       totalFacts,
+      contextChars:  context.length,
+      jsonFields:    parsedFields,
+      tokensInput:   usage.input,
+      tokensOutput:  usage.output,
+      tokensTotal:   usage.total
+    }});
   } catch (err) {
     console.error('Metaresource generate error:', err);
     res.status(500).json({ error: err.message });
