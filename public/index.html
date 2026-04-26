@@ -417,128 +417,205 @@ textarea::placeholder{color:var(--text3)}
   .level-card-desc{font-size:11px}
   .level-note{font-size:13px;max-width:100%;padding:12px}
 
-  /* HEADER MOBILE */
-  .header{padding:10px 12px;gap:8px;min-height:44px}
-  .avatar{width:32px;height:32px;font-size:13px}
-  .header-info h1{font-size:12px}
-  .header-info p{font-size:10px}
-  .header-btn{height:36px;padding:0 8px;font-size:10px;gap:3px;flex-shrink:0}
-  .level-badge{font-size:10px;padding:2px 7px}
-  .req-counter{font-size:10px;padding:2px 7px}
-  .sidebar-toggle{width:36px;height:36px;font-size:16px}
+  /* ═══ HEADER MOBILE — 2-рядна структура ═══ */
+  .header{
+    flex-wrap:wrap;
+    padding:8px 12px 0;
+    gap:0;
+    min-height:auto;
+  }
+  /* Рядок 1: лого + кнопки управления */
+  .header-left{
+    flex:1;min-width:0;order:1;
+    padding-bottom:8px;
+  }
+  .header-right{
+    flex-shrink:0;order:2;
+    gap:6px;
+    padding-bottom:8px;
+  }
+  /* Рядок 2: навигация (горизонтальний скрол) */
+  .header-center{
+    order:3;
+    width:calc(100% + 24px);
+    margin:0 -12px;
+    padding:6px 12px 8px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    gap:6px;
+    border-top:1px solid var(--border);
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .header-center::-webkit-scrollbar{display:none}
+  /* Кнопки навигации в хедере — компактнее */
+  .header-center .fnav-l1{padding:5px 12px;font-size:11px;flex-shrink:0}
+  .header-center .cab-subtab{padding:5px 10px;font-size:11px;flex-shrink:0;margin-bottom:0}
+  .header-center .fnav-sep{height:14px}
+  /* Роль + запросы + кабинет справа — компактно */
+  .hdr-info-right{gap:4px}
+  .hdr-role{font-size:10px}
+  .hdr-requests{font-size:9px}
+  #hbtn-cabinet.header-btn{height:28px;padding:0 8px;font-size:10px}
 
-  /* SIDEBAR MOBILE — выдвижная, НЕ скрывается */
+  /* Аватар и заголовок */
+  .avatar{width:30px;height:30px;font-size:12px}
+  .header-info h1{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .header-info p{display:none}
+  .header-btn{height:32px;padding:0 8px;font-size:10px;gap:3px;flex-shrink:0}
+  .level-badge{display:none!important}
+  .req-counter{display:none!important}
+  .sidebar-toggle{width:32px;height:32px;font-size:15px;flex-shrink:0}
+  #mode-switch-btn{width:32px;height:32px;padding:0;justify-content:center}
+
+  /* SIDEBAR MOBILE — выдвижная */
   .sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;height:100dvh;z-index:1000;transform:translateX(-100%);transition:transform 0.3s ease}
   .sidebar.visible{transform:translateX(0)}
   .sidebar::after{content:'';position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:-1}
 
-  /* SUGGESTIONS MOBILE — горизонтальный скролл */
-  .suggestions{padding:8px 12px;gap:6px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
-  .suggestions::-webkit-scrollbar{height:3px}
+  /* SUGGESTIONS MOBILE */
+  .suggestions{padding:6px 12px;gap:5px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+  .suggestions::-webkit-scrollbar{height:2px}
   .suggestions::-webkit-scrollbar-thumb{background:rgba(99,179,237,0.3);border-radius:2px}
-  .suggestion-btn{flex-shrink:0;font-size:10px;padding:4px 10px;min-height:32px}
+  .suggestion-btn{flex-shrink:0;font-size:10px;padding:4px 10px;min-height:30px}
 
   /* CHAT AREA MOBILE */
-  .chat{padding:12px;gap:12px}
-  .welcome{padding:16px 12px}
-  .welcome-icon{font-size:32px;margin-bottom:8px}
-  .welcome-title{font-size:15px;margin-bottom:6px}
-  .welcome-sub{font-size:12px;line-height:1.5;max-width:100%}
-  .welcome-panels{grid-template-columns:1fr;max-width:100%;gap:10px;margin-top:12px}
-  .welcome-panel{padding:12px;border-radius:var(--radius)}
-  .welcome-panel-title{font-size:12px;margin-bottom:8px}
-  .welcome-panel-list li{font-size:11px;padding:4px 0}
+  .chat{padding:10px;gap:10px}
+  .welcome{padding:14px 10px}
+  .welcome-icon{font-size:28px;margin-bottom:6px}
+  .welcome-title{font-size:14px;margin-bottom:4px}
+  .welcome-sub{font-size:11px;line-height:1.5;max-width:100%}
+  .welcome-panels{grid-template-columns:1fr;max-width:100%;gap:8px;margin-top:10px}
+  .welcome-panel{padding:10px;border-radius:var(--radius)}
+  .welcome-panel-title{font-size:11px;margin-bottom:6px}
+  .welcome-panel-list li{font-size:10px;padding:3px 0}
 
   /* INPUT AREA MOBILE */
-  .input-area{padding:10px 12px;min-height:auto}
-  .input-row{gap:8px}
-  textarea{font-size:13px;padding:10px 12px;border-radius:var(--radius-sm);min-height:40px;max-height:80px}
+  .input-area{padding:8px 12px;min-height:auto}
+  .input-row{gap:7px}
+  textarea{font-size:16px;padding:9px 12px;border-radius:var(--radius-sm);min-height:40px;max-height:100px}
   .send-btn{width:38px;height:38px;flex-shrink:0}
   .send-btn svg{width:13px;height:13px}
-  .input-hint{font-size:10px;margin-top:6px;line-height:1.3}
+  .input-hint{font-size:10px;margin-top:5px;line-height:1.3}
 
   /* MESSAGES MOBILE */
-  .msg{gap:8px}
-  .msg-body{max-width:90%}
-  .msg-avatar{width:28px;height:28px;font-size:12px}
-  .msg-bubble{padding:10px 12px;font-size:13px;line-height:1.5;border-radius:10px}
-  .msg-name{font-size:10px;padding:0 4px}
+  .msg{gap:7px}
+  .msg-body{max-width:92%}
+  .msg-avatar{width:26px;height:26px;font-size:11px}
+  .msg-bubble{padding:9px 11px;font-size:13px;line-height:1.55;border-radius:10px}
+  .msg-name{font-size:9px;padding:0 3px}
 
   /* FORM FIELDS MOBILE */
-  .form-group{margin-bottom:12px}
-  .form-label{font-size:11px;margin-bottom:4px}
-  .form-input{padding:10px 12px;font-size:13px;border-radius:var(--radius-sm);min-height:40px}
-  .form-btn{padding:12px;font-size:13px;min-height:44px;margin-top:6px}
+  .form-group{margin-bottom:10px}
+  .form-label{font-size:11px;margin-bottom:3px}
+  .form-input{padding:10px 12px;font-size:16px;border-radius:var(--radius-sm);min-height:44px}
+  .form-btn{padding:12px;font-size:14px;min-height:48px;margin-top:6px}
   .form-row{grid-template-columns:1fr;gap:8px}
 
-  /* MODAL MOBILE — почти полноэкранные */
-  .overlay{padding:12px;background:rgba(0,0,0,0.9)}
-  .modal{border-radius:16px;padding:20px;max-width:100%;max-height:92dvh;width:auto}
-  .modal-title{font-size:16px}
-  .modal-sub{font-size:12px;margin-bottom:16px;line-height:1.5}
-  .close-btn{top:12px;right:12px;font-size:24px;padding:2px}
+  /* MODAL MOBILE — полноэкранные */
+  .overlay{padding:0;background:rgba(0,0,0,0.95);align-items:flex-end}
+  .modal{
+    border-radius:20px 20px 0 0;
+    padding:20px 16px;
+    max-width:100%;
+    width:100%;
+    max-height:92dvh;
+    border-bottom:none;
+  }
+  .modal-title{font-size:15px;margin-bottom:6px}
+  .modal-sub{font-size:11px;margin-bottom:14px;line-height:1.5}
+  .close-btn{top:14px;right:14px;font-size:22px;padding:2px}
+
+  /* CABINET MODAL MOBILE */
+  #cabinet-overlay.overlay{align-items:flex-end}
+  #cabinet-overlay .modal{
+    border-radius:20px 20px 0 0;
+    padding:16px;
+    max-height:94dvh;
+  }
+  .tab-row{
+    margin-bottom:12px;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    border-radius:var(--radius-sm);
+  }
+  .tab-row::-webkit-scrollbar{display:none}
+  .tab-btn{padding:8px 10px;font-size:10px;min-height:36px;flex-shrink:0;white-space:nowrap}
+  #cab-subtabs{
+    overflow-x:auto;
+    flex-wrap:nowrap!important;
+    scrollbar-width:none;
+    padding:6px 0 8px!important;
+    gap:6px;
+    -webkit-overflow-scrolling:touch;
+  }
+  #cab-subtabs::-webkit-scrollbar{display:none}
+  #cab-subtabs .cab-subtab{flex-shrink:0;margin-bottom:0;font-size:11px;padding:5px 10px}
+
+  /* CABINET STATS MOBILE */
+  .cabinet-stats{grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+  .stat-box{padding:10px 8px;border-radius:var(--radius-sm)}
+  .stat-val{font-size:18px}
+  .stat-label{font-size:9px;margin-top:2px}
 
   /* PLAN GRID MOBILE */
-  .plan-grid{grid-template-columns:1fr;gap:10px;margin-bottom:16px}
+  .plan-grid{grid-template-columns:1fr;gap:10px;margin-bottom:14px}
   .plan-card{padding:14px;border-radius:var(--radius)}
-  .plan-icon{font-size:24px;margin-bottom:6px}
+  .plan-icon{font-size:22px;margin-bottom:5px}
   .plan-name{font-size:13px}
   .plan-price{font-size:16px}
-  .plan-requests{font-size:11px}
+  .plan-requests{font-size:10px}
   .plan-features li{font-size:10px;padding:2px 0}
   .plan-badge{font-size:9px;padding:1px 8px;top:-8px}
 
   /* MODE CARD MOBILE */
-  .mode-card{padding:12px;border-radius:var(--radius);min-height:44px}
-  .mode-emoji{font-size:22px}
+  .mode-card{padding:10px 12px;border-radius:var(--radius);min-height:44px}
+  .mode-emoji{font-size:20px}
   .mode-title{font-size:12px}
   .mode-desc{font-size:10px}
 
-  /* CABINET STATS MOBILE */
-  .cabinet-stats{grid-template-columns:1fr;gap:8px;margin-bottom:12px}
-  .stat-box{padding:12px;border-radius:var(--radius-sm)}
-  .stat-val{font-size:20px}
-  .stat-label{font-size:10px;margin-top:2px}
-
-  /* TABS MOBILE */
-  .tab-row{margin-bottom:16px;border-radius:var(--radius-sm)}
-  .tab-btn{padding:10px 8px;font-size:11px;min-height:40px}
+  /* TABS (general) MOBILE */
+  .tab-btn{padding:8px 10px;font-size:10px;min-height:36px}
 
   /* CROSS-REFS MOBILE */
-  .cross-refs{margin-top:10px;padding:10px;border-radius:var(--radius-sm)}
-  .cross-refs-title{font-size:10px;margin-bottom:6px}
-  .cross-ref-item{font-size:11px;padding:3px 8px;margin:2px 2px 2px 0}
+  .cross-refs{margin-top:8px;padding:8px;border-radius:var(--radius-sm)}
+  .cross-refs-title{font-size:9px;margin-bottom:5px}
+  .cross-ref-item{font-size:10px;padding:3px 7px;margin:2px 2px 2px 0}
 
-  /* EXAMPLE/COMPARE/DIAGRAM MOBILE */
-  .example-block{margin-top:10px;padding:10px 12px;border-radius:var(--radius-sm);border-left:3px solid var(--gold)}
+  /* CONTENT BLOCKS MOBILE */
+  .example-block{margin-top:8px;padding:10px 11px;border-radius:var(--radius-sm);border-left:3px solid var(--gold)}
   .example-label{font-size:9px}
   .example-text{font-size:12px;line-height:1.5}
-  .compare-block{gap:6px}
-  .compare-col{padding:8px 10px;border-radius:var(--radius-sm)}
+  .compare-block{gap:5px}
+  .compare-col{padding:8px;border-radius:var(--radius-sm)}
   .compare-label{font-size:9px}
   .compare-text{font-size:11px}
-  .diagram-container{margin:10px 0;padding:12px 10px 10px;border-radius:var(--radius-sm);overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .diagram-container{margin:8px 0;padding:10px;border-radius:var(--radius-sm);overflow-x:auto;-webkit-overflow-scrolling:touch}
   .mermaid svg{max-width:100%;height:auto}
 
   /* ACTION BUTTONS MOBILE */
-  .action-btn{font-size:11px;padding:4px 10px;min-height:32px;border-radius:var(--radius-sm)}
-  .msg-actions{gap:6px;flex-wrap:wrap}
+  .action-btn{font-size:11px;padding:4px 9px;min-height:32px;border-radius:var(--radius-sm)}
+  .msg-actions{gap:5px;flex-wrap:wrap;margin-top:6px}
 
   /* FOLLOWUPS MOBILE */
-  .followups{margin-top:10px;padding-top:10px}
-  .followups-title{font-size:10px;margin-bottom:6px}
-  .followup-btn{font-size:12px;padding:10px 12px;border-radius:var(--radius-sm);min-height:40px}
+  .followups{margin-top:8px;padding-top:8px}
+  .followups-title{font-size:9px;margin-bottom:5px}
+  .followup-btn{font-size:12px;padding:10px 12px;border-radius:var(--radius-sm);min-height:42px}
 
   /* WIZARD MOBILE */
-  .wizard-question{padding:12px 14px;margin-bottom:3px;border-radius:var(--radius-sm)}
-  .wizard-q-label{font-size:9px;margin-bottom:5px}
+  .wizard-question{padding:10px 12px;margin-bottom:2px;border-radius:var(--radius-sm)}
+  .wizard-q-label{font-size:9px;margin-bottom:4px}
   .wizard-q-text{font-size:13px;line-height:1.5}
 
   /* EXPAND BUTTON MOBILE */
-  .expand-btn{font-size:11px;padding:4px 10px;border-radius:var(--radius-sm);min-height:32px}
+  .expand-btn{font-size:11px;padding:4px 9px;border-radius:var(--radius-sm);min-height:32px}
 
   /* CORRECTIONS PANEL MOBILE */
-  .corrections-panel{width:calc(100% - 20px);right:10px;bottom:60px;max-height:50vh}
+  .corrections-panel{width:calc(100% - 20px);right:10px;bottom:10px;max-height:50vh}
   .corrections-toggle-btn{right:10px;bottom:10px}
 }
 
@@ -555,32 +632,66 @@ textarea::placeholder{color:var(--text3)}
   .level-icon{font-size:22px}
   .level-note{font-size:14px;max-width:100%}
 
-  .header{padding:11px 16px;min-height:44px}
+  /* HEADER TABLET — 2-рядна структура */
+  .header{flex-wrap:wrap;padding:10px 16px 0;gap:0;min-height:auto}
+  .header-left{flex:1;min-width:0;order:1;padding-bottom:10px}
+  .header-right{flex-shrink:0;order:2;gap:7px;padding-bottom:10px}
+  .header-center{
+    order:3;
+    width:calc(100% + 32px);
+    margin:0 -16px;
+    padding:7px 16px 9px;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    justify-content:flex-start;
+    gap:7px;
+    border-top:1px solid var(--border);
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .header-center::-webkit-scrollbar{display:none}
+  .header-center .fnav-l1{flex-shrink:0;font-size:12px}
+  .header-center .cab-subtab{flex-shrink:0;margin-bottom:0}
+
   .avatar{width:32px;height:32px}
   .header-info h1{font-size:12px}
-  .header-btn{height:36px;font-size:11px}
+  .header-info p{display:none}
+  .header-btn{height:34px;font-size:11px}
+  .sidebar-toggle{width:34px;height:34px}
+  .hdr-role{font-size:11px}
+  .hdr-requests{font-size:10px}
 
   .sidebar{display:none !important}
 
-  .suggestions{padding:8px 16px;gap:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
-  .suggestion-btn{flex-shrink:0;font-size:11px;padding:6px 12px;min-height:36px}
+  .suggestions{padding:7px 16px;gap:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  .suggestion-btn{flex-shrink:0;font-size:11px;padding:5px 12px;min-height:34px}
 
   .chat{padding:14px}
   .welcome-icon{font-size:36px}
   .welcome-title{font-size:16px}
   .welcome-panels{grid-template-columns:1fr;gap:11px}
 
-  .input-area{padding:11px 16px}
-  textarea{font-size:13px;padding:10px 12px;min-height:40px}
+  .input-area{padding:10px 16px}
+  textarea{font-size:14px;padding:10px 12px;min-height:40px}
   .send-btn{width:38px;height:38px}
   .input-hint{font-size:11px}
 
-  .overlay{padding:14px}
+  .overlay{padding:12px;background:rgba(0,0,0,0.92)}
   .modal{padding:24px;border-radius:16px;max-width:100%}
 
+  #cab-subtabs{
+    overflow-x:auto;
+    flex-wrap:nowrap!important;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  #cab-subtabs::-webkit-scrollbar{display:none}
+  #cab-subtabs .cab-subtab{flex-shrink:0;margin-bottom:0}
+
   .plan-grid{grid-template-columns:1fr;gap:11px}
-  .cabinet-stats{grid-template-columns:1fr;gap:9px}
+  .cabinet-stats{grid-template-columns:repeat(3,1fr);gap:8px}
   .form-row{grid-template-columns:1fr;gap:9px}
+  .tab-btn{font-size:11px;padding:9px 10px}
 }
 
 /* ═══ SMALL DESKTOP — 769px+ (вернуть нормальные стили) ═══ */
@@ -596,26 +707,33 @@ textarea::placeholder{color:var(--text3)}
 /* ═══ SAFE AREA & NOTCH SUPPORT (iPhone) ═══ */
 @supports(padding: max(0px)) {
   .input-area{
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
     padding-left: max(12px, env(safe-area-inset-left));
     padding-right: max(12px, env(safe-area-inset-right));
   }
   @media(max-width:480px){
-    .header{padding-top: max(10px, env(safe-area-inset-top))}
-    .input-area{padding-bottom: max(10px, env(safe-area-inset-bottom))}
+    .header{padding-top: max(8px, env(safe-area-inset-top))}
+    .input-area{padding-bottom: max(8px, env(safe-area-inset-bottom))}
   }
 }
 
 /* ═══ LANDSCAPE ORIENTATION (мобильные) ═══ */
 @media(max-height:500px) and (max-width:768px){
-  .level-screen{padding:16px 12px;gap:10px}
-  .level-logo{font-size:24px}
-  .level-title{font-size:16px}
-  .header{padding:8px 12px;min-height:40px}
-  .chat{padding:8px}
-  .input-area{padding:8px 12px}
-  textarea{min-height:36px}
+  .level-screen{padding:12px;gap:8px}
+  .level-logo{font-size:22px}
+  .level-title{font-size:15px}
+  /* Хедер в landscape — только 1 рядок, без nav-center */
+  .header{flex-wrap:nowrap;padding:6px 12px}
+  .header-center{display:none}
+  .header-left{flex:1}
+  .chat{padding:6px}
+  .input-area{padding:6px 12px}
+  textarea{min-height:34px;max-height:60px}
   .welcome-panels{display:none}
+  .welcome{padding:10px 8px}
+  .welcome-icon{font-size:22px;margin-bottom:4px}
+  .welcome-title{font-size:13px}
+  .welcome-sub{font-size:10px}
 }
 
 /* ═══ FOCUS STATE (сенсорные устройства) ═══ */
