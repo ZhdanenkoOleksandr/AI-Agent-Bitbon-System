@@ -2124,11 +2124,11 @@ function applyI18n() {
   // Cabinet
   setQ('#cabinet-overlay .modal-title', 'cab_title');
   set('cab-partner-name', 'cab_subtitle');
-  var cabTabs = document.querySelectorAll('#cabinet-overlay > .modal > .tab-row .tab-btn');
-  if (cabTabs[0]) cabTabs[0].textContent = t.cab_tab_info;
-  if (cabTabs[1]) cabTabs[1].textContent = t.cab_tab_payment;
-  if (cabTabs[2]) cabTabs[2].textContent = t.cab_tab_plans;
-  if (cabTabs[3]) cabTabs[3].textContent = t.cab_tab_tools;
+  var cabTabs = document.querySelectorAll('#cabinet-overlay .tab-row .tab-btn');
+  if (cabTabs[0]) cabTabs[0].innerHTML = t.cab_tab_info;
+  if (cabTabs[1]) cabTabs[1].innerHTML = t.cab_tab_payment;
+  if (cabTabs[2]) cabTabs[2].innerHTML = t.cab_tab_plans;
+  if (cabTabs[3]) cabTabs[3].innerHTML = t.cab_tab_tools;
   // Cabinet link editor
   var linkLabel = document.getElementById('cab-link-label');
   if (linkLabel) linkLabel.textContent = t.cab_link_label;
