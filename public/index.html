@@ -1089,7 +1089,7 @@ textarea::placeholder{color:var(--text3)}
         </div>
 
         <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5">
-          Включённые кнопки появятся у клиентов и бизнес-пользователей в заголовке.
+          Включённые кнопки появятся у клиентов и бизнес-пользователей в верхнем футере.
         </div>
       </div>
     </div>
@@ -2359,10 +2359,8 @@ function renderFooterNav() {
   var nav = document.getElementById('footer-nav');
   if (!nav) return;
   var s = loadClientSettings();
+  // Саб-таби керуються тумблерами для ВСІХ режимів
   var isPartner = (userMode === 'partner' || userMode === 'admin');
-  var showEconomy = isPartner ? s.showEconomy : true;
-  var showBrand   = isPartner ? s.showBrand   : true;
-  var showMeta    = isPartner ? s.showMeta    : true;
 
   nav.innerHTML = '';
 
@@ -2370,47 +2368,41 @@ function renderFooterNav() {
   var center = document.createElement('div');
   center.id = 'footer-nav-center';
 
-  // Слой 1 — Консультация Партнёр
+  // Слой 1 — Кабинет (партнёр) или Консультация Партнёр (клиент/бизнес)
   var cab = document.createElement('button');
   cab.id = 'hbtn-cabinet';
   cab.className = 'fnav-l1';
-  cab.innerHTML = '🤝 Консультация Партнёр';
+  cab.innerHTML = isPartner ? '🗂️ Кабинет' : '🤝 Консультация Партнёр';
   cab.onclick = function() { openCabinet(); };
   center.appendChild(cab);
 
-  // Разделитель
-  var sep = document.createElement('span');
-  sep.className = 'fnav-sep';
-  center.appendChild(sep);
+  // Показываем саб-таби только если хотя бы один тумблер включён
+  if (s.showEconomy || s.showBrand || s.showMeta) {
+    var sep = document.createElement('span');
+    sep.className = 'fnav-sep';
+    center.appendChild(sep);
 
-  // Слой 2 — Telegram (всегда)
-  var tg = document.createElement('button');
-  tg.className = 'cab-subtab pinned';
-  tg.innerHTML = '✈️ Telegram';
-  tg.title = 'Связь с партнёром';
-  tg.onclick = function() { window.open('https://t.me/' + (window.BOT_USERNAME || 'BitbonPartnerBot'), '_blank'); };
-  center.appendChild(tg);
-
-  if (showEconomy) {
-    var e = document.createElement('button');
-    e.className = 'cab-subtab st-economy';
-    e.innerHTML = '📈 Экономика';
-    e.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
-    center.appendChild(e);
-  }
-  if (showBrand) {
-    var b = document.createElement('button');
-    b.className = 'cab-subtab st-brand';
-    b.innerHTML = '👤 Бренд';
-    b.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
-    center.appendChild(b);
-  }
-  if (showMeta) {
-    var m = document.createElement('button');
-    m.className = 'cab-subtab st-meta';
-    m.innerHTML = '🏗️ Метаресурсы';
-    m.onclick = function() { startMetaWizard(); };
-    center.appendChild(m);
+    if (s.showEconomy) {
+      var e = document.createElement('button');
+      e.className = 'cab-subtab st-economy';
+      e.innerHTML = '📈 Экономика';
+      e.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
+      center.appendChild(e);
+    }
+    if (s.showBrand) {
+      var b = document.createElement('button');
+      b.className = 'cab-subtab st-brand';
+      b.innerHTML = '👤 Бренд';
+      b.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
+      center.appendChild(b);
+    }
+    if (s.showMeta) {
+      var m = document.createElement('button');
+      m.className = 'cab-subtab st-meta';
+      m.innerHTML = '🏗️ Метаресурсы';
+      m.onclick = function() { startMetaWizard(); };
+      center.appendChild(m);
+    }
   }
 
   nav.appendChild(center);
