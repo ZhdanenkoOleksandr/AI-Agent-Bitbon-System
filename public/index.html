@@ -1122,14 +1122,14 @@ textarea::placeholder{color:var(--text3)}
 
       <!-- Поделиться с клиентом -->
       <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:16px;margin-bottom:14px">
-        <div style="font-weight:600;color:var(--green);margin-bottom:6px;font-size:14px">👤 Поделиться с клиентом</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">
+        <div id="cab-share-title" style="font-weight:600;color:var(--green);margin-bottom:6px;font-size:14px">👤 Поделиться с клиентом</div>
+        <div id="cab-share-desc" style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">
           Выберите количество запросов и отправьте ссылку через любой мессенджер.
         </div>
 
         <!-- Счётчик запросов -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px">
-          <span style="font-size:12px;color:var(--text2);flex:1">🎁 Запросов в подарок:</span>
+          <span id="cab-gift-label1" style="font-size:12px;color:var(--text2);flex:1">🎁 Запросов в подарок:</span>
           <div style="display:flex;align-items:center;gap:8px">
             <button onclick="changeGiftQuota(-5)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Onest',sans-serif">−</button>
             <span id="gift-quota-val" style="font-size:16px;font-weight:700;color:var(--green);min-width:32px;text-align:center">20</span>
@@ -1164,14 +1164,14 @@ textarea::placeholder{color:var(--text3)}
 
       <!-- Пригласить партнёра -->
       <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px">
-        <div style="font-weight:600;color:var(--purple);margin-bottom:6px;font-size:14px">🤝 Пригласить партнёра</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">
+        <div id="cab-invite-title" style="font-weight:600;color:var(--purple);margin-bottom:6px;font-size:14px">🤝 Пригласить партнёра</div>
+        <div id="cab-invite-desc" style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">
           Введите Telegram — бот автоматически напишет партнёру и соберёт все данные.
         </div>
 
         <!-- Счётчик запросов для партнёра -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px">
-          <span style="font-size:12px;color:var(--text2);flex:1">🎁 Запросов в подарок:</span>
+          <span id="cab-gift-label2" style="font-size:12px;color:var(--text2);flex:1">🎁 Запросов в подарок:</span>
           <div style="display:flex;align-items:center;gap:8px">
             <button onclick="changePartnerGiftQuota(-5)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Onest',sans-serif">−</button>
             <span id="partner-gift-quota-val" style="font-size:16px;font-weight:700;color:var(--purple);min-width:32px;text-align:center">20</span>
@@ -1187,7 +1187,7 @@ textarea::placeholder{color:var(--text3)}
         <div class="form-group" style="margin-bottom:10px">
           <input class="form-input" id="cab-reg-telegram" placeholder="@username" style="font-size:14px;padding:11px 14px">
         </div>
-        <button class="form-btn primary" onclick="cabSubmitRegistration()" style="margin-top:0">
+        <button id="cab-create-invite-btn" class="form-btn primary" onclick="cabSubmitRegistration()" style="margin-top:0">
           📩 Создать приглашение
         </button>
         <div id="cab-reg-result" style="margin-top:12px"></div>
@@ -1203,12 +1203,12 @@ textarea::placeholder{color:var(--text3)}
 
       <!-- Настройки видимости для клиентов -->
       <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:16px;margin-top:14px">
-        <div style="font-weight:600;color:var(--accent2);margin-bottom:14px;font-size:14px">⚙️ Показывать клиентам и бизнесу</div>
+        <div id="cab-visibility-title" style="font-weight:600;color:var(--accent2);margin-bottom:14px;font-size:14px">⚙️ Показывать клиентам и бизнесу</div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
           <div>
-            <div style="font-size:13px;font-weight:500;color:var(--text)">📈 Экономика</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">Калькулятор Viking Economy</div>
+            <div id="cab-toggle-economy" style="font-size:13px;font-weight:500;color:var(--text)">📈 Экономика</div>
+            <div id="cab-toggle-economy-sub" style="font-size:11px;color:var(--text3);margin-top:2px">Калькулятор Viking Economy</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="setting-show-economy" onchange="saveClientSettings()">
@@ -1218,8 +1218,8 @@ textarea::placeholder{color:var(--text3)}
 
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
           <div>
-            <div style="font-size:13px;font-weight:500;color:var(--text)">👤 Личный бренд</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">Страница профиля партнёра</div>
+            <div id="cab-toggle-brand" style="font-size:13px;font-weight:500;color:var(--text)">👤 Личный бренд</div>
+            <div id="cab-toggle-brand-sub" style="font-size:11px;color:var(--text3);margin-top:2px">Страница профиля партнёра</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="setting-show-brand" onchange="saveClientSettings()">
@@ -1229,8 +1229,8 @@ textarea::placeholder{color:var(--text3)}
 
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
           <div>
-            <div style="font-size:13px;font-weight:500;color:var(--text)">🏗️ Метаресурс</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:2px">Создание метаресурса бизнеса</div>
+            <div id="cab-toggle-meta" style="font-size:13px;font-weight:500;color:var(--text)">🏗️ Метаресурс</div>
+            <div id="cab-toggle-meta-sub" style="font-size:11px;color:var(--text3);margin-top:2px">Создание метаресурса бизнеса</div>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="setting-show-meta" onchange="saveClientSettings()">
@@ -1715,7 +1715,19 @@ var TRANSLATIONS = {
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
     cab_tools_desc:'Інструменти для привернення клієнтів та розширення партнерської мережі.',
+    cab_share_title:'👤 Поділитися з клієнтом',
+    cab_share_desc:'Виберіть кількість запитів та відправте посилання через будь-який месенджер.',
     cab_requests_gift:'🎁 Запитів у подарунок:',
+    cab_invite_title:'🤝 Запросити партнера',
+    cab_invite_desc:'Введіть Telegram — бот автоматично напише партнеру та збере всі дані.',
+    cab_create_invite:'📩 Створити запрошення',
+    cab_visibility_title:'⚙️ Показувати клієнтам і бізнесу',
+    cab_toggle_economy:'📈 Економіка',
+    cab_toggle_economy_sub:'Калькулятор Viking Economy',
+    cab_toggle_brand:'👤 Особистий бренд',
+    cab_toggle_brand_sub:'Сторінка профілю партнера',
+    cab_toggle_meta:'🏗️ Метаресурс',
+    cab_toggle_meta_sub:'Створення метаресурсу бізнесу',
     cab_share_instruct:'Введіть Telegram — бот автоматично напише партнеру та зберіть усі дані.',
     input_hint:'🏗️ Метаресурс — демо вашого бізнесу · 🏛️ Кабінет — управління API',
     limit_title:'⚡ Ліміт вичерпано',
@@ -1843,7 +1855,19 @@ var TRANSLATIONS = {
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
     cab_tools_desc:'Tools to attract clients and expand your partner network.',
+    cab_share_title:'👤 Share with client',
+    cab_share_desc:'Choose the number of requests and send a link via any messenger.',
     cab_requests_gift:'🎁 Complimentary requests:',
+    cab_invite_title:'🤝 Invite a partner',
+    cab_invite_desc:'Enter Telegram — the bot will automatically write to the partner and collect all data.',
+    cab_create_invite:'📩 Create invitation',
+    cab_visibility_title:'⚙️ Show to clients and business',
+    cab_toggle_economy:'📈 Economy',
+    cab_toggle_economy_sub:'Viking Economy Calculator',
+    cab_toggle_brand:'👤 Personal brand',
+    cab_toggle_brand_sub:'Partner profile page',
+    cab_toggle_meta:'🏗️ Metaresource',
+    cab_toggle_meta_sub:'Business metaresource creation',
     cab_share_instruct:'Enter Telegram — the bot will automatically write to the partner and collect all data.',
     input_hint:'🏗️ Metaresource — demo of your business · 🏛️ Cabinet — API management',
     limit_title:'⚡ Limit exceeded',
@@ -1971,7 +1995,19 @@ var TRANSLATIONS = {
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
     cab_tools_desc:'Инструменты для привлечения клиентов и расширения партнёрской сети.',
+    cab_share_title:'👤 Поделиться с клиентом',
+    cab_share_desc:'Выберите количество запросов и отправьте ссылку через любой мессенджер.',
     cab_requests_gift:'🎁 Запросов в подарок:',
+    cab_invite_title:'🤝 Пригласить партнёра',
+    cab_invite_desc:'Введите Telegram — бот автоматически напишет партнёру и соберёт все данные.',
+    cab_create_invite:'📩 Создать приглашение',
+    cab_visibility_title:'⚙️ Показывать клиентам и бизнесу',
+    cab_toggle_economy:'📈 Экономика',
+    cab_toggle_economy_sub:'Калькулятор Viking Economy',
+    cab_toggle_brand:'👤 Личный бренд',
+    cab_toggle_brand_sub:'Страница профиля партнёра',
+    cab_toggle_meta:'🏗️ Метаресурс',
+    cab_toggle_meta_sub:'Создание метаресурса бизнеса',
     cab_share_instruct:'Введите Telegram — бот автоматически напишет партнёру и соберёт все данные.',
     input_hint:'🏗️ Метаресурс — демо вашего бизнеса · 🏛️ Кабинет — управление API',
     limit_title:'⚡ Лимит исчерпан',
@@ -2166,12 +2202,21 @@ function applyI18n() {
   if (cabShareBtns[1]) { var csp1 = cabShareBtns[1].querySelector('span:last-child'); if (csp1) csp1.textContent = t.msg_whatsapp; }
   if (cabShareBtns[2]) { var csp2 = cabShareBtns[2].querySelector('span:last-child'); if (csp2) csp2.textContent = t.msg_viber; }
   if (cabShareBtns[3]) { var csp3 = cabShareBtns[3].querySelector('span:last-child'); if (csp3) csp3.textContent = t.msg_email; }
-  // Cabinet tools description
-  var allDivs = document.querySelectorAll('#cab-tab-tools div');
-  allDivs.forEach(function(div) { if (div.textContent.includes('Инструменты') && div.textContent.includes('привлечения')) { div.textContent = t.cab_tools_desc; } });
-  // Cabinet gift requests label
-  var allSpans = document.querySelectorAll('#cab-tab-info span');
-  allSpans.forEach(function(span) { if (span.textContent.includes('Запросов в подарок')) { span.textContent = t.cab_requests_gift; } });
+  // Cabinet Tools tab — all texts
+  set('cab-share-title', 'cab_share_title');
+  set('cab-share-desc', 'cab_share_desc');
+  set('cab-gift-label1', 'cab_requests_gift');
+  set('cab-invite-title', 'cab_invite_title');
+  set('cab-invite-desc', 'cab_invite_desc');
+  set('cab-gift-label2', 'cab_requests_gift');
+  set('cab-create-invite-btn', 'cab_create_invite');
+  set('cab-visibility-title', 'cab_visibility_title');
+  set('cab-toggle-economy', 'cab_toggle_economy');
+  set('cab-toggle-economy-sub', 'cab_toggle_economy_sub');
+  set('cab-toggle-brand', 'cab_toggle_brand');
+  set('cab-toggle-brand-sub', 'cab_toggle_brand_sub');
+  set('cab-toggle-meta', 'cab_toggle_meta');
+  set('cab-toggle-meta-sub', 'cab_toggle_meta_sub');
   var statLabels = document.querySelectorAll('#cab-tab-info .stat-label');
   if (statLabels[0]) statLabels[0].textContent = t.cab_stat_requests;
   if (statLabels[1]) statLabels[1].textContent = t.cab_stat_remain;
