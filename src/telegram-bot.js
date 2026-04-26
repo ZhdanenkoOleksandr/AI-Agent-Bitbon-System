@@ -163,56 +163,63 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
         return;
       }
 
-      // Статус 'invited' или любой другой незавершённый — перезапуск сбора данных
-      // (например, сессия была потеряна после рестарта сервера)
+      // Статус 'invited' или любой другой незавершённый — предложить начать заново
       existing.telegramChatId = String(chatId);
       if (msg.from.username) existing.telegram = '@' + msg.from.username;
       persistData();
 
-      sessions[chatId] = { partnerId: existing.id, step: 0, data: {} };
+      sessions[chatId] = {
+        step: 'awaiting_start',
+        partnerId: existing.id,
+        isInvited: true,
+        fromUser: {
+          first_name: msg.from.first_name,
+          last_name:  msg.from.last_name,
+          username
+        }
+      };
       bot.sendMessage(chatId,
         `👋 *${msg.from.first_name || username}*, продолжаем регистрацию!\n\n` +
-        `Заполните данные заново. Отмена: /cancel`,
-        { parse_mode: 'Markdown' }
+        `Нажмите кнопку ниже чтобы начать:`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🚀 НАЧАТЬ', callback_data: 'action_start_reg' }
+            ]]
+          }
+        }
       );
-      bot.sendMessage(chatId, PROMPTS.firstName, { parse_mode: 'Markdown' });
       return;
     }
 
-    // Новый пользователь — начать самостоятельную регистрацию
-    console.log(`🆕 [BOT] Self-registration: ${username}, chatId=${chatId}`);
+    // Новый пользователь — показать кнопку НАЧАТЬ
+    console.log(`🆕 [BOT] New user greeting: ${username}, chatId=${chatId}`);
 
-    const partnerId = generatePartnerId();
-    const newPartner = {
-      id: partnerId,
-      firstName: msg.from.first_name || '',
-      lastName: msg.from.last_name || '',
-      email: '', phone: '', telegram: username,
-      walletAddress: '', inviteToken: null,
-      telegramChatId: String(chatId),
-      status: 'invited', packageType: null,
-      apiKey: null, pinHash: null,
-      role: 'partner',
-      requestsLimit: 0, requestsUsed: 0,
-      metaresourcesLimit: 0, metaresourcesUsed: 0,
-      createdAt: new Date().toISOString(),
-      activatedAt: null, expiresAt: null,
-      source: 'self_registration'
+    sessions[chatId] = {
+      step: 'awaiting_start',
+      partnerId: null,
+      fromUser: {
+        first_name: msg.from.first_name,
+        last_name:  msg.from.last_name,
+        username
+      }
     };
-
-    db.partners[partnerId] = newPartner;
-    persistData();
-    sessions[chatId] = { partnerId, step: 0, data: {} };
-    console.log(`✅ [SES] session created for chatId=${chatId} partnerId=${partnerId}`);
 
     bot.sendMessage(chatId,
       `👋 Привет, *${msg.from.first_name || username}*!\n\n` +
       `Добро пожаловать в *Систему Bitbon* 🌐\n\n` +
-      `Для регистрации ответьте на несколько вопросов.\n` +
-      `Отмена: /cancel`,
-      { parse_mode: 'Markdown' }
+      `Нажмите кнопку ниже чтобы пройти регистрацию партнёра.\n` +
+      `Это займёт ~2 минуты.`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '🚀 НАЧАТЬ', callback_data: 'action_start_reg' }
+          ]]
+        }
+      }
     );
-    bot.sendMessage(chatId, PROMPTS.firstName, { parse_mode: 'Markdown' });
   }
 
   // ── Нулевой пользователь ─────────────────────────────────────────
@@ -279,10 +286,66 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     );
   });
 
-  // ── Выбор пакета (callback) ────────────────────────────────────────
+  // ── Callback кнопок ───────────────────────────────────────────────
   bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
-    const sess = sessions[chatId];
+    const sess   = sessions[chatId];
+
+    // ── Кнопка НАЧАТЬ ───────────────────────────────────────────────
+    if (query.data === 'action_start_reg') {
+      bot.answerCallbackQuery(query.id);
+
+      const fromUser = sess?.fromUser || {
+        first_name: query.from.first_name,
+        last_name:  query.from.last_name,
+        username:   query.from.username ? '@' + query.from.username : null
+      };
+      const username = fromUser.username || (query.from.username ? '@' + query.from.username : null);
+
+      if (!username) {
+        bot.sendMessage(chatId,
+          `❌ Установите @username в настройках Telegram и попробуйте снова.`,
+          { parse_mode: 'Markdown' }
+        );
+        delete sessions[chatId];
+        return;
+      }
+
+      let partnerId = sess?.partnerId;
+
+      if (partnerId) {
+        // Уже существующий invited партнёр
+        const p = db.partners[partnerId];
+        if (p) { p.telegramChatId = String(chatId); persistData(); }
+      } else {
+        // Новый партнёр — создаём запись
+        partnerId = generatePartnerId();
+        db.partners[partnerId] = {
+          id: partnerId,
+          firstName: fromUser.first_name || '',
+          lastName:  fromUser.last_name  || '',
+          email: '', phone: '', telegram: username,
+          walletAddress: '', inviteToken: null,
+          telegramChatId: String(chatId),
+          status: 'invited', packageType: null,
+          apiKey: null, pinHash: null,
+          role: 'partner',
+          requestsLimit: 0, requestsUsed: 0,
+          metaresourcesLimit: 0, metaresourcesUsed: 0,
+          createdAt: new Date().toISOString(),
+          activatedAt: null, expiresAt: null,
+          source: 'self_registration'
+        };
+        persistData();
+        console.log(`✅ [SES] partner created chatId=${chatId} partnerId=${partnerId}`);
+      }
+
+      sessions[chatId] = { partnerId, step: 0, data: {}, isInvited: !!sess?.isInvited };
+      bot.sendMessage(chatId, PROMPTS.firstName, { parse_mode: 'Markdown' });
+      return;
+    }
+
+    // ── Выбор пакета ────────────────────────────────────────────────
     if (!sess || sess.step !== 'plan') return;
 
     sess.data.plan = query.data.replace('plan_', '');
@@ -369,7 +432,17 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
       return;
     }
 
-    // Ожидание inline keyboard
+    // Ожидание нажатия кнопки НАЧАТЬ
+    if (sess.step === 'awaiting_start') {
+      console.log(`⏳ [SES] waiting for НАЧАТЬ button, ignoring text`);
+      bot.sendMessage(chatId,
+        `⬆️ Нажмите кнопку *НАЧАТЬ* выше, чтобы начать регистрацию.`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    // Ожидание выбора пакета (inline keyboard)
     if (sess.step === 'plan') {
       console.log(`⏳ [SES] waiting for plan selection, ignoring text`);
       return;
