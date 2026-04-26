@@ -1260,7 +1260,6 @@ textarea::placeholder{color:var(--text3)}
       <div class="header-right">
         <span class="level-badge" id="level-badge" style="display:none"></span>
         <span class="req-counter" id="req-counter" style="display:none"></span>
-        <button id="hbtn-admin-login" class="header-btn" onclick="openAdminLogin()" title="Вход администратора" style="display:none;border-color:rgba(220,38,38,0.4);color:#dc2626">🔐 Вход</button>
         <button id="hbtn-admin" class="header-btn" onclick="openAdmin()" style="border-color:rgba(239,68,68,0.4);color:var(--red);display:none">🔧 Админ</button>
         <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
@@ -1543,15 +1542,8 @@ function closeModeSwitch() {
 
 // ── Показать/скрыть кнопки хедера в зависимости от режима ─────────────
 function updateHeaderButtons(mode) {
-  var show = {
-    'hbtn-admin':       mode === 'admin',
-    'hbtn-admin-login': mode !== 'partner' && mode !== 'admin'
-  };
-  Object.keys(show).forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.style.display = show[id] ? '' : 'none';
-  });
-  // Футер-навигация перерисовывается при смене режима
+  var adminBtn = document.getElementById('hbtn-admin');
+  if (adminBtn) adminBtn.style.display = mode === 'admin' ? '' : 'none';
   renderFooterNav();
 }
 
@@ -2229,14 +2221,7 @@ function getFetchOptions(method, body) {
 })();
 
 // ── Admin Cabinet Login ────────────────────────────────────────────────
-function updateAdminLoginButton() {
-  var btn = document.getElementById('hbtn-admin-login');
-  var levelScreen = document.getElementById('level-screen');
-  if (btn && levelScreen) {
-    // Показываем кнопку ВХОД только если виден экран уровней и пользователь не залогинен
-    btn.style.display = (!levelScreen.classList.contains('hidden') && !jwtToken) ? 'block' : 'none';
-  }
-}
+function updateAdminLoginButton() { /* кнопка удалена из хедера */ }
 
 function openAdminLogin() {
   var overlay = document.getElementById('admin-login-overlay');
@@ -2364,6 +2349,13 @@ function renderFooterNav() {
   var nav = document.getElementById('footer-nav');
   if (!nav) return;
   var s = loadClientSettings();
+  // Для партнёра — управляется настройками кабинета;
+  // для клиента/бизнеса — все кнопки видны всегда
+  var isPartner = (userMode === 'partner' || userMode === 'admin');
+  var showEconomy = isPartner ? s.showEconomy : true;
+  var showBrand   = isPartner ? s.showBrand   : true;
+  var showMeta    = isPartner ? s.showMeta    : true;
+
   nav.innerHTML = '';
 
   // Слой 1 — кнопка Партнёр
@@ -2380,7 +2372,7 @@ function renderFooterNav() {
   sep.style.cssText = 'width:1px;height:18px;background:var(--border2);align-self:center;flex-shrink:0';
   nav.appendChild(sep);
 
-  // Слой 2 — Telegram (закреплён)
+  // Слой 2 — Telegram (закреплён всегда)
   var tg = document.createElement('button');
   tg.className = 'cab-subtab pinned';
   tg.innerHTML = '✈️ Telegram';
@@ -2388,21 +2380,21 @@ function renderFooterNav() {
   tg.onclick = function() { window.open('https://t.me/' + (window.BOT_USERNAME || 'BitbonPartnerBot'), '_blank'); };
   nav.appendChild(tg);
 
-  if (s.showEconomy) {
+  if (showEconomy) {
     var e = document.createElement('button');
     e.className = 'cab-subtab st-economy';
     e.innerHTML = '📈 Экономика';
     e.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
     nav.appendChild(e);
   }
-  if (s.showBrand) {
+  if (showBrand) {
     var b = document.createElement('button');
     b.className = 'cab-subtab st-brand';
     b.innerHTML = '👤 Бренд';
     b.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
     nav.appendChild(b);
   }
-  if (s.showMeta) {
+  if (showMeta) {
     var m = document.createElement('button');
     m.className = 'cab-subtab st-meta';
     m.innerHTML = '🏗️ Метаресурс';
@@ -2410,7 +2402,7 @@ function renderFooterNav() {
     nav.appendChild(m);
   }
 
-  nav.style.display = nav.children.length ? 'flex' : 'none';
+  nav.style.display = 'flex';
 }
 
 function selectPlan(plan) {
