@@ -96,7 +96,17 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .cab-subtab.st-meta{border-color:rgba(59,130,246,0.45);color:var(--accent2)}
 .cab-subtab.st-meta:hover{background:var(--product-ai-bg)}
 #cab-subtabs{min-height:0;transition:padding 0.2s}
-#footer-nav{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;min-height:0}
+#footer-nav{display:flex;align-items:center;gap:8px;margin-bottom:8px;min-height:0}
+#footer-nav-center{display:flex;flex-wrap:wrap;gap:5px;align-items:center;flex:1;justify-content:center}
+#footer-nav-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;margin-left:4px}
+.fnav-role{font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.fnav-role.role-partner{color:var(--product-partner)}
+.fnav-role.role-business{color:var(--product-economy)}
+.fnav-role.role-user{color:var(--accent2)}
+.fnav-requests{font-size:10px;color:var(--text3);white-space:nowrap}
+.fnav-l1{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:20px;border:1.5px solid var(--product-partner);background:var(--product-partner-bg);color:var(--product-partner);font-size:12px;font-weight:700;cursor:pointer;font-family:'Onest',sans-serif;transition:all 0.18s;white-space:nowrap}
+.fnav-l1:hover{background:rgba(16,185,129,0.2)}
+.fnav-sep{width:1px;height:16px;background:var(--border2);flex-shrink:0;align-self:center}
 /* Вкладки админки — красный акцент */
 #admin-panel-overlay .tab-btn.active {background:var(--product-admin-bg);color:var(--product-admin);border-top-color:var(--product-admin)}
 
@@ -2349,8 +2359,6 @@ function renderFooterNav() {
   var nav = document.getElementById('footer-nav');
   if (!nav) return;
   var s = loadClientSettings();
-  // Для партнёра — управляется настройками кабинета;
-  // для клиента/бизнеса — все кнопки видны всегда
   var isPartner = (userMode === 'partner' || userMode === 'admin');
   var showEconomy = isPartner ? s.showEconomy : true;
   var showBrand   = isPartner ? s.showBrand   : true;
@@ -2358,50 +2366,81 @@ function renderFooterNav() {
 
   nav.innerHTML = '';
 
-  // Слой 1 — кнопка Партнёр
+  // ── Центр: Слой 1 + Слой 2 ──────────────────────────────────────────
+  var center = document.createElement('div');
+  center.id = 'footer-nav-center';
+
+  // Слой 1 — Консультация Партнёр
   var cab = document.createElement('button');
   cab.id = 'hbtn-cabinet';
-  cab.className = 'cab-subtab';
-  cab.style.cssText = 'border-color:rgba(99,179,237,0.45);color:var(--accent2);font-weight:700';
-  cab.innerHTML = '🤝 Партнёр';
+  cab.className = 'fnav-l1';
+  cab.innerHTML = '🤝 Консультация Партнёр';
   cab.onclick = function() { openCabinet(); };
-  nav.appendChild(cab);
+  center.appendChild(cab);
 
   // Разделитель
   var sep = document.createElement('span');
-  sep.style.cssText = 'width:1px;height:18px;background:var(--border2);align-self:center;flex-shrink:0';
-  nav.appendChild(sep);
+  sep.className = 'fnav-sep';
+  center.appendChild(sep);
 
-  // Слой 2 — Telegram (закреплён всегда)
+  // Слой 2 — Telegram (всегда)
   var tg = document.createElement('button');
   tg.className = 'cab-subtab pinned';
   tg.innerHTML = '✈️ Telegram';
-  tg.title = 'Открыть Telegram бот';
+  tg.title = 'Связь с партнёром';
   tg.onclick = function() { window.open('https://t.me/' + (window.BOT_USERNAME || 'BitbonPartnerBot'), '_blank'); };
-  nav.appendChild(tg);
+  center.appendChild(tg);
 
   if (showEconomy) {
     var e = document.createElement('button');
     e.className = 'cab-subtab st-economy';
     e.innerHTML = '📈 Экономика';
     e.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
-    nav.appendChild(e);
+    center.appendChild(e);
   }
   if (showBrand) {
     var b = document.createElement('button');
     b.className = 'cab-subtab st-brand';
     b.innerHTML = '👤 Бренд';
     b.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
-    nav.appendChild(b);
+    center.appendChild(b);
   }
   if (showMeta) {
     var m = document.createElement('button');
     m.className = 'cab-subtab st-meta';
-    m.innerHTML = '🏗️ Метаресурс';
+    m.innerHTML = '🏗️ Метаресурсы';
     m.onclick = function() { startMetaWizard(); };
-    nav.appendChild(m);
+    center.appendChild(m);
   }
 
+  nav.appendChild(center);
+
+  // ── Справа: роль + запросы ───────────────────────────────────────────
+  var right = document.createElement('div');
+  right.id = 'footer-nav-right';
+
+  var roleLabel = document.createElement('span');
+  roleLabel.className = 'fnav-role';
+  var roleName = 'Пользователь';
+  var roleClass = 'role-user';
+  if (userMode === 'partner' || userMode === 'admin') { roleName = 'Партнёр'; roleClass = 'role-partner'; }
+  else if (userMode === 'business') { roleName = 'Бизнес'; roleClass = 'role-business'; }
+  roleLabel.classList.add(roleClass);
+  roleLabel.textContent = roleName;
+  right.appendChild(roleLabel);
+
+  var reqLabel = document.createElement('span');
+  reqLabel.className = 'fnav-requests';
+  if (currentPlan && PLANS[currentPlan]) {
+    var p = PLANS[currentPlan];
+    var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
+    reqLabel.textContent = remain + ' запросов';
+  } else {
+    reqLabel.textContent = 'демо режим';
+  }
+  right.appendChild(reqLabel);
+
+  nav.appendChild(right);
   nav.style.display = 'flex';
 }
 
@@ -2435,9 +2474,10 @@ function updateRequestUI() {
   var p = PLANS[currentPlan];
   var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
   var counter = document.getElementById('req-counter');
-  counter.textContent = remain + ' зап.';
-  counter.style.display = 'inline-flex';
-  counter.className = 'req-counter' + (p.requests !== Infinity && (p.requests - usedRequests) <= 3 ? ' warn' : '');
+  if (counter) { counter.textContent = remain + ' зап.'; counter.style.display = 'inline-flex'; counter.className = 'req-counter' + (p.requests !== Infinity && (p.requests - usedRequests) <= 3 ? ' warn' : ''); }
+  // Обновить счётчик в футер-навигации
+  var fnReq = document.querySelector('#footer-nav-right .fnav-requests');
+  if (fnReq) fnReq.textContent = remain + ' запросов';
   document.getElementById('mini-plan').textContent = p.name;
   document.getElementById('mini-count').textContent = (p.requests === Infinity ? 'Безлимит' : (p.requests - usedRequests) + ' из ' + p.requests);
   document.getElementById('mini-bar').style.width = (p.requests === Infinity ? 30 : Math.round((usedRequests / p.requests) * 100)) + '%';
