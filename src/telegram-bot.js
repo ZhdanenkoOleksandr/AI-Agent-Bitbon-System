@@ -137,12 +137,6 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
       return;
     }
 
-    // Нулевой пользователь
-    if (username.toLowerCase() === ZERO_USER_TELEGRAM.toLowerCase()) {
-      handleZeroUserStart(chatId, msg);
-      return;
-    }
-
     // Поиск существующего партнёра
     const existing = Object.values(db.partners).find(
       p => p.telegram && p.telegram.toLowerCase() === username.toLowerCase()
