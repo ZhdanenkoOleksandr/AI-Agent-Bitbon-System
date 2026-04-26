@@ -2088,16 +2088,25 @@ function applyI18n() {
   if (lcards[2]) { lcards[2].querySelector('.level-card-title').textContent = t.level_partner_title; lcards[2].querySelector('.level-card-desc').textContent = t.level_partner_desc; }
   setQ('.level-note', 'level_note');
 
-  // Share overlay
+  // Share overlay & Cabinet share buttons
   setQ('#share-client-overlay .modal-title', 'share_title');
   setQ('#share-client-overlay .modal-sub', 'share_sub');
-  var shareBtns = document.querySelectorAll('#share-client-overlay .share-messenger-btn');
-  if (shareBtns[0]) { var sp0 = shareBtns[0].querySelector('span:last-child'); if (sp0) sp0.textContent = t.msg_telegram; }
-  if (shareBtns[1]) { var sp1 = shareBtns[1].querySelector('span:last-child'); if (sp1) sp1.textContent = t.msg_whatsapp; }
-  if (shareBtns[2]) { var sp2 = shareBtns[2].querySelector('span:last-child'); if (sp2) sp2.textContent = t.msg_viber; }
-  if (shareBtns[3]) { var sp3 = shareBtns[3].querySelector('span:last-child'); if (sp3) sp3.textContent = t.msg_email; }
-  if (shareBtns[4]) { var sp = shareBtns[4].querySelector('span:last-child'); if (sp) sp.textContent = t.share_instagram; }
+  var shareOverlay = document.getElementById('share-client-overlay');
+  if (shareOverlay) {
+    var shareBtns = shareOverlay.querySelectorAll('.share-messenger-btn');
+    if (shareBtns[0]) { var sp0 = shareBtns[0].querySelector('span:last-child'); if (sp0) sp0.textContent = t.msg_telegram; }
+    if (shareBtns[1]) { var sp1 = shareBtns[1].querySelector('span:last-child'); if (sp1) sp1.textContent = t.msg_whatsapp; }
+    if (shareBtns[2]) { var sp2 = shareBtns[2].querySelector('span:last-child'); if (sp2) sp2.textContent = t.msg_viber; }
+    if (shareBtns[3]) { var sp3 = shareBtns[3].querySelector('span:last-child'); if (sp3) sp3.textContent = t.msg_email; }
+    if (shareBtns[4]) { var sp = shareBtns[4].querySelector('span:last-child'); if (sp) sp.textContent = t.share_instagram; }
+  }
   set('share-footer', 'share_footer');
+  // Also translate cabinet share buttons
+  var cabShareBtns = document.querySelectorAll('#cab-tab-info .share-messenger-btn');
+  if (cabShareBtns[0]) { var csp0 = cabShareBtns[0].querySelector('span:last-child'); if (csp0) csp0.textContent = t.msg_telegram; }
+  if (cabShareBtns[1]) { var csp1 = cabShareBtns[1].querySelector('span:last-child'); if (csp1) csp1.textContent = t.msg_whatsapp; }
+  if (cabShareBtns[2]) { var csp2 = cabShareBtns[2].querySelector('span:last-child'); if (csp2) csp2.textContent = t.msg_viber; }
+  if (cabShareBtns[3]) { var csp3 = cabShareBtns[3].querySelector('span:last-child'); if (csp3) csp3.textContent = t.msg_email; }
 
   // Register overlay
   setQ('#register-overlay .modal-title', 'reg_title');
@@ -2134,15 +2143,18 @@ function applyI18n() {
   // Cabinet
   setQ('#cabinet-overlay .modal-title', 'cab_title');
   set('cab-partner-name', 'cab_subtitle');
-  // Find cabinet tabs by data-tab attribute for more reliable targeting
-  var tabInfo = document.querySelector('[data-tab="info"]');
-  var tabPayment = document.querySelector('[data-tab="payment"]');
-  var tabPlans = document.querySelector('[data-tab="plans"]');
-  var tabTools = document.querySelector('[data-tab="tools"]');
-  if (tabInfo) tabInfo.innerHTML = t.cab_tab_info;
-  if (tabPayment) tabPayment.innerHTML = t.cab_tab_payment;
-  if (tabPlans) tabPlans.innerHTML = t.cab_tab_plans;
-  if (tabTools) tabTools.innerHTML = t.cab_tab_tools;
+  // Find cabinet tabs - scoped to cabinet overlay only
+  var cabOverlay = document.getElementById('cabinet-overlay');
+  if (cabOverlay) {
+    var tabInfo = cabOverlay.querySelector('[data-tab="info"]');
+    var tabPayment = cabOverlay.querySelector('[data-tab="payment"]');
+    var tabPlans = cabOverlay.querySelector('[data-tab="plans"]');
+    var tabTools = cabOverlay.querySelector('[data-tab="tools"]');
+    if (tabInfo) tabInfo.innerHTML = t.cab_tab_info;
+    if (tabPayment) tabPayment.innerHTML = t.cab_tab_payment;
+    if (tabPlans) tabPlans.innerHTML = t.cab_tab_plans;
+    if (tabTools) tabTools.innerHTML = t.cab_tab_tools;
+  }
   // Cabinet link editor
   var linkLabel = document.getElementById('cab-link-label');
   if (linkLabel) linkLabel.textContent = t.cab_link_label;
