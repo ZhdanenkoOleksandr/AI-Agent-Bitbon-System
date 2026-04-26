@@ -68,6 +68,12 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
   botInstance = bot;
   console.log('🤖 Telegram бот запущен');
 
+  // ── Кнопка "Start" / первое открытие чата ────────────────────────
+  // Срабатывает когда пользователь нажимает кнопку Start впервые
+  bot.on('new_chat_members', (msg) => {
+    handleStart(msg.chat.id, msg);
+  });
+
   // ── /start с invite-токеном (deep link из кабинета) ───────────────
   bot.onText(/\/start (.+)/, (msg, match) => {
     const chatId  = msg.chat.id;
@@ -362,9 +368,10 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
       return;
     }
 
-    // Нет сессии — игнорируем
+    // Нет сессии — попробовать запустить регистрацию автоматически
     if (!sess) {
-      console.log(`⚠️  [SES] no session for chatId=${chatId} — ignoring message`);
+      console.log(`⚠️  [SES] no session for chatId=${chatId} — auto-starting`);
+      handleStart(chatId, msg);
       return;
     }
 
