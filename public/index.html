@@ -1646,8 +1646,9 @@ const TOTAL_TOPICS = Object.keys(GLOSSARY_DATA).length;
 var currentLang = localStorage.getItem('bitbon_lang') || (function(){
   var nav = (navigator.language || navigator.userLanguage || 'uk').toLowerCase();
   if (nav.startsWith('uk')) return 'uk';
+  if (nav.startsWith('ru')) return 'ru';
   if (nav.startsWith('en')) return 'en';
-  return 'uk';
+  return 'uk'; // Default to Ukrainian
 })();
 
 var TRANSLATIONS = {
@@ -2133,11 +2134,15 @@ function applyI18n() {
   // Cabinet
   setQ('#cabinet-overlay .modal-title', 'cab_title');
   set('cab-partner-name', 'cab_subtitle');
-  var cabTabs = document.querySelectorAll('#cabinet-overlay .tab-row .tab-btn');
-  if (cabTabs[0]) cabTabs[0].innerHTML = t.cab_tab_info;
-  if (cabTabs[1]) cabTabs[1].innerHTML = t.cab_tab_payment;
-  if (cabTabs[2]) cabTabs[2].innerHTML = t.cab_tab_plans;
-  if (cabTabs[3]) cabTabs[3].innerHTML = t.cab_tab_tools;
+  // Find cabinet tabs by data-tab attribute for more reliable targeting
+  var tabInfo = document.querySelector('[data-tab="info"]');
+  var tabPayment = document.querySelector('[data-tab="payment"]');
+  var tabPlans = document.querySelector('[data-tab="plans"]');
+  var tabTools = document.querySelector('[data-tab="tools"]');
+  if (tabInfo) tabInfo.innerHTML = t.cab_tab_info;
+  if (tabPayment) tabPayment.innerHTML = t.cab_tab_payment;
+  if (tabPlans) tabPlans.innerHTML = t.cab_tab_plans;
+  if (tabTools) tabTools.innerHTML = t.cab_tab_tools;
   // Cabinet link editor
   var linkLabel = document.getElementById('cab-link-label');
   if (linkLabel) linkLabel.textContent = t.cab_link_label;
