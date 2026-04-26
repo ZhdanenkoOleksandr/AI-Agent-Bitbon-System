@@ -96,6 +96,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .cab-subtab.st-meta{border-color:rgba(59,130,246,0.45);color:var(--accent2)}
 .cab-subtab.st-meta:hover{background:var(--product-ai-bg)}
 #cab-subtabs{min-height:0;transition:padding 0.2s}
+#footer-nav{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;min-height:0}
 /* Вкладки админки — красный акцент */
 #admin-panel-overlay .tab-btn.active {background:var(--product-admin-bg);color:var(--product-admin);border-top-color:var(--product-admin)}
 
@@ -1260,7 +1261,6 @@ textarea::placeholder{color:var(--text3)}
         <span class="level-badge" id="level-badge" style="display:none"></span>
         <span class="req-counter" id="req-counter" style="display:none"></span>
         <button id="hbtn-admin-login" class="header-btn" onclick="openAdminLogin()" title="Вход администратора" style="display:none;border-color:rgba(220,38,38,0.4);color:#dc2626">🔐 Вход</button>
-        <button id="hbtn-cabinet" class="header-btn cabinet-btn" onclick="openCabinet()">🤝 Партнёр</button>
         <button id="hbtn-admin" class="header-btn" onclick="openAdmin()" style="border-color:rgba(239,68,68,0.4);color:var(--red);display:none">🔧 Админ</button>
         <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
@@ -1299,6 +1299,7 @@ textarea::placeholder{color:var(--text3)}
     </div>
 
     <div class="input-area">
+      <div id="footer-nav"></div>
       <div class="input-row">
         <textarea id="input" placeholder="Задайте вопрос о Bitbon, Web 4.0 или создайте Метаресурс..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
         <button class="send-btn" id="send-btn" onclick="sendMessage()">
@@ -1543,7 +1544,6 @@ function closeModeSwitch() {
 // ── Показать/скрыть кнопки хедера в зависимости от режима ─────────────
 function updateHeaderButtons(mode) {
   var show = {
-    'hbtn-cabinet':     mode === 'partner' || mode === 'admin',
     'hbtn-admin':       mode === 'admin',
     'hbtn-admin-login': mode !== 'partner' && mode !== 'admin'
   };
@@ -1551,6 +1551,8 @@ function updateHeaderButtons(mode) {
     var el = document.getElementById(id);
     if (el) el.style.display = show[id] ? '' : 'none';
   });
+  // Футер-навигация перерисовывается при смене режима
+  renderFooterNav();
 }
 
 function switchLevel(level) {
@@ -2317,47 +2319,98 @@ function saveClientSettings() {
 }
 
 function renderCabSubtabs() {
+  // Слой 2 внутри кабинета (переключение вкладок)
   var bar = document.getElementById('cab-subtabs');
-  if (!bar) return;
-  var s = loadClientSettings();
-  bar.innerHTML = '';
+  if (bar) {
+    var s = loadClientSettings();
+    bar.innerHTML = '';
 
-  // Telegram — всегда закреплён
+    var tg = document.createElement('button');
+    tg.className = 'cab-subtab pinned';
+    tg.innerHTML = '✈️ Telegram';
+    tg.title = 'Открыть Telegram бот';
+    tg.onclick = function() { window.open('https://t.me/' + (window.BOT_USERNAME || 'BitbonPartnerBot'), '_blank'); };
+    bar.appendChild(tg);
+
+    if (s.showEconomy) {
+      var e = document.createElement('button');
+      e.className = 'cab-subtab st-economy';
+      e.innerHTML = '📈 Экономика';
+      e.onclick = function() { switchCabTab('economy'); };
+      bar.appendChild(e);
+    }
+    if (s.showBrand) {
+      var b = document.createElement('button');
+      b.className = 'cab-subtab st-brand';
+      b.innerHTML = '👤 Бренд';
+      b.onclick = function() { switchCabTab('brand'); };
+      bar.appendChild(b);
+    }
+    if (s.showMeta) {
+      var m = document.createElement('button');
+      m.className = 'cab-subtab st-meta';
+      m.innerHTML = '🏗️ Метаресурс';
+      m.onclick = function() { closeCabinet(); startMetaWizard(); };
+      bar.appendChild(m);
+    }
+    bar.style.padding = bar.children.length ? '8px 16px 0' : '0 16px';
+  }
+
+  // Слой 1+2 в футере (над полем ввода)
+  renderFooterNav();
+}
+
+function renderFooterNav() {
+  var nav = document.getElementById('footer-nav');
+  if (!nav) return;
+  var s = loadClientSettings();
+  nav.innerHTML = '';
+
+  // Слой 1 — кнопка Партнёр
+  var cab = document.createElement('button');
+  cab.id = 'hbtn-cabinet';
+  cab.className = 'cab-subtab';
+  cab.style.cssText = 'border-color:rgba(99,179,237,0.45);color:var(--accent2);font-weight:700';
+  cab.innerHTML = '🤝 Партнёр';
+  cab.onclick = function() { openCabinet(); };
+  nav.appendChild(cab);
+
+  // Разделитель
+  var sep = document.createElement('span');
+  sep.style.cssText = 'width:1px;height:18px;background:var(--border2);align-self:center;flex-shrink:0';
+  nav.appendChild(sep);
+
+  // Слой 2 — Telegram (закреплён)
   var tg = document.createElement('button');
   tg.className = 'cab-subtab pinned';
   tg.innerHTML = '✈️ Telegram';
   tg.title = 'Открыть Telegram бот';
   tg.onclick = function() { window.open('https://t.me/' + (window.BOT_USERNAME || 'BitbonPartnerBot'), '_blank'); };
-  bar.appendChild(tg);
+  nav.appendChild(tg);
 
-  // Экономика
   if (s.showEconomy) {
     var e = document.createElement('button');
     e.className = 'cab-subtab st-economy';
     e.innerHTML = '📈 Экономика';
-    e.onclick = function() { switchCabTab('economy'); };
-    bar.appendChild(e);
+    e.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
+    nav.appendChild(e);
   }
-
-  // Бренд
   if (s.showBrand) {
     var b = document.createElement('button');
     b.className = 'cab-subtab st-brand';
     b.innerHTML = '👤 Бренд';
-    b.onclick = function() { switchCabTab('brand'); };
-    bar.appendChild(b);
+    b.onclick = function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
+    nav.appendChild(b);
   }
-
-  // Метаресурс
   if (s.showMeta) {
     var m = document.createElement('button');
     m.className = 'cab-subtab st-meta';
     m.innerHTML = '🏗️ Метаресурс';
-    m.onclick = function() { closeCabinet(); startMetaWizard(); };
-    bar.appendChild(m);
+    m.onclick = function() { startMetaWizard(); };
+    nav.appendChild(m);
   }
 
-  bar.style.padding = bar.children.length ? '8px 16px 0' : '0 16px';
+  nav.style.display = nav.children.length ? 'flex' : 'none';
 }
 
 function selectPlan(plan) {
@@ -2897,6 +2950,8 @@ async function sendMessage() {
 
 // ═══ MOBILE EVENT HANDLERS ═══
 document.addEventListener('DOMContentLoaded', function() {
+  renderFooterNav();
+
   const sidebar = document.getElementById('sidebar');
   const app = document.querySelector('.app');
 
