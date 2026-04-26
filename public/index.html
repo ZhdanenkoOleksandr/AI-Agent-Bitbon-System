@@ -797,6 +797,15 @@ textarea::placeholder{color:var(--text3)}
     -webkit-overflow-scrolling: touch;
   }
 }
+/* ── Language Switcher ──────────────────────────────────────────── */
+.lang-switcher{position:relative;display:inline-flex;align-items:center}
+.lang-btn{padding:5px 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Onest',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.lang-btn:hover{border-color:var(--accent);color:var(--text)}
+.lang-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;padding:4px;min-width:140px;z-index:600;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.lang-switcher.open .lang-dropdown{display:block}
+.lang-option{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all 0.15s;font-family:'Onest',sans-serif}
+.lang-option:hover{background:var(--surface2);color:var(--text)}
+.lang-option.active{color:var(--accent);font-weight:700}
 </style>
 </head>
 <body>
@@ -867,7 +876,7 @@ textarea::placeholder{color:var(--text3)}
       </button>
     </div>
 
-    <div style="margin-top:14px;font-size:11px;color:var(--text3);text-align:center">
+    <div id="share-footer" style="margin-top:14px;font-size:11px;color:var(--text3);text-align:center">
       Клиент получит доступ к AI-агенту Системы Bitbon
     </div>
   </div>
@@ -951,7 +960,7 @@ textarea::placeholder{color:var(--text3)}
 
     <!-- PIN login — primary -->
     <div style="margin-bottom:16px">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:500">Введите ваш PIN-код:</div>
+      <div id="login-pin-label" style="font-size:13px;color:var(--text2);margin-bottom:10px;font-weight:500">Введите ваш PIN-код:</div>
       <div style="display:flex;gap:10px">
         <input type="password" id="login-pin-input" placeholder="PIN-код" maxlength="8" inputmode="numeric" pattern="[0-9]*"
           style="flex:1;padding:13px 16px;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;color:var(--text1);font-size:18px;letter-spacing:4px;text-align:center;outline:none;font-family:'Onest',sans-serif"
@@ -971,7 +980,7 @@ textarea::placeholder{color:var(--text3)}
     <!-- Divider -->
     <div style="display:flex;align-items:center;gap:10px;margin:18px 0">
       <div style="flex:1;height:1px;background:var(--border2)"></div>
-      <span style="font-size:11px;color:var(--text3)">ещё не партнёр?</span>
+      <span id="not-partner-span" style="font-size:11px;color:var(--text3)">ещё не партнёр?</span>
       <div style="flex:1;height:1px;background:var(--border2)"></div>
     </div>
 
@@ -980,9 +989,9 @@ textarea::placeholder{color:var(--text3)}
       style="display:block;text-align:center;padding:13px;background:linear-gradient(135deg,rgba(0,136,204,0.15),rgba(0,136,204,0.05));border:1.5px solid rgba(0,136,204,0.35);border-radius:10px;color:var(--text2);text-decoration:none;font-size:14px;font-family:'Onest',sans-serif;transition:all 0.2s"
       onmouseover="this.style.borderColor='rgba(0,136,204,0.6)';this.style.color='var(--text1)'"
       onmouseout="this.style.borderColor='rgba(0,136,204,0.35)';this.style.color='var(--text2)'">
-      ✈️ Зарегистрироваться через Telegram
+      <span id="login-tg-text">✈️ Зарегистрироваться через Telegram</span>
     </a>
-    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Бот соберёт данные и установит ваш PIN-код</div>
+    <div id="login-tg-note" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Бот соберёт данные и установит ваш PIN-код</div>
   </div>
 </div>
 
@@ -1422,6 +1431,15 @@ textarea::placeholder{color:var(--text3)}
         <span class="req-counter" id="req-counter" style="display:none"></span>
         <button id="hbtn-admin" class="header-btn" onclick="openAdmin()" style="border-color:rgba(239,68,68,0.4);color:var(--red);display:none">🔧 Админ</button>
         <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
+        <!-- Language Switcher -->
+        <div class="lang-switcher" id="lang-switcher">
+          <button class="lang-btn" onclick="toggleLangDropdown()">🌐 <span id="lang-current">УКР</span></button>
+          <div class="lang-dropdown" id="lang-dropdown">
+            <div class="lang-option active" data-lang="uk" onclick="setLang('uk')">🇺🇦 Українська</div>
+            <div class="lang-option" data-lang="en" onclick="setLang('en')">🇬🇧 English</div>
+            <div class="lang-option" data-lang="ru" onclick="setLang('ru')">🇷🇺 Русский</div>
+          </div>
+        </div>
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
       </div>
     </div>
@@ -1624,19 +1642,558 @@ const GLOSSARY_DATA={
 };
 const TOTAL_TOPICS = Object.keys(GLOSSARY_DATA).length;
 
+// ═══ I18N / LOCALIZATION ═══
+var currentLang = localStorage.getItem('bitbon_lang') || (function(){
+  var nav = (navigator.language || navigator.userLanguage || 'uk').toLowerCase();
+  if (nav.startsWith('uk')) return 'uk';
+  if (nav.startsWith('en')) return 'en';
+  return 'uk';
+})();
+
+var TRANSLATIONS = {
+  uk: {
+    page_title:'Bitbon AI — Агент Системи Bitbon',
+    level_title:'AI Агент Системи Bitbon',
+    level_sub:'Оберіть, хто ви — агент адаптує глибину, термінологію та приклади',
+    level_tg:'Увійти через Telegram',
+    level_user_title:'Я користувач',
+    level_user_desc:'Хочу дізнатися про Bitbon, Web 4.0 та можливості системи',
+    level_biz_title:'Я представляю бізнес',
+    level_biz_desc:'Хочу створити Метаресурс, підключити бізнес до Web 4.0',
+    level_partner_title:'Стати Партнером',
+    level_partner_desc:'Зареєструватися, отримати API і заробляти з Bitbon',
+    level_note:'Партнери Системи Bitbon отримують API-доступ до AI агента для своїх клієнтів',
+    share_title:'👤 Поділитися з клієнтом',
+    share_sub:'Надішліть посилання на AI-агента Системи Bitbon через будь-який месенджер.',
+    share_instagram:'Скопіювати для Instagram / іншого',
+    share_footer:'Клієнт отримає доступ до AI-агента Системи Bitbon',
+    reg_title:'🤝 Запросити Партнера',
+    reg_sub:'Введіть Telegram партнера — бот автоматично напише йому та збере всі дані.',
+    reg_tg_label:'Telegram партнера *',
+    reg_btn:'📩 Створити запрошення',
+    reg_invite_label:'Посилання-запрошення',
+    reg_copy:'📋 Скопіювати',
+    reg_open:'📲 Відкрити',
+    reg_note:"Надішліть це посилання партнеру. Коли він натисне — бот задасть всі питання і дані з'являться в системі автоматично.",
+    mode_title:'🔄 Переключити режим',
+    mode_sub:'Оберіть, ким ви хочете спілкуватися з агентом. Ваш прогрес збережеться.',
+    mode_user:'Я користувач',
+    mode_user_desc:'Дізнатися про Bitbon та Web 4.0',
+    mode_biz:'Я представляю бізнес',
+    mode_biz_desc:'Створити Метаресурс, підключити до Web 4.0',
+    mode_partner:'Стати Партнером',
+    mode_partner_desc:'Зареєструватися, отримати API',
+    login_title:'Вхід до кабінету партнера',
+    login_pin:'Введіть ваш PIN-код:',
+    login_btn:'Увійти',
+    login_not_partner:'ще не партнер?',
+    login_tg:'✈️ Зареєструватися через Telegram',
+    login_tg_note:'Бот збере дані та встановить ваш PIN-код',
+    cab_title:'🏛️ Кабінет партнера',
+    cab_tab_info:'📊 Статистика',
+    cab_tab_payment:'💳 Оплата',
+    cab_tab_plans:'📦 Пакети',
+    cab_tab_tools:'⚙️ Інструменти',
+    cab_stat_requests:'Запитів',
+    cab_stat_remain:'Залишилось',
+    cab_stat_meta:'Метаресурсів',
+    cab_clients:'👥 Клієнти',
+    cab_update:'↻ Оновити',
+    cab_load:'Завантажити',
+    cab_api_placeholder:'Ваш API ключ',
+    cab_guests_empty:'— введіть API ключ для завантаження —',
+    cab_link_save:'Зберегти',
+    cab_link_open:'↗ Відкрити',
+    cab_link_hint:'Це посилання відкриється у клієнтів при натисканні кнопки',
+    cab_no_plan:'Пакет не обрано',
+    admin_panel_title:'⚙️ Панель Адміністратора',
+    admin_panel_sub:'Управління партнерами та запрошеннями',
+    admin_tab_invites:'🔗 Запрошення',
+    admin_tab_partners:'👥 Партнери',
+    admin_tab_payments:'💳 Платежі',
+    admin_logout:'🚪 Вихід',
+    admin_invite_label:'Telegram партнера (@username)',
+    admin_invite_btn:'🔗 Створити запрошення',
+    admin_login_title:'🔐 Вхід Адміністратора',
+    admin_login_sub:'Введіть пароль адміністратора для входу в основний кабінет',
+    admin_login_pass:'Пароль адміністратора',
+    admin_login_btn:'🔓 Увійти до кабінету',
+    sidebar_title:'📊 Панель знань',
+    sidebar_plan:'Підписка',
+    sidebar_demo:'Демо режим',
+    sidebar_reqs:'— запитів',
+    sidebar_kb:'📚 База знань (Метаресурси)',
+    sidebar_kb_empty:"Метаресурси з'являться по мірі створення",
+    sidebar_progress:'Прогрес',
+    sidebar_progress_text:'Вивчено 0 з 14 тем',
+    sidebar_glossary:'📖 Глосарій',
+    sidebar_glossary_empty:'Терміни з\'являться по мірі діалогу',
+    nav_consult:'🤝 Консультація Партнер',
+    nav_economy:'📈 Економіка',
+    nav_brand:'👤 Бренд',
+    nav_meta:'🏗️ Метаресурс',
+    hdr_admin:'🔧 Адмін',
+    hdr_mode_title:'Змінити режим доступу',
+    welcome_title:'Система Bitbon — AI Агент',
+    welcome_sub:'Задавайте питання про Bitbon, Web 4.0 та АУРА. Або натисніть 🏗️ Метаресурс щоб створити демо вашого бізнесу.',
+    welcome_user_panel:'👤 Для користувачів',
+    welcome_biz_panel:'💼 Для бізнесу',
+    welcome_u1:'Що таке Bitbon?',
+    welcome_u2:'Як працює АУРА?',
+    welcome_u3:'Web 4.0 vs Web 3.0',
+    welcome_u4:'Цифрова репутація',
+    welcome_b1:'Підключити бізнес',
+    welcome_b2:'🏗️ Створити Метаресурс',
+    welcome_b3:'Стати партнером',
+    welcome_b4:'Приклади метаресурсів',
+    input_placeholder:'Задайте питання про Bitbon, Web 4.0 або створіть Метаресурс...',
+    input_hint:'🏗️ Метаресурс — демо вашого бізнесу · 🏛️ Кабінет — управління API',
+    agent_partner_suffix:'· Партнер Система Bitbon',
+    agent_default:'AI Viking Agent · Система Bitbon',
+    msg_biz:'Чудово! Я допоможу підключити ваш бізнес до Системи Bitbon.\n\nНатисніть 🏗️ **Метаресурс** щоб створити демо вашого бізнесу, або задайте питання.',
+    msg_user:'Ласкаво просимо! Я розповім про Систему Bitbon простою мовою.\n\nОберіть тему або задайте будь-яке питання.',
+    sug_admin_stat:'📊 Статистика',sug_admin_partners:'🤝 Партнери',sug_admin_status:'✅ Статус',sug_admin_logs:'📋 Логи',sug_admin_sessions:'👥 Сесії',
+    sug_biz_meta:'🏗️ Створити Метаресурс',sug_biz_connect:'Підключити бізнес',sug_biz_examples:'Приклади з бази',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Стати партнером',
+    sug_user_what:'Що таке Bitbon?',sug_user_aura:'АУРА',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ крипто',sug_user_meta:'🏗️ Метаресурс',
+    ask_admin_stat:'Покажи статистику користувачів',ask_admin_partners:'Список всіх партнерів',ask_admin_status:'Перевірити статус системи',ask_admin_logs:'Останні логи',ask_admin_sessions:'Список активних сесій',
+    ask_biz_connect:'Як підключити бізнес до Bitbon?',ask_biz_examples:'Покажи приклади метаресурсів з бази знань',ask_biz_bonpay:'Як працює Bonpay для бізнесу?',ask_biz_partner:'Як стати партнером?',
+    ask_user_what:'Що таке Система Bitbon простими словами?',ask_user_aura:'Що таке АУРА?',ask_user_web40:'Чим Web 4.0 відрізняється від Web 3.0?',ask_user_diff:'У чому відмінність Bitbon від криптовалют?',
+    share_tg_text:'AI-агент Системи Bitbon — запитайте все про Web 4.0 та Bitbon: ',
+    share_email_subject:'AI-агент Системи Bitbon',
+    share_email_body:'Добрий день!\n\nПропоную ознайомитися з AI-агентом Системи Bitbon:\n',
+    share_insta_alert:'Посилання скопійовано!\nВставте його в Instagram Direct або Stories.',
+    voice_lang:'uk-UA',
+    lang_display:'УКР'
+  },
+  en: {
+    page_title:'Bitbon AI — Bitbon System Agent',
+    level_title:'AI Agent of the Bitbon System',
+    level_sub:'Choose who you are — the agent adapts depth, terminology and examples',
+    level_tg:'Sign in via Telegram',
+    level_user_title:"I'm a user",
+    level_user_desc:'Want to learn about Bitbon, Web 4.0 and system capabilities',
+    level_biz_title:'I represent a business',
+    level_biz_desc:'Want to create a Metaresource, connect business to Web 4.0',
+    level_partner_title:'Become a Partner',
+    level_partner_desc:'Register, get API and earn with Bitbon',
+    level_note:'Bitbon System Partners get API access to the AI agent for their clients',
+    share_title:'👤 Share with client',
+    share_sub:'Send a link to the Bitbon System AI agent via any messenger.',
+    share_instagram:'Copy for Instagram / other',
+    share_footer:'The client will get access to the Bitbon System AI agent',
+    reg_title:'🤝 Invite a Partner',
+    reg_sub:"Enter partner's Telegram — the bot will automatically write to them and collect all data.",
+    reg_tg_label:"Partner's Telegram *",
+    reg_btn:'📩 Create invitation',
+    reg_invite_label:'Invitation link',
+    reg_copy:'📋 Copy',
+    reg_open:'📲 Open',
+    reg_note:'Send this link to the partner. When they click — the bot will ask all questions and data will appear in the system automatically.',
+    mode_title:'🔄 Switch mode',
+    mode_sub:'Choose how you want to interact with the agent. Your progress will be saved.',
+    mode_user:"I'm a user",
+    mode_user_desc:'Learn about Bitbon and Web 4.0',
+    mode_biz:'I represent a business',
+    mode_biz_desc:'Create Metaresource, connect to Web 4.0',
+    mode_partner:'Become a Partner',
+    mode_partner_desc:'Register, get API',
+    login_title:'Partner cabinet login',
+    login_pin:'Enter your PIN code:',
+    login_btn:'Login',
+    login_not_partner:'not a partner yet?',
+    login_tg:'✈️ Register via Telegram',
+    login_tg_note:'Bot will collect data and set your PIN code',
+    cab_title:'🏛️ Partner cabinet',
+    cab_tab_info:'📊 Statistics',
+    cab_tab_payment:'💳 Payment',
+    cab_tab_plans:'📦 Packages',
+    cab_tab_tools:'⚙️ Tools',
+    cab_stat_requests:'Requests',
+    cab_stat_remain:'Remaining',
+    cab_stat_meta:'Metaresources',
+    cab_clients:'👥 Clients',
+    cab_update:'↻ Update',
+    cab_load:'Load',
+    cab_api_placeholder:'Your API key',
+    cab_guests_empty:'— enter API key to load —',
+    cab_link_save:'Save',
+    cab_link_open:'↗ Open',
+    cab_link_hint:'This link will open for clients when they click the button',
+    cab_no_plan:'No package selected',
+    admin_panel_title:'⚙️ Admin Panel',
+    admin_panel_sub:'Manage partners and invitations',
+    admin_tab_invites:'🔗 Invitations',
+    admin_tab_partners:'👥 Partners',
+    admin_tab_payments:'💳 Payments',
+    admin_logout:'🚪 Logout',
+    admin_invite_label:"Partner's Telegram (@username)",
+    admin_invite_btn:'🔗 Create invitation',
+    admin_login_title:'🔐 Admin Login',
+    admin_login_sub:'Enter admin password to access the main cabinet',
+    admin_login_pass:'Admin password',
+    admin_login_btn:'🔓 Enter cabinet',
+    sidebar_title:'📊 Knowledge panel',
+    sidebar_plan:'Subscription',
+    sidebar_demo:'Demo mode',
+    sidebar_reqs:'— requests',
+    sidebar_kb:'📚 Knowledge base (Metaresources)',
+    sidebar_kb_empty:'Metaresources will appear as they are created',
+    sidebar_progress:'Progress',
+    sidebar_progress_text:'Learned 0 of 14 topics',
+    sidebar_glossary:'📖 Glossary',
+    sidebar_glossary_empty:'Terms will appear as the dialog progresses',
+    nav_consult:'🤝 Partner Consultation',
+    nav_economy:'📈 Economy',
+    nav_brand:'👤 Brand',
+    nav_meta:'🏗️ Metaresource',
+    hdr_admin:'🔧 Admin',
+    hdr_mode_title:'Switch access mode',
+    welcome_title:'Bitbon System — AI Agent',
+    welcome_sub:'Ask questions about Bitbon, Web 4.0 and AURA. Or press 🏗️ Metaresource to create a demo of your business.',
+    welcome_user_panel:'👤 For users',
+    welcome_biz_panel:'💼 For business',
+    welcome_u1:'What is Bitbon?',
+    welcome_u2:'How does AURA work?',
+    welcome_u3:'Web 4.0 vs Web 3.0',
+    welcome_u4:'Digital reputation',
+    welcome_b1:'Connect business',
+    welcome_b2:'🏗️ Create Metaresource',
+    welcome_b3:'Become a partner',
+    welcome_b4:'Metaresource examples',
+    input_placeholder:'Ask a question about Bitbon, Web 4.0 or create a Metaresource...',
+    input_hint:'🏗️ Metaresource — demo of your business · 🏛️ Cabinet — API management',
+    agent_partner_suffix:'· Partner Bitbon System',
+    agent_default:'AI Viking Agent · Bitbon System',
+    msg_biz:"Great! I'll help connect your business to the Bitbon System.\n\nPress 🏗️ **Metaresource** to create a demo of your business, or ask a question.",
+    msg_user:"Welcome! I'll tell you about the Bitbon System in simple language.\n\nChoose a topic or ask any question.",
+    sug_admin_stat:'📊 Statistics',sug_admin_partners:'🤝 Partners',sug_admin_status:'✅ Status',sug_admin_logs:'📋 Logs',sug_admin_sessions:'👥 Sessions',
+    sug_biz_meta:'🏗️ Create Metaresource',sug_biz_connect:'Connect business',sug_biz_examples:'Base examples',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Become a partner',
+    sug_user_what:'What is Bitbon?',sug_user_aura:'AURA',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ crypto',sug_user_meta:'🏗️ Metaresource',
+    ask_admin_stat:'Show user statistics',ask_admin_partners:'List of all partners',ask_admin_status:'Check system status',ask_admin_logs:'Latest logs',ask_admin_sessions:'List of active sessions',
+    ask_biz_connect:'How to connect my business to Bitbon?',ask_biz_examples:'Show metaresource examples from the knowledge base',ask_biz_bonpay:'How does Bonpay work for business?',ask_biz_partner:'How to become a partner?',
+    ask_user_what:'What is the Bitbon System in simple words?',ask_user_aura:'What is AURA?',ask_user_web40:'How is Web 4.0 different from Web 3.0?',ask_user_diff:'What is the difference between Bitbon and cryptocurrencies?',
+    share_tg_text:'Bitbon System AI agent — ask anything about Web 4.0 and Bitbon: ',
+    share_email_subject:'Bitbon System AI agent',
+    share_email_body:'Hello!\n\nI would like to share the Bitbon System AI agent with you:\n',
+    share_insta_alert:'Link copied!\nPaste it in Instagram Direct or Stories.',
+    voice_lang:'en-US',
+    lang_display:'ENG'
+  },
+  ru: {
+    page_title:'Bitbon AI — Агент Системы Bitbon',
+    level_title:'AI Агент Системы Bitbon',
+    level_sub:'Выберите кто вы — агент адаптирует глубину, терминологию и примеры',
+    level_tg:'Войти через Telegram',
+    level_user_title:'Я пользователь',
+    level_user_desc:'Хочу узнать о Bitbon, Web 4.0 и возможностях системы',
+    level_biz_title:'Я представляю бизнес',
+    level_biz_desc:'Хочу создать Метаресурс, подключить бизнес к Web 4.0',
+    level_partner_title:'Стать Партнёром',
+    level_partner_desc:'Зарегистрироваться, получить API и зарабатывать с Bitbon',
+    level_note:'Партнёры Системы Bitbon получают API-доступ к AI агенту для своих клиентов',
+    share_title:'👤 Поделиться с клиентом',
+    share_sub:'Отправьте ссылку на AI-агента Системы Bitbon через любой мессенджер.',
+    share_instagram:'Скопировать для Instagram / другого',
+    share_footer:'Клиент получит доступ к AI-агенту Системы Bitbon',
+    reg_title:'🤝 Пригласить Партнёра',
+    reg_sub:'Введите Telegram партнёра — бот автоматически напишет ему и соберёт все данные.',
+    reg_tg_label:'Telegram партнёра *',
+    reg_btn:'📩 Создать приглашение',
+    reg_invite_label:'Ссылка-приглашение',
+    reg_copy:'📋 Скопировать',
+    reg_open:'📲 Открыть',
+    reg_note:'Отправьте эту ссылку партнёру. Когда он нажмёт — бот задаст все вопросы и данные появятся в системе автоматически.',
+    mode_title:'🔄 Переключить режим',
+    mode_sub:'Выберите, кем вы хотите общаться с агентом. Ваш прогресс сохранится.',
+    mode_user:'Я пользователь',
+    mode_user_desc:'Узнать о Bitbon и Web 4.0',
+    mode_biz:'Я представляю бизнес',
+    mode_biz_desc:'Создать Метаресурс, подключить к Web 4.0',
+    mode_partner:'Стать Партнёром',
+    mode_partner_desc:'Зарегистрироваться, получить API',
+    login_title:'Вход в кабинет партнёра',
+    login_pin:'Введите ваш PIN-код:',
+    login_btn:'Войти',
+    login_not_partner:'ещё не партнёр?',
+    login_tg:'✈️ Зарегистрироваться через Telegram',
+    login_tg_note:'Бот соберёт данные и установит ваш PIN-код',
+    cab_title:'🏛️ Кабинет партнёра',
+    cab_tab_info:'📊 Статистика',
+    cab_tab_payment:'💳 Оплата',
+    cab_tab_plans:'📦 Пакеты',
+    cab_tab_tools:'⚙️ Инструменты',
+    cab_stat_requests:'Запросов',
+    cab_stat_remain:'Осталось',
+    cab_stat_meta:'Метаресурсов',
+    cab_clients:'👥 Клиенты',
+    cab_update:'↻ Обновить',
+    cab_load:'Загрузить',
+    cab_api_placeholder:'Ваш API ключ',
+    cab_guests_empty:'— введите API ключ для загрузки —',
+    cab_link_save:'Сохранить',
+    cab_link_open:'↗ Открыть',
+    cab_link_hint:'Эта ссылка откроется у клиентов при нажатии кнопки',
+    cab_no_plan:'Пакет не выбран',
+    admin_panel_title:'⚙️ Панель Администратора',
+    admin_panel_sub:'Управление партнёрами и приглашениями',
+    admin_tab_invites:'🔗 Приглашения',
+    admin_tab_partners:'👥 Партнёры',
+    admin_tab_payments:'💳 Платежи',
+    admin_logout:'🚪 Выход',
+    admin_invite_label:'Telegram партнёра (@username)',
+    admin_invite_btn:'🔗 Создать приглашение',
+    admin_login_title:'🔐 Вход Администратора',
+    admin_login_sub:'Введите пароль администратора для входа в основной кабинет',
+    admin_login_pass:'Пароль администратора',
+    admin_login_btn:'🔓 Войти в кабинет',
+    sidebar_title:'📊 Панель знаний',
+    sidebar_plan:'Подписка',
+    sidebar_demo:'Демо режим',
+    sidebar_reqs:'— запросов',
+    sidebar_kb:'📚 База знаний (Метаресурсы)',
+    sidebar_kb_empty:'Метаресурсы появятся по мере создания',
+    sidebar_progress:'Прогресс',
+    sidebar_progress_text:'Изучено 0 из 14 тем',
+    sidebar_glossary:'📖 Глоссарий',
+    sidebar_glossary_empty:'Термины появятся по мере диалога',
+    nav_consult:'🤝 Консультация Партнёр',
+    nav_economy:'📈 Экономика',
+    nav_brand:'👤 Бренд',
+    nav_meta:'🏗️ Метаресурс',
+    hdr_admin:'🔧 Админ',
+    hdr_mode_title:'Сменить режим доступа',
+    welcome_title:'Система Bitbon — AI Агент',
+    welcome_sub:'Задавайте вопросы о Bitbon, Web 4.0 и АУРА. Или нажмите 🏗️ Метаресурс чтобы создать демо вашего бизнеса.',
+    welcome_user_panel:'👤 Для пользователей',
+    welcome_biz_panel:'💼 Для бизнеса',
+    welcome_u1:'Что такое Bitbon?',
+    welcome_u2:'Как работает АУРА?',
+    welcome_u3:'Web 4.0 vs Web 3.0',
+    welcome_u4:'Цифровая репутация',
+    welcome_b1:'Подключить бизнес',
+    welcome_b2:'🏗️ Создать Метаресурс',
+    welcome_b3:'Стать партнёром',
+    welcome_b4:'Примеры метаресурсов',
+    input_placeholder:'Задайте вопрос о Bitbon, Web 4.0 или создайте Метаресурс...',
+    input_hint:'🏗️ Метаресурс — демо вашего бизнеса · 🏛️ Кабинет — управление API',
+    agent_partner_suffix:'· Партнёр Система Bitbon',
+    agent_default:'AI Viking Agent · Система Bitbon',
+    msg_biz:'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.',
+    msg_user:'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.',
+    sug_admin_stat:'📊 Статистика',sug_admin_partners:'🤝 Партнёры',sug_admin_status:'✅ Статус',sug_admin_logs:'📋 Логи',sug_admin_sessions:'👥 Сессии',
+    sug_biz_meta:'🏗️ Создать Метаресурс',sug_biz_connect:'Подключить бизнес',sug_biz_examples:'Примеры из базы',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Стать партнёром',
+    sug_user_what:'Что такое Bitbon?',sug_user_aura:'АУРА',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ крипто',sug_user_meta:'🏗️ Метаресурс',
+    ask_admin_stat:'Покажи статистику пользователей',ask_admin_partners:'Список всех партнёров',ask_admin_status:'Проверить статус системы',ask_admin_logs:'Последние логи',ask_admin_sessions:'Список активных сессий',
+    ask_biz_connect:'Как подключить бизнес к Bitbon?',ask_biz_examples:'Покажи примеры метаресурсов из базы знаний',ask_biz_bonpay:'Как работает Bonpay для бизнеса?',ask_biz_partner:'Как стать партнёром?',
+    ask_user_what:'Что такое Система Bitbon простыми словами?',ask_user_aura:'Что такое АУРА?',ask_user_web40:'Чем Web 4.0 отличается от Web 3.0?',ask_user_diff:'В чём отличие Bitbon от криптовалют?',
+    share_tg_text:'AI-агент Системы Bitbon — спросите всё о Web 4.0 и Bitbon: ',
+    share_email_subject:'AI-агент Системы Bitbon',
+    share_email_body:'Здравствуйте!\n\nПредлагаю ознакомиться с AI-агентом Системы Bitbon:\n',
+    share_insta_alert:'Ссылка скопирована!\nВставьте её в Instagram Direct или Stories.',
+    voice_lang:'ru-RU',
+    lang_display:'РУС'
+  }
+};
+
+function i18n(key) {
+  return (TRANSLATIONS[currentLang] || TRANSLATIONS['uk'])[key] || (TRANSLATIONS['uk'])[key] || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('bitbon_lang', lang);
+  applyI18n();
+  var sw = document.getElementById('lang-switcher');
+  if (sw) sw.classList.remove('open');
+  document.querySelectorAll('.lang-option').forEach(function(opt) {
+    opt.classList.toggle('active', opt.dataset.lang === lang);
+  });
+  var display = document.getElementById('lang-current');
+  if (display) display.textContent = i18n('lang_display');
+  if (typeof voiceRecognition !== 'undefined' && voiceRecognition) voiceRecognition.lang = i18n('voice_lang');
+  if (userMode) updateSuggestionsBar(userMode);
+  if (userMode) renderHeaderNav();
+}
+
+function toggleLangDropdown() {
+  var sw = document.getElementById('lang-switcher');
+  if (sw) sw.classList.toggle('open');
+}
+
+document.addEventListener('click', function(e) {
+  var sw = document.getElementById('lang-switcher');
+  if (sw && !sw.contains(e.target)) sw.classList.remove('open');
+});
+
+function applyI18n() {
+  var t = TRANSLATIONS[currentLang] || TRANSLATIONS['uk'];
+  document.documentElement.lang = currentLang === 'en' ? 'en' : currentLang === 'ru' ? 'ru' : 'uk';
+  document.title = t.page_title;
+
+  function set(id, key) { var el = document.getElementById(id); if (el && t[key] !== undefined) el.textContent = t[key]; }
+  function setPlaceholder(id, key) { var el = document.getElementById(id); if (el && t[key] !== undefined) el.placeholder = t[key]; }
+  function setAttr(id, attr, key) { var el = document.getElementById(id); if (el && t[key] !== undefined) el.setAttribute(attr, t[key]); }
+  function setQ(sel, key) { var el = document.querySelector(sel); if (el && t[key] !== undefined) el.textContent = t[key]; }
+
+  // Level screen
+  setQ('.level-title', 'level_title');
+  setQ('.level-sub', 'level_sub');
+  setQ('#level-screen a span:last-child', 'level_tg');
+  var lcards = document.querySelectorAll('#level-screen .level-card');
+  if (lcards[0]) { lcards[0].querySelector('.level-card-title').textContent = t.level_user_title; lcards[0].querySelector('.level-card-desc').textContent = t.level_user_desc; }
+  if (lcards[1]) { lcards[1].querySelector('.level-card-title').textContent = t.level_biz_title; lcards[1].querySelector('.level-card-desc').textContent = t.level_biz_desc; }
+  if (lcards[2]) { lcards[2].querySelector('.level-card-title').textContent = t.level_partner_title; lcards[2].querySelector('.level-card-desc').textContent = t.level_partner_desc; }
+  setQ('.level-note', 'level_note');
+
+  // Share overlay
+  setQ('#share-client-overlay .modal-title', 'share_title');
+  setQ('#share-client-overlay .modal-sub', 'share_sub');
+  var shareBtns = document.querySelectorAll('#share-client-overlay .share-messenger-btn');
+  if (shareBtns[4]) { var sp = shareBtns[4].querySelector('span:last-child'); if (sp) sp.textContent = t.share_instagram; }
+  set('share-footer', 'share_footer');
+
+  // Register overlay
+  setQ('#register-overlay .modal-title', 'reg_title');
+  setQ('#register-overlay .modal-sub', 'reg_sub');
+  var regLabel = document.querySelector('#register-overlay .form-label');
+  if (regLabel) regLabel.textContent = t.reg_tg_label;
+  var regBtn = document.querySelector('#register-overlay .form-btn.primary');
+  if (regBtn) regBtn.innerHTML = t.reg_btn;
+  var invLabelDiv = document.querySelector('#invite-block > div:first-child');
+  if (invLabelDiv) invLabelDiv.textContent = t.reg_invite_label;
+  var invBtns = document.querySelectorAll('#invite-block .form-btn');
+  if (invBtns[0]) invBtns[0].innerHTML = t.reg_copy;
+  if (invBtns[1]) invBtns[1].innerHTML = t.reg_open;
+  var invNote = document.querySelector('#invite-block > div:last-child');
+  if (invNote) invNote.textContent = t.reg_note;
+
+  // Mode switch overlay
+  setQ('#mode-switch-overlay .modal-title', 'mode_title');
+  setQ('#mode-switch-overlay .modal-sub', 'mode_sub');
+  var modeBtns = document.querySelectorAll('#mode-switch-overlay .mode-card');
+  if (modeBtns[0]) { modeBtns[0].querySelector('.mode-title').textContent = t.mode_user; modeBtns[0].querySelector('.mode-desc').textContent = t.mode_user_desc; }
+  if (modeBtns[1]) { modeBtns[1].querySelector('.mode-title').textContent = t.mode_biz; modeBtns[1].querySelector('.mode-desc').textContent = t.mode_biz_desc; }
+  if (modeBtns[2]) { modeBtns[2].querySelector('.mode-title').textContent = t.mode_partner; modeBtns[2].querySelector('.mode-desc').textContent = t.mode_partner_desc; }
+
+  // Login modal
+  var loginTitle = document.querySelector('#login-required-modal .modal-title');
+  if (loginTitle) loginTitle.textContent = t.login_title;
+  set('login-pin-label', 'login_pin');
+  set('login-pin-btn', 'login_btn');
+  set('not-partner-span', 'login_not_partner');
+  set('login-tg-text', 'login_tg');
+  set('login-tg-note', 'login_tg_note');
+
+  // Cabinet
+  setQ('#cabinet-overlay .modal-title', 'cab_title');
+  var cabTabs = document.querySelectorAll('#cabinet-overlay > .modal > .tab-row .tab-btn');
+  if (cabTabs[0]) cabTabs[0].textContent = t.cab_tab_info;
+  if (cabTabs[1]) cabTabs[1].textContent = t.cab_tab_payment;
+  if (cabTabs[2]) cabTabs[2].textContent = t.cab_tab_plans;
+  if (cabTabs[3]) cabTabs[3].textContent = t.cab_tab_tools;
+  var statLabels = document.querySelectorAll('#cab-tab-info .stat-label');
+  if (statLabels[0]) statLabels[0].textContent = t.cab_stat_requests;
+  if (statLabels[1]) statLabels[1].textContent = t.cab_stat_remain;
+  if (statLabels[2]) statLabels[2].textContent = t.cab_stat_meta;
+  var clientsLabel = document.querySelector('#cab-tab-info [style*="font-weight:600"][style*="text-transform"]');
+  if (clientsLabel) clientsLabel.textContent = t.cab_clients;
+  var updateBtns = document.querySelectorAll('#cab-tab-info [onclick="loadGuestStats()"]');
+  if (updateBtns[0]) updateBtns[0].textContent = t.cab_update;
+  var gList = document.getElementById('guests-list');
+  if (gList && (gList.textContent.trim().startsWith('—') || gList.textContent.trim() === '')) gList.textContent = t.cab_guests_empty;
+  setPlaceholder('stat-api-key', 'cab_api_placeholder');
+  var loadBtn = document.querySelector('#cab-tab-info .form-btn.primary');
+  if (loadBtn) loadBtn.textContent = t.cab_load;
+  var planLabel = document.getElementById('cab-plan-label');
+  if (planLabel && planLabel.textContent === document.getElementById('cab-plan-label').textContent) set('cab-plan-label', 'cab_no_plan');
+  var linkSaveBtn = document.querySelector('#cab-link-editor .cab-link-save');
+  if (linkSaveBtn) linkSaveBtn.textContent = t.cab_link_save;
+  set('cab-link-open-btn', 'cab_link_open');
+  set('cab-link-hint', 'cab_link_hint');
+
+  // Admin login overlay
+  setQ('#admin-login-overlay .modal-title', 'admin_login_title');
+  setQ('#admin-login-overlay .modal-sub', 'admin_login_sub');
+  var aPassLabel = document.querySelector('#admin-login-overlay .form-label');
+  if (aPassLabel) aPassLabel.textContent = t.admin_login_pass;
+  var aPassInput = document.getElementById('admin-cabinet-pass');
+  if (aPassInput) aPassInput.placeholder = t.admin_login_pass;
+  var aLoginBtn = document.querySelector('#admin-login-overlay .form-btn.primary');
+  if (aLoginBtn) aLoginBtn.textContent = t.admin_login_btn;
+
+  // Admin panel
+  setQ('#admin-panel-overlay .modal-title', 'admin_panel_title');
+  set('admin-user-name', 'admin_panel_sub');
+  var aTabs = document.querySelectorAll('#admin-panel-overlay .tab-btn');
+  if (aTabs[0]) aTabs[0].textContent = t.admin_tab_invites;
+  if (aTabs[1]) aTabs[1].textContent = t.admin_tab_partners;
+  if (aTabs[2]) aTabs[2].textContent = t.admin_tab_payments;
+  var invLabel2 = document.querySelector('#admin-tab-invites .form-label');
+  if (invLabel2) invLabel2.textContent = t.admin_invite_label;
+  var invBtn2 = document.querySelector('#admin-tab-invites .form-btn.gold');
+  if (invBtn2) invBtn2.textContent = t.admin_invite_btn;
+  document.querySelectorAll('[onclick="adminLogout()"]').forEach(function(b) { b.textContent = t.admin_logout; });
+
+  // Sidebar
+  var sidebarHdr = document.querySelector('.sidebar-header');
+  if (sidebarHdr) sidebarHdr.textContent = t.sidebar_title;
+  var sLabels = document.querySelectorAll('.section-label');
+  if (sLabels[0]) sLabels[0].textContent = t.sidebar_plan;
+  if (sLabels[1]) sLabels[1].textContent = t.sidebar_kb;
+  if (sLabels[2]) sLabels[2].textContent = t.sidebar_progress;
+  if (sLabels[3]) sLabels[3].textContent = t.sidebar_glossary;
+  var miniPlanEl = document.getElementById('mini-plan');
+  if (miniPlanEl && (miniPlanEl.textContent === 'Демо режим' || miniPlanEl.textContent === 'Demo mode' || miniPlanEl.textContent === 'Демо режим')) miniPlanEl.textContent = t.sidebar_demo;
+  var kbEl = document.querySelector('#kb-list > div[style]');
+  if (kbEl) kbEl.textContent = t.sidebar_kb_empty;
+  set('progress-text', 'sidebar_progress_text');
+  var glossaryEl = document.querySelector('#glossary-list > div[style]');
+  if (glossaryEl) glossaryEl.textContent = t.sidebar_glossary_empty;
+
+  // Welcome block
+  setQ('.welcome-title', 'welcome_title');
+  setQ('.welcome-sub', 'welcome_sub');
+  setQ('.welcome-panel-title.user-title', 'welcome_user_panel');
+  setQ('.welcome-panel-title.biz-title', 'welcome_biz_panel');
+  var uLis = document.querySelectorAll('.user-panel .welcome-panel-list li');
+  if (uLis[0]) uLis[0].textContent = t.welcome_u1;
+  if (uLis[1]) uLis[1].textContent = t.welcome_u2;
+  if (uLis[2]) uLis[2].textContent = t.welcome_u3;
+  if (uLis[3]) uLis[3].textContent = t.welcome_u4;
+  var bLis = document.querySelectorAll('.biz-panel .welcome-panel-list li');
+  if (bLis[0]) bLis[0].textContent = t.welcome_b1;
+  if (bLis[1]) bLis[1].textContent = t.welcome_b2;
+  if (bLis[2]) bLis[2].textContent = t.welcome_b3;
+  if (bLis[3]) bLis[3].textContent = t.welcome_b4;
+
+  // Input
+  setPlaceholder('input', 'input_placeholder');
+  set('input-hint', 'input_hint');
+
+  // Header
+  set('hbtn-admin', 'hdr_admin');
+  setAttr('mode-switch-btn', 'title', 'hdr_mode_title');
+  var display = document.getElementById('lang-current');
+  if (display) display.textContent = t.lang_display;
+  document.querySelectorAll('.lang-option').forEach(function(opt) {
+    opt.classList.toggle('active', opt.dataset.lang === currentLang);
+  });
+  if (!partnerInfo || !partnerInfo.fullName) set('agent-name', 'agent_default');
+}
+
 // ═══ PARTNER NAME ═══
 function getAgentName() {
   if (partnerInfo && partnerInfo.fullName) {
-    return partnerInfo.fullName + ' · Партнёр Система Bitbon';
+    return partnerInfo.fullName + ' ' + i18n('agent_partner_suffix');
   }
-  return 'AI Viking Agent · Система Bitbon';
+  return i18n('agent_default');
 }
 
 function getBotLabel() {
   if (partnerInfo && partnerInfo.fullName) {
     return partnerInfo.fullName + ' · AI Agent';
   }
-  return 'AI Viking Agent · Система Bitbon';
+  return i18n('agent_default');
 }
 
 // ═══ LEVEL SELECTION ═══
@@ -1664,11 +2221,11 @@ function setLevel(level) {
   } else if (level === 'business') {
     userLevel = 'intermediate';
     updateSuggestionsBar('business');
-    addMessage('bot', 'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.', null, false);
+    addMessage('bot', i18n('msg_biz'), null, false);
   } else {
     userLevel = 'beginner';
     updateSuggestionsBar('user');
-    addMessage('bot', 'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.', null, false);
+    addMessage('bot', i18n('msg_user'), null, false);
   }
 
   // Роль отображается в футер-навигации; в хедере badge не нужен
@@ -1767,25 +2324,25 @@ function updateSuggestionsBar(mode) {
   var bar = document.getElementById('suggestions-bar');
   if (mode === 'admin') {
     bar.innerHTML =
-      '<button class="suggestion-btn" onclick="ask(\'Покажи статистику пользователей\')">📊 Статистика</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'Список всех партнёров\')">🤝 Партнёры</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'Проверить статус системы\')">✅ Статус</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'Последние логи\')">📋 Логи</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'Список активных сессий\')">👥 Сессии</button>';
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_admin_stat') + '\')">' + i18n('sug_admin_stat') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_admin_partners') + '\')">' + i18n('sug_admin_partners') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_admin_status') + '\')">' + i18n('sug_admin_status') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_admin_logs') + '\')">' + i18n('sug_admin_logs') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_admin_sessions') + '\')">' + i18n('sug_admin_sessions') + '</button>';
   } else if (mode === 'business') {
     bar.innerHTML =
-      '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">🏗️ Создать Метаресурс</button>' +
-      '<button class="suggestion-btn biz-suggest" onclick="ask(\'Как подключить бизнес к Bitbon?\')">Подключить бизнес</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'Покажи примеры метаресурсов из базы знаний\')">Примеры из базы</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'Как работает Bonpay для бизнеса?\')">Bonpay</button>' +
-      '<button class="suggestion-btn biz-suggest" onclick="ask(\'Как стать партнёром?\')">Стать партнёром</button>';
+      '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">' + i18n('sug_biz_meta') + '</button>' +
+      '<button class="suggestion-btn biz-suggest" onclick="ask(\'' + i18n('ask_biz_connect') + '\')">' + i18n('sug_biz_connect') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_biz_examples') + '\')">' + i18n('sug_biz_examples') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_biz_bonpay') + '\')">' + i18n('sug_biz_bonpay') + '</button>' +
+      '<button class="suggestion-btn biz-suggest" onclick="ask(\'' + i18n('ask_biz_partner') + '\')">' + i18n('sug_biz_partner') + '</button>';
   } else {
     bar.innerHTML =
-      '<button class="suggestion-btn" onclick="ask(\'Что такое Система Bitbon простыми словами?\')">Что такое Bitbon?</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'Что такое АУРА?\')">АУРА</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'Чем Web 4.0 отличается от Web 3.0?\')">Web 4.0 vs 3.0</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'В чём отличие Bitbon от криптовалют?\')">Bitbon ≠ крипто</button>' +
-      '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">🏗️ Метаресурс</button>';
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_what') + '\')">' + i18n('sug_user_what') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_aura') + '\')">' + i18n('sug_user_aura') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_web40') + '\')">' + i18n('sug_user_web40') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_diff') + '\')">' + i18n('sug_user_diff') + '</button>' +
+      '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">' + i18n('sug_user_meta') + '</button>';
   }
 }
 
@@ -1812,29 +2369,29 @@ function copyShareUrl() {
 }
 function shareViaTelegram() {
   var url = document.getElementById('share-url-text').textContent;
-  var text = encodeURIComponent('AI-агент Системы Bitbon — спросите всё о Web 4.0 и Bitbon: ' + url);
+  var text = encodeURIComponent(i18n('share_tg_text') + url);
   window.open('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + text, '_blank');
 }
 function shareViaWhatsApp() {
   var url = document.getElementById('share-url-text').textContent;
-  var text = encodeURIComponent('AI-агент Системы Bitbon — спросите всё о Web 4.0 и Bitbon: ' + url);
+  var text = encodeURIComponent(i18n('share_tg_text') + url);
   window.open('https://wa.me/?text=' + text, '_blank');
 }
 function shareViaViber() {
   var url = document.getElementById('share-url-text').textContent;
-  var text = encodeURIComponent('AI-агент Системы Bitbon: ' + url);
+  var text = encodeURIComponent(i18n('share_email_subject') + ': ' + url);
   window.open('viber://forward?text=' + text, '_blank');
 }
 function shareViaEmail() {
   var url = document.getElementById('share-url-text').textContent;
-  var subject = encodeURIComponent('AI-агент Системы Bitbon');
-  var body = encodeURIComponent('Здравствуйте!\n\nПредлагаю ознакомиться с AI-агентом Системы Bitbon:\n' + url);
+  var subject = encodeURIComponent(i18n('share_email_subject'));
+  var body = encodeURIComponent(i18n('share_email_body') + url);
   window.open('mailto:?subject=' + subject + '&body=' + body, '_blank');
 }
 function shareViaInstagram() {
   var url = document.getElementById('share-url-text').textContent;
   navigator.clipboard.writeText(url).then(function() {
-    alert('Ссылка скопирована!\nВставьте её в Instagram Direct или Stories.');
+    alert(i18n('share_insta_alert'));
   });
 }
 
@@ -2541,25 +3098,25 @@ function renderCabSubtabs() {
     if (s.showEconomy) {
       var e = document.createElement('button');
       e.className = 'cab-subtab st-economy' + (links.economy ? ' has-link' : '');
-      e.innerHTML = '📈 Экономика' + (links.economy ? ' ✏️' : ' ＋');
-      e.title = links.economy ? links.economy : 'Установить ссылку';
-      e.onclick = function() { openCabLinkEditor('economy', '📈 Экономика', 'https://yoursite.com/economy'); };
+      e.innerHTML = i18n('nav_economy') + (links.economy ? ' ✏️' : ' ＋');
+      e.title = links.economy ? links.economy : i18n('nav_economy');
+      e.onclick = function() { openCabLinkEditor('economy', i18n('nav_economy'), 'https://yoursite.com/economy'); };
       bar.appendChild(e);
     }
     if (s.showBrand) {
       var b = document.createElement('button');
       b.className = 'cab-subtab st-brand' + (links.brand ? ' has-link' : '');
-      b.innerHTML = '👤 Бренд' + (links.brand ? ' ✏️' : ' ＋');
-      b.title = links.brand ? links.brand : 'Установить ссылку';
-      b.onclick = function() { openCabLinkEditor('brand', '👤 Бренд', 'https://yoursite.com/brand'); };
+      b.innerHTML = i18n('nav_brand') + (links.brand ? ' ✏️' : ' ＋');
+      b.title = links.brand ? links.brand : i18n('nav_brand');
+      b.onclick = function() { openCabLinkEditor('brand', i18n('nav_brand'), 'https://yoursite.com/brand'); };
       bar.appendChild(b);
     }
     if (s.showMeta) {
       var m = document.createElement('button');
       m.className = 'cab-subtab st-meta' + (links.meta ? ' has-link' : '');
-      m.innerHTML = '🏗️ Метаресурс' + (links.meta ? ' ✏️' : ' ＋');
-      m.title = links.meta ? links.meta : 'Установить ссылку';
-      m.onclick = function() { openCabLinkEditor('meta', '🏗️ Метаресурс', 'https://yoursite.com/meta'); };
+      m.innerHTML = i18n('nav_meta') + (links.meta ? ' ✏️' : ' ＋');
+      m.title = links.meta ? links.meta : i18n('nav_meta');
+      m.onclick = function() { openCabLinkEditor('meta', i18n('nav_meta'), 'https://yoursite.com/meta'); };
       bar.appendChild(m);
     }
     bar.style.padding = bar.children.length ? '8px 16px 0' : '0 16px';
@@ -2583,7 +3140,7 @@ function renderHeaderNav() {
   if (!isPartner) {
     var cab = document.createElement('button');
     cab.className = 'fnav-l1';
-    cab.innerHTML = '🤝 Консультация Партнёр';
+    cab.innerHTML = i18n('nav_consult');
     cab.onclick = function() { openCabinet(); };
     center.appendChild(cab);
   }
@@ -2599,7 +3156,7 @@ function renderHeaderNav() {
     if (s.showEconomy) {
       var e = document.createElement('button');
       e.className = 'cab-subtab st-economy';
-      e.innerHTML = '📈 Экономика';
+      e.innerHTML = i18n('nav_economy');
       e.onclick = links.economy
         ? function() { window.open(links.economy, '_blank'); }
         : function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
@@ -2608,7 +3165,7 @@ function renderHeaderNav() {
     if (s.showBrand) {
       var b = document.createElement('button');
       b.className = 'cab-subtab st-brand';
-      b.innerHTML = '👤 Бренд';
+      b.innerHTML = i18n('nav_brand');
       b.onclick = links.brand
         ? function() { window.open(links.brand, '_blank'); }
         : function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
@@ -2617,7 +3174,7 @@ function renderHeaderNav() {
     if (s.showMeta) {
       var m = document.createElement('button');
       m.className = 'cab-subtab st-meta';
-      m.innerHTML = '🏗️ Метаресурсы';
+      m.innerHTML = i18n('nav_meta');
       m.onclick = links.meta
         ? function() { window.open(links.meta, '_blank'); }
         : function() { startMetaWizard(); };
@@ -3256,7 +3813,7 @@ function initVoiceRecognition() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SpeechRecognition) {
     voiceRecognition = new SpeechRecognition();
-    voiceRecognition.lang = 'ru-RU';
+    voiceRecognition.lang = i18n('voice_lang');
     voiceRecognition.continuous = false;
     voiceRecognition.interimResults = true;
 
@@ -3461,6 +4018,7 @@ document.addEventListener('keydown', function(e) {
 
 // Инициализация на загрузке
 document.addEventListener('DOMContentLoaded', function() {
+  applyI18n();
   loadCorrections();
   initVoiceRecognition();
 
