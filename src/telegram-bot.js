@@ -68,12 +68,6 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
   botInstance = bot;
   console.log('🤖 Telegram бот запущен');
 
-  // ── Кнопка "Start" / первое открытие чата ────────────────────────
-  // Срабатывает когда пользователь нажимает кнопку Start впервые
-  bot.on('new_chat_members', (msg) => {
-    handleStart(msg.chat.id, msg);
-  });
-
   // ── /start с invite-токеном (deep link из кабинета) ───────────────
   bot.onText(/\/start (.+)/, (msg, match) => {
     const chatId  = msg.chat.id;
