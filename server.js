@@ -130,6 +130,13 @@ DB.metaresources = createdMetaresources;
 
 // Load partners from disk
 let savedPartners = loadJSON('partners_db.json') || {};
+// Ensure zero user always has role: 'admin'
+const ZERO_TG_LOWER = (process.env.ZERO_USER_TELEGRAM || '@VikingOLZH').toLowerCase();
+Object.values(savedPartners).forEach(p => {
+  if (p.telegram && p.telegram.toLowerCase() === ZERO_TG_LOWER) {
+    p.role = 'admin';
+  }
+});
 DB.partners = savedPartners;
 
 // Load payments
@@ -740,6 +747,49 @@ app.get('/api/partner/dashboard', authenticatePartner, (req, res) => {
 
 
 // ══════════════════════════════════════════════════════════════════════
+// METARESOURCE GENERATION — proxy to Anthropic (browser cannot call directly)
+// ══════════════════════════════════════════════════════════════════════
+app.post('/api/metaresource/generate', async (req, res) => {
+  const { context, systemPrompt } = req.body;
+  if (!context || !systemPrompt) return res.status(400).json({ error: 'Missing context or systemPrompt' });
+
+  if (!ANTHROPIC_API_KEY) return res.status(503).json({ error: 'API key not configured' });
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: context }]
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json({ error: data.error?.message || 'API Error' });
+
+    const text = data.content?.[0]?.text || '';
+    const usage = {
+      input:  data.usage?.input_tokens  || 0,
+      output: data.usage?.output_tokens || 0,
+      total:  (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0)
+    };
+    console.log(`🏗️  Metaresource gen — tokens: ${usage.input} in / ${usage.output} out`);
+
+    res.json({ success: true, text, usage });
+  } catch (err) {
+    console.error('Metaresource generate error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════════
 // METARESOURCE KNOWLEDGE BASE — LEARNING SYSTEM
 // ══════════════════════════════════════════════════════════════════════
 
@@ -1045,6 +1095,14 @@ app.post('/api/chat', async (req, res) => {
       ? data.content[0].text
       : 'Не удалось получить ответ.';
 
+    const usage = {
+      input:  data.usage?.input_tokens  || 0,
+      output: data.usage?.output_tokens || 0,
+      total:  (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
+      model:  data.model || 'unknown'
+    };
+    console.log(`🔢 Tokens — input: ${usage.input}, output: ${usage.output}, total: ${usage.total}`);
+
     // Log request
     DB.requestsLog.push({
       id: 'req_' + Date.now(),
@@ -1052,10 +1110,14 @@ app.post('/api/chat', async (req, res) => {
       userMode: userMode,
       userLevel: userLevel,
       question: question,
+      tokensInput:  usage.input,
+      tokensOutput: usage.output,
+      tokensTotal:  usage.total,
+      model:        usage.model,
       timestamp: new Date().toISOString()
     });
 
-    res.json({ reply, success: true });
+    res.json({ reply, success: true, usage });
   } catch (err) {
     console.error('Chat endpoint error:', err);
     res.status(500).json({ error: 'Server error: ' + err.message });

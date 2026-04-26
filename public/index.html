@@ -2587,13 +2587,14 @@ async function generateMetaResource() {
 
   var raw = '';
   try {
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({model: 'claude-sonnet-4-20250514', max_tokens: 2000, system: META_PROMPT, messages: [{role: 'user', content: context}]})
+    var response = await fetch(API_BASE + '/api/metaresource/generate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ context: context, systemPrompt: META_PROMPT })
     });
     var data = await response.json();
-    if (data.error) throw new Error(data.error.message);
-    raw = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    if (!response.ok || data.error) throw new Error(data.error || 'API Error');
+    raw = data.text || '';
     removeTyping();
     if (!raw) throw new Error('Пустой ответ');
 
