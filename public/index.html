@@ -78,16 +78,24 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 #cabinet-overlay .tab-btn[data-tab="info"].active    {background:var(--product-partner-bg);color:var(--product-partner);border-top-color:var(--product-partner)}
 #cabinet-overlay .tab-btn[data-tab="payment"].active {background:var(--product-economy-bg);color:var(--product-economy);border-top-color:var(--product-economy)}
 #cabinet-overlay .tab-btn[data-tab="plans"].active   {background:var(--product-ai-bg);color:var(--product-ai);border-top-color:var(--product-ai)}
-#cabinet-overlay .tab-btn[data-tab="economy"].active {background:var(--product-brand-bg);color:var(--product-brand);border-top-color:var(--product-brand)}
-#cabinet-overlay .tab-btn[data-tab="brand"].active   {background:var(--product-partner-bg);color:var(--product-partner);border-top-color:var(--product-partner)}
 #cabinet-overlay .tab-btn[data-tab="tools"].active   {background:var(--product-brand-bg);color:var(--product-brand);border-top-color:var(--product-brand)}
-/* hover подсветка по продукту */
+/* hover */
 #cabinet-overlay .tab-btn[data-tab="info"]:hover:not(.active)    {border-top-color:var(--product-partner)}
 #cabinet-overlay .tab-btn[data-tab="payment"]:hover:not(.active) {border-top-color:var(--product-economy)}
 #cabinet-overlay .tab-btn[data-tab="plans"]:hover:not(.active)   {border-top-color:var(--product-ai)}
-#cabinet-overlay .tab-btn[data-tab="economy"]:hover:not(.active) {border-top-color:var(--product-brand)}
-#cabinet-overlay .tab-btn[data-tab="brand"]:hover:not(.active)   {border-top-color:var(--product-partner)}
 #cabinet-overlay .tab-btn[data-tab="tools"]:hover:not(.active)   {border-top-color:var(--product-brand)}
+/* Слой 2 — sub-tabs */
+.cab-subtab{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Onest',sans-serif;transition:all 0.18s;white-space:nowrap;margin-bottom:8px}
+.cab-subtab:hover{background:var(--surface3);color:var(--text)}
+.cab-subtab.pinned{border-color:rgba(0,136,204,0.45);color:#0ea5e9}
+.cab-subtab.pinned:hover{background:rgba(0,136,204,0.1)}
+.cab-subtab.st-economy{border-color:rgba(245,158,11,0.45);color:var(--product-economy)}
+.cab-subtab.st-economy:hover{background:var(--product-economy-bg)}
+.cab-subtab.st-brand{border-color:rgba(139,92,246,0.45);color:var(--product-brand)}
+.cab-subtab.st-brand:hover{background:var(--product-brand-bg)}
+.cab-subtab.st-meta{border-color:rgba(59,130,246,0.45);color:var(--accent2)}
+.cab-subtab.st-meta:hover{background:var(--product-ai-bg)}
+#cab-subtabs{min-height:0;transition:padding 0.2s}
 /* Вкладки админки — красный акцент */
 #admin-panel-overlay .tab-btn.active {background:var(--product-admin-bg);color:var(--product-admin);border-top-color:var(--product-admin)}
 
@@ -843,15 +851,16 @@ textarea::placeholder{color:var(--text3)}
     <div class="modal-title">🏛️ Кабинет партнёра</div>
     <div class="modal-sub" id="cab-partner-name">Управление подпиской и API</div>
 
-    <!-- Tabs: Statistics / Payment / Plans / Economy / Brand -->
+    <!-- Слой 1: основные вкладки кабинета -->
     <div class="tab-row">
       <button class="tab-btn active" data-tab="info"    onclick="switchCabTab('info')">📊 Статистика</button>
       <button class="tab-btn"        data-tab="payment" onclick="switchCabTab('payment')">💳 Оплата</button>
       <button class="tab-btn"        data-tab="plans"   onclick="switchCabTab('plans')">📦 Пакеты</button>
-      <button class="tab-btn"        data-tab="economy" onclick="switchCabTab('economy')">📈 Экономика</button>
-      <button class="tab-btn"        data-tab="brand"   onclick="switchCabTab('brand')">🤝 Партнёры</button>
-      <button class="tab-btn"        data-tab="tools"   onclick="switchCabTab('tools')">👤 Бренд</button>
+      <button class="tab-btn"        data-tab="tools"   onclick="switchCabTab('tools')">⚙️ Инструменты</button>
     </div>
+
+    <!-- Слой 2: Telegram (закреплён) + Экономика/Бренд/Метаресурс (по настройкам) -->
+    <div id="cab-subtabs" style="display:flex;gap:6px;padding:8px 16px 0;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap"></div>
 
     <div class="tab-content active" id="cab-tab-info">
       <div class="cabinet-stats">
@@ -1251,12 +1260,7 @@ textarea::placeholder{color:var(--text3)}
         <span class="level-badge" id="level-badge" style="display:none"></span>
         <span class="req-counter" id="req-counter" style="display:none"></span>
         <button id="hbtn-admin-login" class="header-btn" onclick="openAdminLogin()" title="Вход администратора" style="display:none;border-color:rgba(220,38,38,0.4);color:#dc2626">🔐 Вход</button>
-        <button id="hbtn-economy" class="header-btn" onclick="window.location.href='https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app'" title="Viking Economy калькулятор">📈 Экономика</button>
-        <button id="hbtn-brand" class="header-btn" onclick="window.location.href='https://parner.vercel.app/ru'" title="Личный бренд партнёра">👤 Бренд</button>
-        <button id="hbtn-client" class="header-btn" onclick="openShareClient()" title="Поделиться с клиентом" style="border-color:rgba(16,185,129,0.4);color:var(--green)">👤 Клиент</button>
-        <button id="hbtn-partner" class="header-btn" onclick="openRegister()" title="Зарегистрировать партнёра" style="border-color:rgba(139,92,246,0.4);color:var(--purple)">🤝 Партнёр</button>
-        <button id="hbtn-meta" class="header-btn meta-btn" onclick="startMetaWizard()">🏗️ Метаресурс</button>
-        <button id="hbtn-cabinet" class="header-btn cabinet-btn" onclick="openCabinet()">🏛️ Кабинет</button>
+        <button id="hbtn-cabinet" class="header-btn cabinet-btn" onclick="openCabinet()">🤝 Партнёр</button>
         <button id="hbtn-admin" class="header-btn" onclick="openAdmin()" style="border-color:rgba(239,68,68,0.4);color:var(--red);display:none">🔧 Админ</button>
         <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
@@ -1538,19 +1542,10 @@ function closeModeSwitch() {
 
 // ── Показать/скрыть кнопки хедера в зависимости от режима ─────────────
 function updateHeaderButtons(mode) {
-  var s = loadClientSettings();
-  // admin:   только админ-панель
-  // partner: всё видно
-  // business: метаресурс + economy/brand по настройкам
-  // user:    только economy/brand по настройкам
   var show = {
-    'hbtn-economy': mode !== 'admin' && (mode === 'partner' || (mode === 'business' && s.showEconomy) || (mode === 'user' && s.showEconomy)),
-    'hbtn-brand':   mode !== 'admin' && (mode === 'partner' || (mode === 'business' && s.showBrand)   || (mode === 'user' && s.showBrand)),
-    'hbtn-client':  false,
-    'hbtn-partner': false,
-    'hbtn-meta':    mode !== 'admin' && (mode === 'partner' || ((mode === 'business' || mode === 'user') && s.showMeta)),
-    'hbtn-cabinet': mode === 'partner',
-    'hbtn-admin':   mode === 'admin'
+    'hbtn-cabinet':     mode === 'partner' || mode === 'admin',
+    'hbtn-admin':       mode === 'admin',
+    'hbtn-admin-login': mode !== 'partner' && mode !== 'admin'
   };
   Object.keys(show).forEach(function(id) {
     var el = document.getElementById(id);
@@ -1801,6 +1796,7 @@ function openCabinet() {
 
 function _openCabinetContent(userData) {
   updateCabinetStats();
+  renderCabSubtabs();
   document.getElementById('cabinet-overlay').classList.remove('hidden');
 
   // Show user's full name
@@ -2317,7 +2313,51 @@ function saveClientSettings() {
   localStorage.setItem('setting-show-economy', showEconomy);
   localStorage.setItem('setting-show-brand',   showBrand);
   localStorage.setItem('setting-show-meta',    showMeta);
-  if (userMode !== 'partner') updateHeaderButtons(userMode);
+  renderCabSubtabs();
+}
+
+function renderCabSubtabs() {
+  var bar = document.getElementById('cab-subtabs');
+  if (!bar) return;
+  var s = loadClientSettings();
+  bar.innerHTML = '';
+
+  // Telegram — всегда закреплён
+  var tg = document.createElement('button');
+  tg.className = 'cab-subtab pinned';
+  tg.innerHTML = '✈️ Telegram';
+  tg.title = 'Открыть Telegram бот';
+  tg.onclick = function() { window.open('https://t.me/' + (window.BOT_USERNAME || 'BitbonPartnerBot'), '_blank'); };
+  bar.appendChild(tg);
+
+  // Экономика
+  if (s.showEconomy) {
+    var e = document.createElement('button');
+    e.className = 'cab-subtab st-economy';
+    e.innerHTML = '📈 Экономика';
+    e.onclick = function() { switchCabTab('economy'); };
+    bar.appendChild(e);
+  }
+
+  // Бренд
+  if (s.showBrand) {
+    var b = document.createElement('button');
+    b.className = 'cab-subtab st-brand';
+    b.innerHTML = '👤 Бренд';
+    b.onclick = function() { switchCabTab('brand'); };
+    bar.appendChild(b);
+  }
+
+  // Метаресурс
+  if (s.showMeta) {
+    var m = document.createElement('button');
+    m.className = 'cab-subtab st-meta';
+    m.innerHTML = '🏗️ Метаресурс';
+    m.onclick = function() { closeCabinet(); startMetaWizard(); };
+    bar.appendChild(m);
+  }
+
+  bar.style.padding = bar.children.length ? '8px 16px 0' : '0 16px';
 }
 
 function selectPlan(plan) {
