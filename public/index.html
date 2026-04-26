@@ -3724,7 +3724,8 @@ async function sendMessage() {
         messages: history,
         systemPrompt: buildSystemPrompt(),
         userLevel: userLevel,
-        userMode: userMode
+        userMode: userMode,
+        language: currentLang
       })
     });
     var data = await response.json();

@@ -1123,11 +1123,19 @@ function routeKBContext(question) {
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { question, messages, systemPrompt, userLevel, userMode } = req.body;
+    const { question, messages, systemPrompt, userLevel, userMode, language } = req.body;
 
     if (!question || !messages || !systemPrompt) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
+
+    // Map language code to language name for Claude
+    const languageMap = {
+      'uk': 'Ukrainian',
+      'en': 'English',
+      'ru': 'Russian'
+    };
+    const langName = languageMap[language] || 'English';
 
     if (!ANTHROPIC_API_KEY) {
       console.error('❌ ANTHROPIC_API_KEY not configured!');
@@ -1137,7 +1145,8 @@ app.post('/api/chat', async (req, res) => {
 
     // Inject routed KB context into system prompt
     const kbContext = routeKBContext(question);
-    const enhancedSystemPrompt = systemPrompt + kbContext;
+    const languageInstruction = `\n\n[IMPORTANT: Respond ONLY in ${langName}. Do not use any other language.]`;
+    const enhancedSystemPrompt = systemPrompt + kbContext + languageInstruction;
 
     // Call Anthropic API
     const response = await fetch('https://api.anthropic.com/v1/messages', {
