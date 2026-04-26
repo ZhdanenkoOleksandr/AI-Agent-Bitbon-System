@@ -1713,6 +1713,9 @@ var TRANSLATIONS = {
     cab_no_plan:'Пакет не обрано',
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
+    cab_tools_desc:'Інструменти для привернення клієнтів та розширення партнерської мережі.',
+    cab_requests_gift:'🎁 Запитів у подарунок:',
+    cab_share_instruct:'Введіть Telegram — бот автоматично напише партнеру та зберіть усі дані.',
     input_hint:'🏗️ Метаресурс — демо вашого бізнесу · 🏛️ Кабінет — управління API',
     limit_title:'⚡ Ліміт вичерпано',
     limit_sub:'Оновіть підписку щоб продовжити.',
@@ -1838,6 +1841,9 @@ var TRANSLATIONS = {
     cab_no_plan:'No package selected',
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
+    cab_tools_desc:'Tools to attract clients and expand your partner network.',
+    cab_requests_gift:'🎁 Complimentary requests:',
+    cab_share_instruct:'Enter Telegram — the bot will automatically write to the partner and collect all data.',
     input_hint:'🏗️ Metaresource — demo of your business · 🏛️ Cabinet — API management',
     limit_title:'⚡ Limit exceeded',
     limit_sub:'Update your subscription to continue.',
@@ -1963,6 +1969,9 @@ var TRANSLATIONS = {
     cab_no_plan:'Пакет не выбран',
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
+    cab_tools_desc:'Инструменты для привлечения клиентов и расширения партнёрской сети.',
+    cab_requests_gift:'🎁 Запросов в подарок:',
+    cab_share_instruct:'Введите Telegram — бот автоматически напишет партнёру и соберёт все данные.',
     input_hint:'🏗️ Метаресурс — демо вашего бизнеса · 🏛️ Кабинет — управление API',
     limit_title:'⚡ Лимит исчерпан',
     limit_sub:'Обновите подписку чтобы продолжить.',
@@ -2140,6 +2149,12 @@ function applyI18n() {
   if (cabShareBtns[1]) { var csp1 = cabShareBtns[1].querySelector('span:last-child'); if (csp1) csp1.textContent = t.msg_whatsapp; }
   if (cabShareBtns[2]) { var csp2 = cabShareBtns[2].querySelector('span:last-child'); if (csp2) csp2.textContent = t.msg_viber; }
   if (cabShareBtns[3]) { var csp3 = cabShareBtns[3].querySelector('span:last-child'); if (csp3) csp3.textContent = t.msg_email; }
+  // Cabinet tools description
+  var allDivs = document.querySelectorAll('#cab-tab-tools div');
+  allDivs.forEach(function(div) { if (div.textContent.includes('Инструменты') && div.textContent.includes('привлечения')) { div.textContent = t.cab_tools_desc; } });
+  // Cabinet gift requests label
+  var allSpans = document.querySelectorAll('#cab-tab-info span');
+  allSpans.forEach(function(span) { if (span.textContent.includes('Запросов в подарок')) { span.textContent = t.cab_requests_gift; } });
   var statLabels = document.querySelectorAll('#cab-tab-info .stat-label');
   if (statLabels[0]) statLabels[0].textContent = t.cab_stat_requests;
   if (statLabels[1]) statLabels[1].textContent = t.cab_stat_remain;
