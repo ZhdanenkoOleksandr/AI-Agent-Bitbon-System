@@ -1667,6 +1667,10 @@ var TRANSLATIONS = {
     share_sub:'Надішліть посилання на AI-агента Системи Bitbon через будь-який месенджер.',
     share_instagram:'Скопіювати для Instagram / іншого',
     share_footer:'Клієнт отримає доступ до AI-агента Системи Bitbon',
+    msg_telegram:'✈️ Telegram',
+    msg_whatsapp:'💬 WhatsApp',
+    msg_viber:'📳 Viber',
+    msg_email:'📧 Email',
     reg_title:'🤝 Запросити Партнера',
     reg_sub:'Введіть Telegram партнера — бот автоматично напише йому та збере всі дані.',
     reg_tg_label:'Telegram партнера *',
@@ -1788,6 +1792,10 @@ var TRANSLATIONS = {
     share_sub:'Send a link to the Bitbon System AI agent via any messenger.',
     share_instagram:'Copy for Instagram / other',
     share_footer:'The client will get access to the Bitbon System AI agent',
+    msg_telegram:'✈️ Telegram',
+    msg_whatsapp:'💬 WhatsApp',
+    msg_viber:'📳 Viber',
+    msg_email:'📧 Email',
     reg_title:'🤝 Invite a Partner',
     reg_sub:"Enter partner's Telegram — the bot will automatically write to them and collect all data.",
     reg_tg_label:"Partner's Telegram *",
@@ -1909,6 +1917,10 @@ var TRANSLATIONS = {
     share_sub:'Отправьте ссылку на AI-агента Системы Bitbon через любой мессенджер.',
     share_instagram:'Скопировать для Instagram / другого',
     share_footer:'Клиент получит доступ к AI-агенту Системы Bitbon',
+    msg_telegram:'✈️ Telegram',
+    msg_whatsapp:'💬 WhatsApp',
+    msg_viber:'📳 Viber',
+    msg_email:'📧 Email',
     reg_title:'🤝 Пригласить Партнёра',
     reg_sub:'Введите Telegram партнёра — бот автоматически напишет ему и соберёт все данные.',
     reg_tg_label:'Telegram партнёра *',
@@ -2070,6 +2082,10 @@ function applyI18n() {
   setQ('#share-client-overlay .modal-title', 'share_title');
   setQ('#share-client-overlay .modal-sub', 'share_sub');
   var shareBtns = document.querySelectorAll('#share-client-overlay .share-messenger-btn');
+  if (shareBtns[0]) { var sp0 = shareBtns[0].querySelector('span:last-child'); if (sp0) sp0.textContent = t.msg_telegram; }
+  if (shareBtns[1]) { var sp1 = shareBtns[1].querySelector('span:last-child'); if (sp1) sp1.textContent = t.msg_whatsapp; }
+  if (shareBtns[2]) { var sp2 = shareBtns[2].querySelector('span:last-child'); if (sp2) sp2.textContent = t.msg_viber; }
+  if (shareBtns[3]) { var sp3 = shareBtns[3].querySelector('span:last-child'); if (sp3) sp3.textContent = t.msg_email; }
   if (shareBtns[4]) { var sp = shareBtns[4].querySelector('span:last-child'); if (sp) sp.textContent = t.share_instagram; }
   set('share-footer', 'share_footer');
 
@@ -2118,6 +2134,12 @@ function applyI18n() {
   if (linkLabel) linkLabel.textContent = t.cab_link_label;
   var linkInput = document.getElementById('cab-link-input');
   if (linkInput) linkInput.placeholder = t.cab_link_placeholder;
+  // Cabinet messenger buttons (in share section)
+  var cabShareBtns = document.querySelectorAll('#cab-tab-info .share-messenger-btn');
+  if (cabShareBtns[0]) { var csp0 = cabShareBtns[0].querySelector('span:last-child'); if (csp0) csp0.textContent = t.msg_telegram; }
+  if (cabShareBtns[1]) { var csp1 = cabShareBtns[1].querySelector('span:last-child'); if (csp1) csp1.textContent = t.msg_whatsapp; }
+  if (cabShareBtns[2]) { var csp2 = cabShareBtns[2].querySelector('span:last-child'); if (csp2) csp2.textContent = t.msg_viber; }
+  if (cabShareBtns[3]) { var csp3 = cabShareBtns[3].querySelector('span:last-child'); if (csp3) csp3.textContent = t.msg_email; }
   var statLabels = document.querySelectorAll('#cab-tab-info .stat-label');
   if (statLabels[0]) statLabels[0].textContent = t.cab_stat_requests;
   if (statLabels[1]) statLabels[1].textContent = t.cab_stat_remain;
