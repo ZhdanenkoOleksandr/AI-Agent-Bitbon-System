@@ -1522,10 +1522,9 @@ function setLevel(level) {
     addMessage('bot', 'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.', null, false);
   }
 
-  // Update badge
+  // Роль отображается в футер-навигации; в хедере badge не нужен
   var badge = document.getElementById('level-badge');
-  badge.textContent = level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
-  badge.style.display = 'inline-flex';
+  badge.style.display = 'none';
 
   // Update header buttons visibility
   updateHeaderButtons(level);
@@ -1601,10 +1600,9 @@ function switchLevel(level) {
     addMessage('bot', '👤 Вы переключились на режим **Пользователя**. Я расскажу о Системе Bitbon простым языком.', null, false);
   }
 
-  // Update badge
+  // Роль отображается в футер-навигации
   var badge = document.getElementById('level-badge');
-  badge.textContent = level === 'admin' ? '⚙️ Администратор' : level === 'user' ? '👤 Пользователь' : level === 'business' ? '💼 Бизнес' : '🤝 Партнёр';
-  badge.style.display = 'inline-flex';
+  badge.style.display = 'none';
 
   // Update header buttons visibility
   updateHeaderButtons(level);
