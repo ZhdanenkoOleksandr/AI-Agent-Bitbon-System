@@ -1690,6 +1690,7 @@ var TRANSLATIONS = {
     login_tg:'✈️ Зареєструватися через Telegram',
     login_tg_note:'Бот збере дані та встановить ваш PIN-код',
     cab_title:'🏛️ Кабінет партнера',
+    cab_subtitle:'Управління підпискою та API',
     cab_tab_info:'📊 Статистика',
     cab_tab_payment:'💳 Оплата',
     cab_tab_plans:'📦 Пакети',
@@ -1706,6 +1707,12 @@ var TRANSLATIONS = {
     cab_link_open:'↗ Відкрити',
     cab_link_hint:'Це посилання відкриється у клієнтів при натисканні кнопки',
     cab_no_plan:'Пакет не обрано',
+    cab_link_label:'Telegram',
+    cab_link_placeholder:'https://t.me/yourname',
+    input_hint:'🏗️ Метаресурс — демо вашого бізнесу · 🏛️ Кабінет — управління API',
+    limit_title:'⚡ Ліміт вичерпано',
+    limit_sub:'Оновіть підписку щоб продовжити.',
+    limit_btn:'🏛️ Оновити',
     admin_panel_title:'⚙️ Панель Адміністратора',
     admin_panel_sub:'Управління партнерами та запрошеннями',
     admin_tab_invites:'🔗 Запрошення',
@@ -1804,6 +1811,7 @@ var TRANSLATIONS = {
     login_tg:'✈️ Register via Telegram',
     login_tg_note:'Bot will collect data and set your PIN code',
     cab_title:'🏛️ Partner cabinet',
+    cab_subtitle:'Subscription and API management',
     cab_tab_info:'📊 Statistics',
     cab_tab_payment:'💳 Payment',
     cab_tab_plans:'📦 Packages',
@@ -1820,6 +1828,12 @@ var TRANSLATIONS = {
     cab_link_open:'↗ Open',
     cab_link_hint:'This link will open for clients when they click the button',
     cab_no_plan:'No package selected',
+    cab_link_label:'Telegram',
+    cab_link_placeholder:'https://t.me/yourname',
+    input_hint:'🏗️ Metaresource — demo of your business · 🏛️ Cabinet — API management',
+    limit_title:'⚡ Limit exceeded',
+    limit_sub:'Update your subscription to continue.',
+    limit_btn:'🏛️ Upgrade',
     admin_panel_title:'⚙️ Admin Panel',
     admin_panel_sub:'Manage partners and invitations',
     admin_tab_invites:'🔗 Invitations',
@@ -1918,6 +1932,7 @@ var TRANSLATIONS = {
     login_tg:'✈️ Зарегистрироваться через Telegram',
     login_tg_note:'Бот соберёт данные и установит ваш PIN-код',
     cab_title:'🏛️ Кабинет партнёра',
+    cab_subtitle:'Управление подпиской и API',
     cab_tab_info:'📊 Статистика',
     cab_tab_payment:'💳 Оплата',
     cab_tab_plans:'📦 Пакеты',
@@ -1934,6 +1949,12 @@ var TRANSLATIONS = {
     cab_link_open:'↗ Открыть',
     cab_link_hint:'Эта ссылка откроется у клиентов при нажатии кнопки',
     cab_no_plan:'Пакет не выбран',
+    cab_link_label:'Telegram',
+    cab_link_placeholder:'https://t.me/yourname',
+    input_hint:'🏗️ Метаресурс — демо вашего бизнеса · 🏛️ Кабинет — управление API',
+    limit_title:'⚡ Лимит исчерпан',
+    limit_sub:'Обновите подписку чтобы продолжить.',
+    limit_btn:'🏛️ Обновить',
     admin_panel_title:'⚙️ Панель Администратора',
     admin_panel_sub:'Управление партнёрами и приглашениями',
     admin_tab_invites:'🔗 Приглашения',
@@ -2086,11 +2107,17 @@ function applyI18n() {
 
   // Cabinet
   setQ('#cabinet-overlay .modal-title', 'cab_title');
+  set('cab-partner-name', 'cab_subtitle');
   var cabTabs = document.querySelectorAll('#cabinet-overlay > .modal > .tab-row .tab-btn');
   if (cabTabs[0]) cabTabs[0].textContent = t.cab_tab_info;
   if (cabTabs[1]) cabTabs[1].textContent = t.cab_tab_payment;
   if (cabTabs[2]) cabTabs[2].textContent = t.cab_tab_plans;
   if (cabTabs[3]) cabTabs[3].textContent = t.cab_tab_tools;
+  // Cabinet link editor
+  var linkLabel = document.getElementById('cab-link-label');
+  if (linkLabel) linkLabel.textContent = t.cab_link_label;
+  var linkInput = document.getElementById('cab-link-input');
+  if (linkInput) linkInput.placeholder = t.cab_link_placeholder;
   var statLabels = document.querySelectorAll('#cab-tab-info .stat-label');
   if (statLabels[0]) statLabels[0].textContent = t.cab_stat_requests;
   if (statLabels[1]) statLabels[1].textContent = t.cab_stat_remain;
@@ -2169,6 +2196,11 @@ function applyI18n() {
   // Input
   setPlaceholder('input', 'input_placeholder');
   set('input-hint', 'input_hint');
+  // Update hint text if it's still in the old hardcoded format
+  var hint = document.getElementById('input-hint');
+  if (hint && (hint.textContent.includes('Метаресурс') || hint.textContent.includes('Metaresource') || hint.textContent.includes('Метаресурс'))) {
+    hint.textContent = t.input_hint;
+  }
 
   // Header
   set('hbtn-admin', 'hdr_admin');
