@@ -1116,7 +1116,7 @@ textarea::placeholder{color:var(--text3)}
 
     <!-- Tab: Инструменты партнёра -->
     <div class="tab-content" id="cab-tab-tools">
-      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">
+      <div id="cab-tools-desc" style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">
         Инструменты для привлечения клиентов и расширения партнёрской сети.
       </div>
 
@@ -1736,8 +1736,11 @@ var TRANSLATIONS = {
     cab_payment_desc:'Для активації API ключа відправте Bitbon на гаманець системи та вкажіть хеш транзакції. Адміністратор підтвердить оплату і активує доступ.',
     cab_payment_label_id:'ID партнера',cab_payment_label_tx:'Хеш транзакції (TX)',cab_payment_label_amount:'Сума (BB)',cab_payment_btn:'💳 Відправити на перевірку',
     plan_per_month:'/міс',plan_badge_popular:'🔥 Популярний',plan_name_starter:'Стартер',plan_req_starter:'100 запитів',plan_name_pro:'Про',plan_req_pro:'500 запитів',plan_name_expert:'Експерт',plan_req_expert:'Безліміт',plan_f_ai:'AI агент',plan_f_meta3:'3 метаресурси',plan_f_support:'Базова підтримка',plan_f_meta15:'15 метаресурсів',plan_f_priority:'Пріоритет',plan_f_cross:'Крос-посилання',plan_f_unlimited:'∞ метаресурсів',plan_f_whitelabel:'White-label',plan_f_priority2:'Пріоритетна підтримка',
+    cab_tools_main_desc:'Інструменти для залучення клієнтів та розширення партнерської мережі.',
     economy_components_title:'🎯 Ключові компоненти:',economy_outro:'Детальніше про економічну модель можна дізнатися через AI агента.',economy_btn_more:'📚 Дізнатися більше',economy_btn_calc:'🔗 Відкрити калькулятор',economy_ask_more:'Розкажи детальніше про економічну модель Bitbon і Viking Economy',
+    eco_f1:'💰 <strong>Дефляційна модель</strong> — лише 100 млн BB, обмежена пропозиція',eco_f2:'🔄 <strong>АУРА як цифровий актив</strong> — зростає в ціні з розвитком екосистеми',eco_f3:'🌐 <strong>Web 4.0 інтеграція</strong> — блокчейн + AI для реального сектору',eco_f4:'📊 <strong>Партнерська модель</strong> — розподіл доходів між учасниками',eco_f5:'🚀 <strong>Масштабування</strong> — зростання вартості разом з кількістю користувачів',
     brand_components_title:'⭐ Компоненти особистого бренду:',brand_outro:'Сильний особистий бренд у Bitbon — ключ до успіху.',brand_btn_develop:'🚀 Розвивати бренд',brand_btn_profile:'🔗 Мій профіль',brand_ask_develop:'Як розвивати особистий бренд і АУРА в Системі Bitbon?',
+    brand_f1:'📝 <strong>Профіль партнера</strong> — ваша візитна картка в екосистемі',brand_f2:'🏆 <strong>АУРА рейтинг</strong> — репутаційний капітал і довіра',brand_f3:'🎓 <strong>Сертифікація</strong> — визнання рівня компетентності',brand_f4:'💼 <strong>Портфоліо метаресурсів</strong> — демонстрація готових рішень',brand_f5:'🤝 <strong>Мережевий ефект</strong> — залучення клієнтів через репутацію',
     admin_label_partners:'Партнерів',admin_label_users:'Користувачів',admin_label_sessions:'Активних сесій',admin_quick_title:'📊 Швидкі дії',admin_btn_partners:'📋 Список партнерів',admin_btn_stat:'📈 Статистика',admin_btn_sessions:'👥 Активні сесії',admin_btn_status:'✅ Статус',admin_mgmt_title:'🔐 Управління',admin_btn_new_partner:'➕ Новий партнер',admin_ask_partners:'Покажи список всіх партнерів з деталями',admin_ask_stat:'Яка статистика запитів за останні 7 днів?',admin_ask_sessions:'Покажи активні сесії користувачів',admin_ask_status:'Статус системи — всі компоненти працюють?',admin_ask_new_partner:'Створи нового тестового партнера з активним статусом',
     admin_panel_title:'⚙️ Панель Адміністратора',
     admin_panel_sub:'Управління партнерами та запрошеннями',
@@ -1885,8 +1888,11 @@ var TRANSLATIONS = {
     cab_payment_desc:'To activate your API key, send Bitbon to the system wallet and specify the transaction hash. The administrator will confirm payment and activate access.',
     cab_payment_label_id:'Partner ID',cab_payment_label_tx:'Transaction Hash (TX)',cab_payment_label_amount:'Amount (BB)',cab_payment_btn:'💳 Submit for review',
     plan_per_month:'/mo',plan_badge_popular:'🔥 Popular',plan_name_starter:'Starter',plan_req_starter:'100 requests',plan_name_pro:'Pro',plan_req_pro:'500 requests',plan_name_expert:'Expert',plan_req_expert:'Unlimited',plan_f_ai:'AI agent',plan_f_meta3:'3 metaresources',plan_f_support:'Basic support',plan_f_meta15:'15 metaresources',plan_f_priority:'Priority',plan_f_cross:'Cross-links',plan_f_unlimited:'∞ metaresources',plan_f_whitelabel:'White-label',plan_f_priority2:'Priority support',
+    cab_tools_main_desc:'Tools to attract clients and expand your partner network.',
     economy_components_title:'🎯 Key components:',economy_outro:'Learn more about the economic model via the AI agent by asking questions about Bitbon structure and investment potential.',economy_btn_more:'📚 Learn more',economy_btn_calc:'🔗 Open calculator',economy_ask_more:'Tell me more about the Bitbon economic model and Viking Economy',
+    eco_f1:'💰 <strong>Deflationary model</strong> — only 100M BB, limited supply',eco_f2:'🔄 <strong>AURA as a digital asset</strong> — grows in value with ecosystem development',eco_f3:'🌐 <strong>Web 4.0 integration</strong> — blockchain + AI for real sector',eco_f4:'📊 <strong>Partner model</strong> — revenue sharing among participants',eco_f5:'🚀 <strong>Scaling</strong> — value growth with number of users',
     brand_components_title:'⭐ Personal brand components:',brand_outro:'A strong personal brand in Bitbon is the key to success. Invest in developing your profile and attract partners with your network.',brand_btn_develop:'🚀 Develop brand',brand_btn_profile:'🔗 My profile',brand_ask_develop:'How to develop personal brand and AURA in Bitbon System?',
+    brand_f1:'📝 <strong>Partner profile</strong> — your business card in the ecosystem',brand_f2:'🏆 <strong>AURA rating</strong> — reputational capital and trust',brand_f3:'🎓 <strong>Certification</strong> — recognition of competence level',brand_f4:'💼 <strong>Metaresource portfolio</strong> — showcase of ready solutions',brand_f5:'🤝 <strong>Network effect</strong> — attracting clients through reputation',
     admin_label_partners:'Partners',admin_label_users:'Users',admin_label_sessions:'Active sessions',admin_quick_title:'📊 Quick actions',admin_btn_partners:'📋 Partners list',admin_btn_stat:'📈 Statistics',admin_btn_sessions:'👥 Active sessions',admin_btn_status:'✅ Status',admin_mgmt_title:'🔐 Management',admin_btn_new_partner:'➕ New partner',admin_ask_partners:'Show list of all partners with details',admin_ask_stat:'What are the request statistics for the last 7 days?',admin_ask_sessions:'Show active user sessions',admin_ask_status:'System status — are all components working?',admin_ask_new_partner:'Create a new test partner with active status',
     admin_panel_title:'⚙️ Admin Panel',
     admin_panel_sub:'Manage partners and invitations',
@@ -2034,8 +2040,11 @@ var TRANSLATIONS = {
     cab_payment_desc:'Для активации API ключа отправьте Bitbon на кошелёк системы и укажите хэш транзакции. Администратор подтвердит оплату и активирует доступ.',
     cab_payment_label_id:'ID партнёра',cab_payment_label_tx:'Хэш транзакции (TX)',cab_payment_label_amount:'Сумма (BB)',cab_payment_btn:'💳 Отправить на проверку',
     plan_per_month:'/мес',plan_badge_popular:'🔥 Популярный',plan_name_starter:'Стартер',plan_req_starter:'100 запросов',plan_name_pro:'Про',plan_req_pro:'500 запросов',plan_name_expert:'Эксперт',plan_req_expert:'Безлимит',plan_f_ai:'AI агент',plan_f_meta3:'3 метаресурса',plan_f_support:'Базовая поддержка',plan_f_meta15:'15 метаресурсов',plan_f_priority:'Приоритет',plan_f_cross:'Кросс-ссылки',plan_f_unlimited:'∞ метаресурсов',plan_f_whitelabel:'White-label',plan_f_priority2:'Приоритетная поддержка',
+    cab_tools_main_desc:'Инструменты для привлечения клиентов и расширения партнёрской сети.',
     economy_components_title:'🎯 Ключевые компоненты:',economy_outro:'Подробнее об экономической модели можно узнать через AI агента.',economy_btn_more:'📚 Узнать больше',economy_btn_calc:'🔗 Открыть калькулятор',economy_ask_more:'Расскажи подробнее об экономической модели Bitbon и Viking Economy',
+    eco_f1:'💰 <strong>Дефляционная модель</strong> — всего 100 млн BB, ограниченное предложение',eco_f2:'🔄 <strong>АУРА как цифровой актив</strong> — растёт в цене с развитием экосистемы',eco_f3:'🌐 <strong>Web 4.0 интеграция</strong> — блокчейн + AI для реального сектора',eco_f4:'📊 <strong>Партнёрская модель</strong> — разделение доходов между участниками',eco_f5:'🚀 <strong>Масштабирование</strong> — рост стоимости вместе с числом пользователей',
     brand_components_title:'⭐ Компоненты личного бренда:',brand_outro:'Сильный личный бренд в Bitbon — ключ к успеху. Инвестируйте в развитие своего профиля.',brand_btn_develop:'🚀 Развивать бренд',brand_btn_profile:'🔗 Мой профиль',brand_ask_develop:'Как развивать личный бренд и АУРА в Системе Bitbon?',
+    brand_f1:'📝 <strong>Профиль партнёра</strong> — ваша визитная карточка в экосистеме',brand_f2:'🏆 <strong>АУРА рейтинг</strong> — репутационный капитал и доверие',brand_f3:'🎓 <strong>Сертификация</strong> — признание уровня компетентности',brand_f4:'💼 <strong>Портфолио метаресурсов</strong> — демонстрация готовых решений',brand_f5:'🤝 <strong>Сетевой эффект</strong> — привлечение клиентов через репутацию',
     admin_label_partners:'Партнёров',admin_label_users:'Пользователей',admin_label_sessions:'Активных сессий',admin_quick_title:'📊 Быстрые действия',admin_btn_partners:'📋 Список партнёров',admin_btn_stat:'📈 Статистика',admin_btn_sessions:'👥 Активные сессии',admin_btn_status:'✅ Статус',admin_mgmt_title:'🔐 Управление',admin_btn_new_partner:'➕ Новый партнёр',admin_ask_partners:'Покажи список всех партнёров с деталями',admin_ask_stat:'Какая статистика запросов за последние 7 дней?',admin_ask_sessions:'Покажи активные сессии пользователей',admin_ask_status:'Статус системы — все компоненты работают?',admin_ask_new_partner:'Создай новый тестовый партнёр с активным статусом',
     admin_panel_title:'⚙️ Панель Администратора',
     admin_panel_sub:'Управление партнёрами и приглашениями',
@@ -2254,6 +2263,18 @@ function applyI18n() {
   set('brand-outro', 'brand_outro');
   set('brand-btn-develop', 'brand_btn_develop');
   set('brand-btn-profile', 'brand_btn_profile');
+  // Economy list items (innerHTML for <strong> tags)
+  ['eco-f1','eco-f2','eco-f3','eco-f4','eco-f5'].forEach(function(id) {
+    var el = document.getElementById(id); var key = id.replace('-','_');
+    if (el && t[key]) el.innerHTML = t[key];
+  });
+  // Brand list items (innerHTML for <strong> tags)
+  ['brand-f1','brand-f2','brand-f3','brand-f4','brand-f5'].forEach(function(id) {
+    var el = document.getElementById(id); var key = id.replace('-','_');
+    if (el && t[key]) el.innerHTML = t[key];
+  });
+  // Tools tab description
+  set('cab-tools-desc', 'cab_tools_main_desc');
   // Admin overlay
   set('admin-label-partners', 'admin_label_partners');
   set('admin-label-users', 'admin_label_users');
