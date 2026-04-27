@@ -3658,12 +3658,11 @@ function renderHeaderNav() {
 }
 
 function selectPlan(plan) {
-  if (_demoCabinetMode) return; // demo cabinet — plan selection is display-only
-  currentPlan = plan;
-  usedRequests = 0;
-  usedMeta = 0;
-  updateCabinetStats();
-  updateRequestUI();
+  // Plan cards are display-only — visual selection for payment, never touch currentPlan or footer
+  selectedRegPlan = plan;
+  document.querySelectorAll('#cab-tab-plans .plan-card').forEach(function(c) {
+    c.classList.toggle('active', c.getAttribute('onclick') === "selectPlan('" + plan + "')");
+  });
 }
 
 function updateCabinetStats() {
