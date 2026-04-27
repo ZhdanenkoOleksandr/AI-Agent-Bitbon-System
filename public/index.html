@@ -3575,7 +3575,10 @@ function renderHeaderNav() {
     var cab = document.createElement('button');
     cab.className = 'fnav-l1';
     cab.innerHTML = i18n('nav_consult');
-    cab.onclick = function() { openCabinet(); };
+    var _tgLink = loadPartnerLinks().telegram;
+    cab.onclick = _tgLink
+      ? function() { window.open(_tgLink, '_blank'); }
+      : function() { openCabinet(); };
     center.appendChild(cab);
   }
 
