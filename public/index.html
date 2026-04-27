@@ -2814,6 +2814,8 @@ function _restoreCabinetAfterDemo() {
 }
 
 function _openCabinetContent(userData) {
+  // ensure demo-mode restrictions are cleared for authenticated partners
+  if (_demoCabinetMode) _restoreCabinetAfterDemo();
   updateCabinetStats();
   renderCabSubtabs();
   document.getElementById('cabinet-overlay').classList.remove('hidden');
