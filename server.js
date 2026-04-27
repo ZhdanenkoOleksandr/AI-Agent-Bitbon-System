@@ -65,13 +65,7 @@ const ALLOWED_ORIGIN = (process.env.SITE_URL || process.env.ALLOWED_ORIGIN || 'h
 app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 
-// ── INTERCEPT: gift_quota redirect BEFORE static files ──
-app.use((req, res, next) => {
-  if (req.query.gift_quota) {
-    return res.redirect(301, 'https://t.me/BitbonPartnerBot');
-  }
-  next();
-});
+// gift_quota param is handled client-side in public/index.html
 
 app.use(express.static(path.join(__dirname, 'public')));
 

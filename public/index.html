@@ -3135,6 +3135,30 @@ function getFetchOptions(method, body) {
   }).catch(function(){});
 })();
 
+// ── Handle plain gift_quota URL (open bot directly with gifted requests) ──
+(function handleGiftQuotaUrl() {
+  var params = new URLSearchParams(window.location.search);
+  var quota = params.get('gift_quota');
+  if (!quota) return;
+  var n = parseInt(quota, 10);
+  if (isNaN(n) || n <= 0) return;
+  // Store gifted quota in localStorage
+  localStorage.setItem('giftQuotaFree', n);
+  localStorage.setItem('giftQuotaUsed', 0);
+  // Clean URL so refreshing doesn't re-trigger
+  window.history.replaceState({}, document.title, window.location.pathname);
+  // Auto-enter bot as 'user' level — skip level selection screen
+  document.addEventListener('DOMContentLoaded', function() {
+    setLevel('user');
+    // Show gift banner in chat
+    setTimeout(function() {
+      addMessage('bot',
+        '🎁 **Вам подарено ' + n + ' бесплатных запросов!**\n\nЗадайте любой вопрос о Системе Bitbon — я здесь, чтобы помочь.',
+        null, false);
+    }, 200);
+  });
+})();
+
 // ── Exchange Telegram web_token for JWT session ─────────────────────────
 (function handleTelegramWebToken() {
   var params = new URLSearchParams(window.location.search);
