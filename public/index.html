@@ -1238,7 +1238,7 @@ textarea::placeholder{color:var(--text3)}
           </label>
         </div>
 
-        <div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5">
+        <div id="cab-visibility-note" style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.5">
           Включённые кнопки появятся у клиентов и бизнес-пользователей в верхнем футере.
         </div>
       </div>
@@ -1796,7 +1796,10 @@ var TRANSLATIONS = {
     share_email_body:'Добрий день!\n\nПропоную ознайомитися з AI-агентом Системи Bitbon:\n',
     share_insta_alert:'Посилання скопійовано!\nВставте його в Instagram Direct або Stories.',
     voice_lang:'uk-UA',
-    lang_display:'УКР'
+    lang_display:'УКР',
+    role_user:'Користувач',role_partner:'Партнер',role_business:'Бізнес',
+    hdr_requests_label:'запитів',hdr_demo_mode:'демо режим',hdr_cabinet:'Кабінет',
+    cab_visibility_note:'Увімкнені кнопки з\'являться у клієнтів і бізнес-користувачів у верхньому хедері.'
   },
   en: {
     page_title:'Bitbon AI — Bitbon System Agent',
@@ -1942,7 +1945,10 @@ var TRANSLATIONS = {
     share_email_body:'Hello!\n\nI would like to share the Bitbon System AI agent with you:\n',
     share_insta_alert:'Link copied!\nPaste it in Instagram Direct or Stories.',
     voice_lang:'en-US',
-    lang_display:'ENG'
+    lang_display:'ENG',
+    role_user:'User',role_partner:'Partner',role_business:'Business',
+    hdr_requests_label:'requests',hdr_demo_mode:'demo mode',hdr_cabinet:'Cabinet',
+    cab_visibility_note:'Enabled buttons will appear for clients and business users in the top header.'
   },
   ru: {
     page_title:'Bitbon AI — Агент Системы Bitbon',
@@ -2088,7 +2094,10 @@ var TRANSLATIONS = {
     share_email_body:'Здравствуйте!\n\nПредлагаю ознакомиться с AI-агентом Системы Bitbon:\n',
     share_insta_alert:'Ссылка скопирована!\nВставьте её в Instagram Direct или Stories.',
     voice_lang:'ru-RU',
-    lang_display:'РУС'
+    lang_display:'РУС',
+    role_user:'Пользователь',role_partner:'Партнёр',role_business:'Бизнес',
+    hdr_requests_label:'запросов',hdr_demo_mode:'демо режим',hdr_cabinet:'Кабинет',
+    cab_visibility_note:'Включённые кнопки появятся у клиентов и бизнес-пользователей в верхнем футере.'
   }
 };
 
@@ -2271,6 +2280,7 @@ function applyI18n() {
   set('cab-toggle-brand-sub', 'cab_toggle_brand_sub');
   set('cab-toggle-meta', 'cab_toggle_meta');
   set('cab-toggle-meta-sub', 'cab_toggle_meta_sub');
+  set('cab-visibility-note', 'cab_visibility_note');
   var statLabels = document.querySelectorAll('#cab-tab-info .stat-label');
   if (statLabels[0]) statLabels[0].textContent = t.cab_stat_requests;
   if (statLabels[1]) statLabels[1].textContent = t.cab_stat_remain;
@@ -3373,9 +3383,9 @@ function renderHeaderNav() {
   var cabBtn = document.getElementById('hbtn-cabinet');
 
   if (roleEl) {
-    var roleName = 'Пользователь'; var roleClass = 'role-user';
-    if (userMode === 'partner' || userMode === 'admin') { roleName = 'Партнёр'; roleClass = 'role-partner'; }
-    else if (userMode === 'business') { roleName = 'Бизнес'; roleClass = 'role-business'; }
+    var roleName = i18n('role_user'); var roleClass = 'role-user';
+    if (userMode === 'partner' || userMode === 'admin') { roleName = i18n('role_partner'); roleClass = 'role-partner'; }
+    else if (userMode === 'business') { roleName = i18n('role_business'); roleClass = 'role-business'; }
     roleEl.className = 'hdr-role ' + roleClass;
     roleEl.textContent = roleName;
     roleEl.style.display = 'inline';
@@ -3384,15 +3394,15 @@ function renderHeaderNav() {
     if (currentPlan && PLANS[currentPlan]) {
       var p = PLANS[currentPlan];
       var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
-      reqEl.textContent = remain + ' запросов';
+      reqEl.textContent = remain + ' ' + i18n('hdr_requests_label');
     } else {
-      reqEl.textContent = 'демо режим';
+      reqEl.textContent = i18n('hdr_demo_mode');
     }
     reqEl.style.display = 'inline';
   }
   if (cabBtn) {
     if (isPartner) {
-      cabBtn.innerHTML = '🗂️ Кабинет';
+      cabBtn.innerHTML = '🗂️ ' + i18n('hdr_cabinet');
       cabBtn.style.cssText = 'display:flex;border-color:var(--product-partner);color:var(--product-partner)';
     } else {
       cabBtn.style.display = 'none';
