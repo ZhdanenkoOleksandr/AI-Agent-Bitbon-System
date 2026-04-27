@@ -1048,69 +1048,69 @@ textarea::placeholder{color:var(--text3)}
     </div>
 
     <div class="tab-content" id="cab-tab-payment">
-      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+      <div id="cab-payment-desc" style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
         Для активации API ключа отправьте Bitbon на кошелёк системы и укажите хэш транзакции. Администратор подтвердит оплату и активирует доступ.
       </div>
       <div class="form-group">
-        <label class="form-label">ID партнёра</label>
+        <label id="cab-payment-label-id" class="form-label">ID партнёра</label>
         <input class="form-input" id="pay-partner-id" placeholder="prt_xxxx">
       </div>
       <div class="form-group">
-        <label class="form-label">Хэш транзакции (TX)</label>
+        <label id="cab-payment-label-tx" class="form-label">Хэш транзакции (TX)</label>
         <input class="form-input" id="pay-tx" placeholder="0x...">
       </div>
       <div class="form-group">
-        <label class="form-label">Сумма (BB)</label>
+        <label id="cab-payment-label-amount" class="form-label">Сумма (BB)</label>
         <input class="form-input" id="pay-amount" type="number" placeholder="50">
       </div>
-      <button class="form-btn gold" onclick="submitPayment()">💳 Отправить на проверку</button>
+      <button id="cab-payment-btn" class="form-btn gold" onclick="submitPayment()">💳 Отправить на проверку</button>
       <div id="pay-result"></div>
     </div>
 
     <div class="tab-content" id="cab-tab-plans">
       <div class="plan-grid">
         <div class="plan-card" onclick="selectPlan('starter')">
-          <div class="plan-icon">🌱</div><div class="plan-name">Стартер</div>
-          <div class="plan-price">10 BB <span>/мес</span></div><div class="plan-requests">100 запросов</div>
-          <ul class="plan-features"><li>AI агент</li><li>3 метаресурса</li><li>Базовая поддержка</li></ul>
+          <div class="plan-icon">🌱</div><div id="plan-name-starter" class="plan-name">Стартер</div>
+          <div class="plan-price">10 BB <span id="plan-per-month">/мес</span></div><div id="plan-req-starter" class="plan-requests">100 запросов</div>
+          <ul class="plan-features"><li id="plan-f-ai">AI агент</li><li id="plan-f-meta3">3 метаресурса</li><li id="plan-f-support">Базовая поддержка</li></ul>
         </div>
         <div class="plan-card popular" onclick="selectPlan('pro')">
-          <div class="plan-badge">🔥 Популярный</div>
-          <div class="plan-icon">📖</div><div class="plan-name">Про</div>
-          <div class="plan-price">50 BB <span>/мес</span></div><div class="plan-requests">500 запросов</div>
-          <ul class="plan-features"><li>15 метаресурсов</li><li>Приоритет</li><li>Кросс-ссылки</li></ul>
+          <div id="plan-badge-popular" class="plan-badge">🔥 Популярный</div>
+          <div class="plan-icon">📖</div><div id="plan-name-pro" class="plan-name">Про</div>
+          <div class="plan-price">50 BB <span>/мес</span></div><div id="plan-req-pro" class="plan-requests">500 запросов</div>
+          <ul class="plan-features"><li id="plan-f-meta15">15 метаресурсов</li><li id="plan-f-priority">Приоритет</li><li id="plan-f-cross">Кросс-ссылки</li></ul>
         </div>
         <div class="plan-card" onclick="selectPlan('expert')">
-          <div class="plan-icon">🚀</div><div class="plan-name">Эксперт</div>
-          <div class="plan-price">150 BB <span>/мес</span></div><div class="plan-requests">Безлимит</div>
-          <ul class="plan-features"><li>∞ метаресурсов</li><li>White-label</li><li>Приоритетная поддержка</li></ul>
+          <div class="plan-icon">🚀</div><div id="plan-name-expert" class="plan-name">Эксперт</div>
+          <div class="plan-price">150 BB <span>/мес</span></div><div id="plan-req-expert" class="plan-requests">Безлимит</div>
+          <ul class="plan-features"><li id="plan-f-unlimited">∞ метаресурсов</li><li id="plan-f-whitelabel">White-label</li><li id="plan-f-priority2">Приоритетная поддержка</li></ul>
         </div>
       </div>
     </div>
 
     <!-- Tab: Экономическая модель (Bitbon Viking Economy) -->
     <div class="tab-content" id="cab-tab-economy">
-      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+      <div id="economy-desc" style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
         <strong>📈 Bitbon Viking Economy</strong> — инновационная экономическая модель системы Bitbon, основанная на принципах децентрализации и дефляционной модели роста стоимости АУРА.
       </div>
 
       <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
-        <div style="font-weight:600;color:var(--purple);margin-bottom:10px;font-size:14px">🎯 Ключевые компоненты:</div>
+        <div id="economy-components-title" style="font-weight:600;color:var(--purple);margin-bottom:10px;font-size:14px">🎯 Ключевые компоненты:</div>
         <ul style="list-style:none;color:var(--text2);font-size:13px;line-height:1.8">
-          <li>💰 <strong>Дефляционная модель</strong> — всего 100 млн BB, ограниченное предложение</li>
-          <li>🔄 <strong>АУРА как цифровой актив</strong> — растёт в цене с развитием экосистемы</li>
-          <li>🌐 <strong>Web 4.0 интеграция</strong> — блокчейн + AI для реального сектора</li>
-          <li>📊 <strong>Партнёрская модель</strong> — разделение доходов между участниками</li>
-          <li>🚀 <strong>Масштабирование</strong> — рост стоимости вместе с числом пользователей</li>
+          <li id="eco-f1">💰 <strong>Дефляционная модель</strong> — всего 100 млн BB, ограниченное предложение</li>
+          <li id="eco-f2">🔄 <strong>АУРА как цифровой актив</strong> — растёт в цене с развитием экосистемы</li>
+          <li id="eco-f3">🌐 <strong>Web 4.0 интеграция</strong> — блокчейн + AI для реального сектора</li>
+          <li id="eco-f4">📊 <strong>Партнёрская модель</strong> — разделение доходов между участниками</li>
+          <li id="eco-f5">🚀 <strong>Масштабирование</strong> — рост стоимости вместе с числом пользователей</li>
         </ul>
       </div>
 
-      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+      <div id="economy-outro" style="font-size:13px;color:var(--text2);margin-bottom:12px">
         Подробнее о экономической модели можно узнать через AI агента, задав вопросы о структуре Bitbon и потенциале инвестиций.
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <button class="fancy-btn economy" onclick="ask('Расскажи подробнее об экономической модели Bitbon и Viking Economy')">📚 Узнать больше</button>
-        <button class="fancy-btn economy" onclick="window.open('https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app','_blank')">🔗 Открыть калькулятор</button>
+        <button id="economy-btn-more" class="fancy-btn economy" onclick="ask(i18n('economy_ask_more'))">📚 Узнать больше</button>
+        <button id="economy-btn-calc" class="fancy-btn economy" onclick="window.open('https://calculator-kvwbikinm-alexs-projects-7faa505b.vercel.app','_blank')">🔗 Открыть калькулятор</button>
       </div>
     </div>
 
@@ -1246,27 +1246,27 @@ textarea::placeholder{color:var(--text3)}
 
     <!-- Tab: Личный бренд -->
     <div class="tab-content" id="cab-tab-brand">
-      <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
+      <div id="brand-desc" style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px">
         <strong>👤 Личный бренд партнёра</strong> — развитие и управление вашей профессиональной идентичности в Системе Bitbon.
       </div>
 
       <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
-        <div style="font-weight:600;color:var(--accent);margin-bottom:10px;font-size:14px">⭐ Компоненты личного бренда:</div>
+        <div id="brand-components-title" style="font-weight:600;color:var(--accent);margin-bottom:10px;font-size:14px">⭐ Компоненты личного бренда:</div>
         <ul style="list-style:none;color:var(--text2);font-size:13px;line-height:1.8">
-          <li>📝 <strong>Профиль партнёра</strong> — ваша визитная карточка в экосистеме</li>
-          <li>🏆 <strong>АУРА рейтинг</strong> — репутационный капитал и доверие</li>
-          <li>🎓 <strong>Сертификация</strong> — признание уровня компетентности</li>
-          <li>💼 <strong>Портфолио метаресурсов</strong> — демонстрация готовых решений</li>
-          <li>🤝 <strong>Сетевой эффект</strong> — привлечение клиентов через репутацию</li>
+          <li id="brand-f1">📝 <strong>Профиль партнёра</strong> — ваша визитная карточка в экосистеме</li>
+          <li id="brand-f2">🏆 <strong>АУРА рейтинг</strong> — репутационный капитал и доверие</li>
+          <li id="brand-f3">🎓 <strong>Сертификация</strong> — признание уровня компетентности</li>
+          <li id="brand-f4">💼 <strong>Портфолио метаресурсов</strong> — демонстрация готовых решений</li>
+          <li id="brand-f5">🤝 <strong>Сетевой эффект</strong> — привлечение клиентов через репутацию</li>
         </ul>
       </div>
 
-      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">
+      <div id="brand-outro" style="font-size:13px;color:var(--text2);margin-bottom:12px">
         Сильный личный бренд в Bitbon — ключ к успеху. Инвестируйте в развитие своего профиля и привлекайте партнёров с вашей сетью.
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <button class="fancy-btn brand" onclick="ask('Как развивать личный бренд и АУРА в Системе Bitbon?')">🚀 Развивать бренд</button>
-        <button class="fancy-btn brand" onclick="window.open('https://parner.vercel.app/ru','_blank')">🔗 Мой профиль</button>
+        <button id="brand-btn-develop" class="fancy-btn brand" onclick="ask(i18n('brand_ask_develop'))">🚀 Развивать бренд</button>
+        <button id="brand-btn-profile" class="fancy-btn brand" onclick="window.open('https://parner.vercel.app/ru','_blank')">🔗 Мой профиль</button>
       </div>
     </div>
   </div>
@@ -1282,32 +1282,32 @@ textarea::placeholder{color:var(--text3)}
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:20px;margin-bottom:20px">
       <div class="stat-box">
         <div class="stat-val" id="admin-stat-partners">0</div>
-        <div class="stat-label">Партнёров</div>
+        <div id="admin-label-partners" class="stat-label">Партнёров</div>
       </div>
       <div class="stat-box">
         <div class="stat-val" id="admin-stat-users">0</div>
-        <div class="stat-label">Пользователей</div>
+        <div id="admin-label-users" class="stat-label">Пользователей</div>
       </div>
       <div class="stat-box">
         <div class="stat-val" id="admin-stat-sessions">0</div>
-        <div class="stat-label">Активных сессий</div>
+        <div id="admin-label-sessions" class="stat-label">Активных сессий</div>
       </div>
     </div>
 
     <div style="background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
-      <div style="font-weight:600;color:var(--accent2);margin-bottom:12px;font-size:14px">📊 Быстрые действия</div>
+      <div id="admin-quick-title" style="font-weight:600;color:var(--accent2);margin-bottom:12px;font-size:14px">📊 Быстрые действия</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <button class="form-btn" onclick="ask('Покажи список всех партнёров с деталями')">📋 Список партнёров</button>
-        <button class="form-btn" onclick="ask('Какая статистика запросов за последние 7 дней?')">📈 Статистика</button>
-        <button class="form-btn" onclick="ask('Покажи активные сессии пользователей')">👥 Активные сессии</button>
-        <button class="form-btn" onclick="ask('Статус системы - все ли компоненты работают?')">✅ Статус</button>
+        <button id="admin-btn-partners" class="form-btn" onclick="ask(i18n('admin_ask_partners'))">📋 Список партнёров</button>
+        <button id="admin-btn-stat" class="form-btn" onclick="ask(i18n('admin_ask_stat'))">📈 Статистика</button>
+        <button id="admin-btn-sessions" class="form-btn" onclick="ask(i18n('admin_ask_sessions'))">👥 Активные сессии</button>
+        <button id="admin-btn-status" class="form-btn" onclick="ask(i18n('admin_ask_status'))">✅ Статус</button>
       </div>
     </div>
 
     <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:16px">
-      <div style="font-weight:600;color:var(--purple);margin-bottom:12px;font-size:14px">🔐 Управление</div>
+      <div id="admin-mgmt-title" style="font-weight:600;color:var(--purple);margin-bottom:12px;font-size:14px">🔐 Управление</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="form-btn" onclick="ask('Создай новый тестовый партнёр с активным статусом')" style="flex:1;min-width:150px">➕ Новый партнёр</button>
+        <button id="admin-btn-new-partner" class="form-btn" onclick="ask(i18n('admin_ask_new_partner'))" style="flex:1;min-width:150px">➕ Новый партнёр</button>
         <button class="form-btn" onclick="adminLogout()" style="flex:1;min-width:150px;background:rgba(239,68,68,0.15);color:var(--red)">🚪 Выход</button>
       </div>
     </div>
@@ -1733,6 +1733,12 @@ var TRANSLATIONS = {
     limit_title:'⚡ Ліміт вичерпано',
     limit_sub:'Оновіть підписку щоб продовжити.',
     limit_btn:'🏛️ Оновити',
+    cab_payment_desc:'Для активації API ключа відправте Bitbon на гаманець системи та вкажіть хеш транзакції. Адміністратор підтвердить оплату і активує доступ.',
+    cab_payment_label_id:'ID партнера',cab_payment_label_tx:'Хеш транзакції (TX)',cab_payment_label_amount:'Сума (BB)',cab_payment_btn:'💳 Відправити на перевірку',
+    plan_per_month:'/міс',plan_badge_popular:'🔥 Популярний',plan_name_starter:'Стартер',plan_req_starter:'100 запитів',plan_name_pro:'Про',plan_req_pro:'500 запитів',plan_name_expert:'Експерт',plan_req_expert:'Безліміт',plan_f_ai:'AI агент',plan_f_meta3:'3 метаресурси',plan_f_support:'Базова підтримка',plan_f_meta15:'15 метаресурсів',plan_f_priority:'Пріоритет',plan_f_cross:'Крос-посилання',plan_f_unlimited:'∞ метаресурсів',plan_f_whitelabel:'White-label',plan_f_priority2:'Пріоритетна підтримка',
+    economy_components_title:'🎯 Ключові компоненти:',economy_outro:'Детальніше про економічну модель можна дізнатися через AI агента.',economy_btn_more:'📚 Дізнатися більше',economy_btn_calc:'🔗 Відкрити калькулятор',economy_ask_more:'Розкажи детальніше про економічну модель Bitbon і Viking Economy',
+    brand_components_title:'⭐ Компоненти особистого бренду:',brand_outro:'Сильний особистий бренд у Bitbon — ключ до успіху.',brand_btn_develop:'🚀 Розвивати бренд',brand_btn_profile:'🔗 Мій профіль',brand_ask_develop:'Як розвивати особистий бренд і АУРА в Системі Bitbon?',
+    admin_label_partners:'Партнерів',admin_label_users:'Користувачів',admin_label_sessions:'Активних сесій',admin_quick_title:'📊 Швидкі дії',admin_btn_partners:'📋 Список партнерів',admin_btn_stat:'📈 Статистика',admin_btn_sessions:'👥 Активні сесії',admin_btn_status:'✅ Статус',admin_mgmt_title:'🔐 Управління',admin_btn_new_partner:'➕ Новий партнер',admin_ask_partners:'Покажи список всіх партнерів з деталями',admin_ask_stat:'Яка статистика запитів за останні 7 днів?',admin_ask_sessions:'Покажи активні сесії користувачів',admin_ask_status:'Статус системи — всі компоненти працюють?',admin_ask_new_partner:'Створи нового тестового партнера з активним статусом',
     admin_panel_title:'⚙️ Панель Адміністратора',
     admin_panel_sub:'Управління партнерами та запрошеннями',
     admin_tab_invites:'🔗 Запрошення',
@@ -1873,6 +1879,12 @@ var TRANSLATIONS = {
     limit_title:'⚡ Limit exceeded',
     limit_sub:'Update your subscription to continue.',
     limit_btn:'🏛️ Upgrade',
+    cab_payment_desc:'To activate your API key, send Bitbon to the system wallet and specify the transaction hash. The administrator will confirm payment and activate access.',
+    cab_payment_label_id:'Partner ID',cab_payment_label_tx:'Transaction Hash (TX)',cab_payment_label_amount:'Amount (BB)',cab_payment_btn:'💳 Submit for review',
+    plan_per_month:'/mo',plan_badge_popular:'🔥 Popular',plan_name_starter:'Starter',plan_req_starter:'100 requests',plan_name_pro:'Pro',plan_req_pro:'500 requests',plan_name_expert:'Expert',plan_req_expert:'Unlimited',plan_f_ai:'AI agent',plan_f_meta3:'3 metaresources',plan_f_support:'Basic support',plan_f_meta15:'15 metaresources',plan_f_priority:'Priority',plan_f_cross:'Cross-links',plan_f_unlimited:'∞ metaresources',plan_f_whitelabel:'White-label',plan_f_priority2:'Priority support',
+    economy_components_title:'🎯 Key components:',economy_outro:'Learn more about the economic model via the AI agent by asking questions about Bitbon structure and investment potential.',economy_btn_more:'📚 Learn more',economy_btn_calc:'🔗 Open calculator',economy_ask_more:'Tell me more about the Bitbon economic model and Viking Economy',
+    brand_components_title:'⭐ Personal brand components:',brand_outro:'A strong personal brand in Bitbon is the key to success. Invest in developing your profile and attract partners with your network.',brand_btn_develop:'🚀 Develop brand',brand_btn_profile:'🔗 My profile',brand_ask_develop:'How to develop personal brand and AURA in Bitbon System?',
+    admin_label_partners:'Partners',admin_label_users:'Users',admin_label_sessions:'Active sessions',admin_quick_title:'📊 Quick actions',admin_btn_partners:'📋 Partners list',admin_btn_stat:'📈 Statistics',admin_btn_sessions:'👥 Active sessions',admin_btn_status:'✅ Status',admin_mgmt_title:'🔐 Management',admin_btn_new_partner:'➕ New partner',admin_ask_partners:'Show list of all partners with details',admin_ask_stat:'What are the request statistics for the last 7 days?',admin_ask_sessions:'Show active user sessions',admin_ask_status:'System status — are all components working?',admin_ask_new_partner:'Create a new test partner with active status',
     admin_panel_title:'⚙️ Admin Panel',
     admin_panel_sub:'Manage partners and invitations',
     admin_tab_invites:'🔗 Invitations',
@@ -2013,6 +2025,12 @@ var TRANSLATIONS = {
     limit_title:'⚡ Лимит исчерпан',
     limit_sub:'Обновите подписку чтобы продолжить.',
     limit_btn:'🏛️ Обновить',
+    cab_payment_desc:'Для активации API ключа отправьте Bitbon на кошелёк системы и укажите хэш транзакции. Администратор подтвердит оплату и активирует доступ.',
+    cab_payment_label_id:'ID партнёра',cab_payment_label_tx:'Хэш транзакции (TX)',cab_payment_label_amount:'Сумма (BB)',cab_payment_btn:'💳 Отправить на проверку',
+    plan_per_month:'/мес',plan_badge_popular:'🔥 Популярный',plan_name_starter:'Стартер',plan_req_starter:'100 запросов',plan_name_pro:'Про',plan_req_pro:'500 запросов',plan_name_expert:'Эксперт',plan_req_expert:'Безлимит',plan_f_ai:'AI агент',plan_f_meta3:'3 метаресурса',plan_f_support:'Базовая поддержка',plan_f_meta15:'15 метаресурсов',plan_f_priority:'Приоритет',plan_f_cross:'Кросс-ссылки',plan_f_unlimited:'∞ метаресурсов',plan_f_whitelabel:'White-label',plan_f_priority2:'Приоритетная поддержка',
+    economy_components_title:'🎯 Ключевые компоненты:',economy_outro:'Подробнее об экономической модели можно узнать через AI агента.',economy_btn_more:'📚 Узнать больше',economy_btn_calc:'🔗 Открыть калькулятор',economy_ask_more:'Расскажи подробнее об экономической модели Bitbon и Viking Economy',
+    brand_components_title:'⭐ Компоненты личного бренда:',brand_outro:'Сильный личный бренд в Bitbon — ключ к успеху. Инвестируйте в развитие своего профиля.',brand_btn_develop:'🚀 Развивать бренд',brand_btn_profile:'🔗 Мой профиль',brand_ask_develop:'Как развивать личный бренд и АУРА в Системе Bitbon?',
+    admin_label_partners:'Партнёров',admin_label_users:'Пользователей',admin_label_sessions:'Активных сессий',admin_quick_title:'📊 Быстрые действия',admin_btn_partners:'📋 Список партнёров',admin_btn_stat:'📈 Статистика',admin_btn_sessions:'👥 Активные сессии',admin_btn_status:'✅ Статус',admin_mgmt_title:'🔐 Управление',admin_btn_new_partner:'➕ Новый партнёр',admin_ask_partners:'Покажи список всех партнёров с деталями',admin_ask_stat:'Какая статистика запросов за последние 7 дней?',admin_ask_sessions:'Покажи активные сессии пользователей',admin_ask_status:'Статус системы — все компоненты работают?',admin_ask_new_partner:'Создай новый тестовый партнёр с активным статусом',
     admin_panel_title:'⚙️ Панель Администратора',
     admin_panel_sub:'Управление партнёрами и приглашениями',
     admin_tab_invites:'🔗 Приглашения',
@@ -2202,6 +2220,42 @@ function applyI18n() {
   if (cabShareBtns[1]) { var csp1 = cabShareBtns[1].querySelector('span:last-child'); if (csp1) csp1.textContent = t.msg_whatsapp; }
   if (cabShareBtns[2]) { var csp2 = cabShareBtns[2].querySelector('span:last-child'); if (csp2) csp2.textContent = t.msg_viber; }
   if (cabShareBtns[3]) { var csp3 = cabShareBtns[3].querySelector('span:last-child'); if (csp3) csp3.textContent = t.msg_email; }
+  // Cabinet Payment tab
+  set('cab-payment-desc', 'cab_payment_desc');
+  set('cab-payment-label-id', 'cab_payment_label_id');
+  set('cab-payment-label-tx', 'cab_payment_label_tx');
+  set('cab-payment-label-amount', 'cab_payment_label_amount');
+  set('cab-payment-btn', 'cab_payment_btn');
+  // Cabinet Plans tab
+  set('plan-per-month', 'plan_per_month');
+  set('plan-badge-popular', 'plan_badge_popular');
+  set('plan-name-starter', 'plan_name_starter');set('plan-req-starter', 'plan_req_starter');
+  set('plan-name-pro', 'plan_name_pro');set('plan-req-pro', 'plan_req_pro');
+  set('plan-name-expert', 'plan_name_expert');set('plan-req-expert', 'plan_req_expert');
+  set('plan-f-ai', 'plan_f_ai');set('plan-f-meta3', 'plan_f_meta3');set('plan-f-support', 'plan_f_support');
+  set('plan-f-meta15', 'plan_f_meta15');set('plan-f-priority', 'plan_f_priority');set('plan-f-cross', 'plan_f_cross');
+  set('plan-f-unlimited', 'plan_f_unlimited');set('plan-f-whitelabel', 'plan_f_whitelabel');set('plan-f-priority2', 'plan_f_priority2');
+  // Cabinet Economy tab
+  set('economy-components-title', 'economy_components_title');
+  set('economy-outro', 'economy_outro');
+  set('economy-btn-more', 'economy_btn_more');
+  set('economy-btn-calc', 'economy_btn_calc');
+  // Cabinet Brand tab
+  set('brand-components-title', 'brand_components_title');
+  set('brand-outro', 'brand_outro');
+  set('brand-btn-develop', 'brand_btn_develop');
+  set('brand-btn-profile', 'brand_btn_profile');
+  // Admin overlay
+  set('admin-label-partners', 'admin_label_partners');
+  set('admin-label-users', 'admin_label_users');
+  set('admin-label-sessions', 'admin_label_sessions');
+  set('admin-quick-title', 'admin_quick_title');
+  set('admin-btn-partners', 'admin_btn_partners');
+  set('admin-btn-stat', 'admin_btn_stat');
+  set('admin-btn-sessions', 'admin_btn_sessions');
+  set('admin-btn-status', 'admin_btn_status');
+  set('admin-mgmt-title', 'admin_mgmt_title');
+  set('admin-btn-new-partner', 'admin_btn_new_partner');
   // Cabinet Tools tab — all texts
   set('cab-share-title', 'cab_share_title');
   set('cab-share-desc', 'cab_share_desc');
