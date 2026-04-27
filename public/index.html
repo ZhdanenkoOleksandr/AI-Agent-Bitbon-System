@@ -3117,6 +3117,17 @@ function getFetchOptions(method, body) {
   return opts;
 }
 
+// ── gift_quota redirect → Telegram bot ────────────────────────────────
+(function handleGiftQuotaRedirect() {
+  var params = new URLSearchParams(window.location.search);
+  var quota = params.get('gift_quota');
+  if (!quota) return;
+  // Store so it can be displayed when user returns
+  localStorage.setItem('pendingGiftQuota', quota);
+  // Redirect to the Telegram bot
+  window.location.href = 'https://t.me/BitbonPartnerBot';
+})();
+
 // ── Claim gift on page load ───────────────────────────────────────────
 (function claimGiftOnLoad() {
   var params = new URLSearchParams(window.location.search);
