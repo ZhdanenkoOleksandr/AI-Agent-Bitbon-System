@@ -1187,7 +1187,7 @@ textarea::placeholder{color:var(--text3)}
       </div>
 
       <!-- Пригласить партнёра -->
-      <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px">
+      <div id="cab-invite-partner-wrap" style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px">
         <div id="cab-invite-title" style="font-weight:600;color:var(--purple);margin-bottom:6px;font-size:14px">🤝 Пригласить партнёра</div>
         <div id="cab-invite-desc" style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">
           Введите Telegram — бот автоматически напишет партнёру и соберёт все данные.
@@ -2780,7 +2780,7 @@ function _openDemoCabinet() {
   document.querySelector('#cabinet-overlay .modal-title').textContent = '🏛️ Демо-кабинет';
 
   // Disable "Invite Partner" block in tools tab
-  var inviteBlock = document.querySelector('#cab-tab-tools [style*="rgba(139,92,246"]');
+  var inviteBlock = document.getElementById('cab-invite-partner-wrap');
   if (inviteBlock) {
     inviteBlock.style.opacity = '0.35';
     inviteBlock.style.pointerEvents = 'none';
@@ -2808,7 +2808,7 @@ function _restoreCabinetAfterDemo() {
   if (banner) banner.style.display = 'none';
   var lock = document.getElementById('demo-invite-lock');
   if (lock) lock.style.display = 'none';
-  var inviteBlock = document.querySelector('#cab-tab-tools [style*="rgba(139,92,246"]');
+  var inviteBlock = document.getElementById('cab-invite-partner-wrap');
   if (inviteBlock) { inviteBlock.style.opacity = ''; inviteBlock.style.pointerEvents = ''; }
   document.querySelector('#cabinet-overlay .modal-title').textContent = '🏛️ Кабинет партнёра';
 }
