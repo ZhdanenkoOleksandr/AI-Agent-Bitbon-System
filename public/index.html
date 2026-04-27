@@ -1029,7 +1029,7 @@ textarea::placeholder{color:var(--text3)}
 
     <!-- Редактор ссылки (открывается под sub-tabs) -->
     <div id="cab-link-editor">
-      <div class="cab-link-label" id="cab-link-label">✈️ Telegram</div>
+      <div class="cab-link-label" id="cab-link-label">🤝 Консультация Партнёра</div>
       <div class="cab-link-row">
         <input class="cab-link-input" id="cab-link-input" placeholder="https://t.me/yourname" type="url">
         <button class="cab-link-open" id="cab-link-open-btn" onclick="cabLinkOpen()">↗ Открыть</button>
@@ -1788,7 +1788,7 @@ var TRANSLATIONS = {
     sidebar_progress_text:'Вивчено 0 з 14 тем',
     sidebar_glossary:'📖 Глосарій',
     sidebar_glossary_empty:'Терміни з\'являться по мірі діалогу',
-    nav_consult:'🤝 Консультація Партнер',
+    nav_consult:'🤝 Консультація Партнера',
     nav_economy:'📈 Економіка',
     nav_brand:'👤 Бренд',
     nav_meta:'🏗️ Метаресурс',
@@ -1940,7 +1940,7 @@ var TRANSLATIONS = {
     sidebar_progress_text:'Learned 0 of 14 topics',
     sidebar_glossary:'📖 Glossary',
     sidebar_glossary_empty:'Terms will appear as the dialog progresses',
-    nav_consult:'🤝 Partner Consultation',
+    nav_consult:'🤝 Partner Consultation (Telegram)',
     nav_economy:'📈 Economy',
     nav_brand:'👤 Brand',
     nav_meta:'🏗️ Metaresource',
@@ -2038,7 +2038,7 @@ var TRANSLATIONS = {
     cab_guests_empty:'— введите API ключ для загрузки —',
     cab_link_save:'Сохранить',
     cab_link_open:'↗ Открыть',
-    cab_link_hint:'Эта ссылка откроется у клиентов при нажатии кнопки',
+    cab_link_hint:'Кнопка «Консультация Партнёра» откроет ваш Telegram у клиентов',
     cab_no_plan:'Пакет не выбран',
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
@@ -2092,7 +2092,7 @@ var TRANSLATIONS = {
     sidebar_progress_text:'Изучено 0 из 14 тем',
     sidebar_glossary:'📖 Глоссарий',
     sidebar_glossary_empty:'Термины появятся по мере диалога',
-    nav_consult:'🤝 Консультация Партнёр',
+    nav_consult:'🤝 Консультация Партнёра',
     nav_economy:'📈 Экономика',
     nav_brand:'👤 Бренд',
     nav_meta:'🏗️ Метаресурс',
@@ -3437,7 +3437,7 @@ function openCabLinkEditor(key, label, placeholder) {
   lbl.innerHTML = label;
   input.placeholder = placeholder;
   input.value = localStorage.getItem(CAB_LINK_KEYS[key]) || '';
-  hint.textContent = 'Эта ссылка откроется у клиентов при нажатии кнопки';
+  hint.textContent = 'Кнопка «Консультация Партнёра» откроет ваш Telegram у клиентов';
   openBtn.style.display = input.value ? 'flex' : 'none';
   editor.classList.add('open');
   setTimeout(function(){ input.focus(); input.select(); }, 50);
@@ -3453,7 +3453,7 @@ function cabLinkSave() {
   hint.textContent = val ? '✅ Ссылка сохранена' : '✅ Ссылка очищена (используется по умолчанию)';
   openBtn.style.display = val ? 'flex' : 'none';
   setTimeout(function(){
-    hint.textContent = 'Эта ссылка откроется у клиентов при нажатии кнопки';
+    hint.textContent = 'Кнопка «Консультация Партнёра» откроет ваш Telegram у клиентов';
   }, 2000);
   renderHeaderNav();
 }
@@ -3473,9 +3473,9 @@ function renderCabSubtabs() {
     // Telegram
     var tg = document.createElement('button');
     tg.className = 'cab-subtab pinned' + (links.telegram ? ' has-link' : '');
-    tg.innerHTML = '✈️ Telegram' + (links.telegram ? ' ✏️' : ' ＋');
-    tg.title = links.telegram ? links.telegram : 'Установить ссылку';
-    tg.onclick = function() { openCabLinkEditor('telegram', '✈️ Telegram', 'https://t.me/yourname'); };
+    tg.innerHTML = '🤝 Консультация Партнёра' + (links.telegram ? ' ✏️' : ' ＋');
+    tg.title = links.telegram ? links.telegram : 'Установить ссылку на ваш Telegram';
+    tg.onclick = function() { openCabLinkEditor('telegram', '🤝 Консультация Партнёра', 'https://t.me/yourname'); };
     bar.appendChild(tg);
 
     if (s.showEconomy) {
