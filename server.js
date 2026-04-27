@@ -1386,6 +1386,10 @@ app.get('/api/partner/guests', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+  // ── Server-side redirect for gift_quota — no HTML loaded ──
+  if (req.query.gift_quota) {
+    return res.redirect(301, 'https://t.me/BitbonPartnerBot');
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 

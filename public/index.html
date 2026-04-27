@@ -4,19 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5, user-scalable=yes">
 <title>Bitbon AI — Агент Системы Bitbon</title>
-<script>
-// ── INSTANT: gift_quota redirect to Telegram bot (before page renders) ──
-(function() {
-  if (typeof URLSearchParams !== 'undefined') {
-    var params = new URLSearchParams(window.location.search);
-    var quota = params.get('gift_quota');
-    if (quota) {
-      try { localStorage.setItem('pendingGiftQuota', quota); } catch(e) {}
-      window.location.href = 'https://t.me/BitbonPartnerBot';
-    }
-  }
-})();
-</script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap');
