@@ -3150,11 +3150,12 @@ function getFetchOptions(method, body) {
   // Auto-enter bot as 'user' level — skip level selection screen
   document.addEventListener('DOMContentLoaded', function() {
     setLevel('user');
+    updateGiftCounter();
     // Show gift banner in chat
     setTimeout(function() {
       addMessage('bot',
         '🎁 **Вам подарено ' + n + ' бесплатных запросов!**\n\nЗадайте любой вопрос о Системе Bitbon — я здесь, чтобы помочь.',
-        null, false);
+        [{label:'🏗️ Создать демо-Метаресурс', action:'startMetaWizard()'}], false);
     }, 200);
   });
 })();
@@ -3411,6 +3412,22 @@ function renderCabSubtabs() {
 
 function renderFooterNav() { renderHeaderNav(); }
 
+function updateGiftCounter() {
+  renderHeaderNav(); // refresh hdr-requests
+  var g = getGiftState();
+  var left = g.free - g.used;
+  // warn when ≤3 left
+  if (left > 0 && left <= 3) {
+    var reqEl = document.getElementById('hdr-requests');
+    if (reqEl) reqEl.style.color = 'var(--gold)';
+    if (left === 1) {
+      addMessage('bot',
+        '⚠️ Остался **1 подарочный запрос**. После этого потребуется регистрация.',
+        [{label:'🤝 Стать партнёром', action:'setLevel(\'partner\')'}], false);
+    }
+  }
+}
+
 function renderHeaderNav() {
   var center = document.getElementById('header-nav-center');
   if (!center) return;
@@ -3485,7 +3502,12 @@ function renderHeaderNav() {
       var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
       reqEl.textContent = remain + ' ' + i18n('hdr_requests_label');
     } else {
-      reqEl.textContent = i18n('hdr_demo_mode');
+      var _gn = getGiftState();
+      if (_gn.active) {
+        reqEl.textContent = '🎁 ' + (_gn.free - _gn.used) + ' / ' + _gn.free;
+      } else {
+        reqEl.textContent = i18n('hdr_demo_mode');
+      }
     }
     reqEl.style.display = 'inline';
   }
@@ -3537,14 +3559,28 @@ function updateRequestUI() {
   document.getElementById('mini-bar').style.width = (p.requests === Infinity ? 30 : Math.round((usedRequests / p.requests) * 100)) + '%';
 }
 
+function getGiftState() {
+  var free = parseInt(localStorage.getItem('giftQuotaFree') || 0);
+  var used = parseInt(localStorage.getItem('giftQuotaUsed') || 0);
+  return { free: free, used: used, active: free > 0 };
+}
+
 function canSendRequest() {
-  if (!currentPlan) return true;
+  if (!currentPlan) {
+    var g = getGiftState();
+    if (g.active) return g.used < g.free;
+    return true; // demo mode — no limit
+  }
   var p = PLANS[currentPlan];
   return p.requests === Infinity || usedRequests < p.requests;
 }
 
 function canCreateMeta() {
-  if (!currentPlan) return usedMeta < 2; // demo: 2 free
+  if (!currentPlan) {
+    var g = getGiftState();
+    if (g.active) return usedMeta < 1; // gift mode: 1 demo metaresource
+    return usedMeta < 2; // default: 2 free
+  }
   var p = PLANS[currentPlan];
   return p.meta === Infinity || usedMeta < p.meta;
 }
@@ -3986,8 +4022,16 @@ async function sendMessage() {
     return;
   }
 
-  if (currentPlan && !canSendRequest()) {
-    addMessage('bot', null, null, false, true);
+  if (!canSendRequest()) {
+    var _gb = getGiftState();
+    if (_gb.active && !currentPlan) {
+      addMessage('bot',
+        '🎁 Ваши **' + _gb.free + ' подарочных запросов** использованы.\n\n' +
+        'Зарегистрируйтесь как партнёр или войдите в кабинет для продолжения.',
+        [{label:'🤝 Стать партнёром', action:'setLevel(\'partner\')'}], false);
+    } else {
+      addMessage('bot', null, null, false, true);
+    }
     return;
   }
 
@@ -4025,6 +4069,12 @@ async function sendMessage() {
     updateSidebar(reply);
     usedRequests++;
     if (currentPlan) { updateRequestUI(); updateCabinetStats(); }
+    // gift quota: count and refresh counter
+    var _g = getGiftState();
+    if (_g.active && !currentPlan) {
+      localStorage.setItem('giftQuotaUsed', _g.used + 1);
+      updateGiftCounter();
+    }
     if (history.length > 14) history = history.slice(-14);
   } catch(err) {
     removeTyping();
