@@ -1033,10 +1033,19 @@ textarea::placeholder{color:var(--text3)}
       <div style="font-size:11px;color:var(--text3);margin-bottom:12px" id="cab-plan-label">Пакет не выбран</div>
       <div style="font-size:12px;color:var(--text2);line-height:1.6" id="cab-status-info"></div>
 
+      <!-- Приглашённые партнёры -->
+      <div style="margin-top:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em">🤝 Приглашённые партнёры</div>
+          <button onclick="loadReferrals()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;cursor:pointer;font-family:'Onest',sans-serif">↻ Обновить</button>
+        </div>
+        <div id="referrals-list" style="font-size:12px;color:var(--text3)">⏳ Загрузка...</div>
+      </div>
+
       <!-- Клиенты партнёра -->
       <div style="margin-top:18px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em">👥 Клиенты</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em">👥 Гостевые ссылки</div>
           <button onclick="loadGuestStats()" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;cursor:pointer;font-family:'Onest',sans-serif">↻ Обновить</button>
         </div>
         <div id="guests-list" style="font-size:12px;color:var(--text3)">— введите API ключ для загрузки —</div>
@@ -2740,6 +2749,8 @@ function _openCabinetContent(userData) {
   refreshShareUrl();
   // Load toggle settings
   loadClientSettings();
+  // Load referrals (invited partners)
+  loadReferrals();
 }
 
 function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
@@ -3041,6 +3052,38 @@ async function loadGuestStats() {
           '<button onclick="topupGuest(\'' + apiKey + '\',\'' + g.token + '\',25)" style="flex:1;padding:5px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:10px;cursor:pointer;font-family:\'Onest\',sans-serif">+25</button>' +
           '<button onclick="topupGuest(\'' + apiKey + '\',\'' + g.token + '\',50)" style="flex:1;padding:5px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:10px;cursor:pointer;font-family:\'Onest\',sans-serif">+50</button>' +
         '</div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<span style="color:var(--red)">❌ Ошибка соединения</span>';
+  }
+}
+
+async function loadReferrals() {
+  var list = document.getElementById('referrals-list');
+  if (!list) return;
+  var jwt = sessionStorage.getItem('jwt') || jwtToken;
+  if (!jwt) { list.innerHTML = '<span style="color:var(--text3)">Войдите в кабинет для просмотра</span>'; return; }
+  list.innerHTML = '⏳ Загрузка...';
+  try {
+    var r = await fetch(API_BASE + '/api/partner/referrals', {
+      headers: { 'Authorization': 'Bearer ' + jwt }
+    });
+    var d = await r.json();
+    if (!d.success) { list.innerHTML = '<span style="color:var(--red)">❌ ' + (d.error || 'Ошибка') + '</span>'; return; }
+    if (!d.referrals.length) { list.innerHTML = '<span style="color:var(--text3)">Нет приглашённых партнёров. Используйте «🤝 Пригласить партнёра» ниже.</span>'; return; }
+    var statusIcon = { active: '✅', pending_payment: '⏳', invited: '📨', blocked: '🚫' };
+    list.innerHTML = d.referrals.map(function(p) {
+      var icon = statusIcon[p.status] || '❓';
+      var name = (p.firstName + ' ' + p.lastName).trim() || p.telegram || '—';
+      var date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('ru-RU') : '';
+      var pkg  = p.packageType ? ' · ' + p.packageType : '';
+      return '<div style="padding:10px;border:1px solid var(--border2);border-radius:8px;margin-bottom:8px;background:var(--surface2)">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center">' +
+          '<span style="font-size:13px;color:var(--text);font-weight:500">' + icon + ' ' + name + '</span>' +
+          '<span style="font-size:10px;color:var(--text3)">' + date + '</span>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--text3);margin-top:4px">' + p.telegram + pkg + '</div>' +
       '</div>';
     }).join('');
   } catch(e) {

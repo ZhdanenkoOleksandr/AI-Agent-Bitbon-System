@@ -4,9 +4,10 @@
 // ══════════════════════════════════════════════════════════════════════
 
 const path = require('path');
-require('dotenv').config();
-// Also load from AI-Agent-Bitbon-System/.env if root .env is missing vars
-require('dotenv').config({ path: path.join(__dirname, 'AI-Agent-Bitbon-System', '.env'), override: false });
+// AI-Agent-Bitbon-System/.env — основной конфиг (приоритет)
+require('dotenv').config({ path: path.join(__dirname, 'AI-Agent-Bitbon-System', '.env') });
+// Корневой .env — для значений которых нет в AI-Agent-Bitbon-System/.env
+require('dotenv').config({ override: false });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -398,7 +399,7 @@ app.post('/api/admin/deactivate', authenticateAdmin, (req, res) => {
 // ══════════════════════════════════════════════════════════════════════
 
 // Register new partner (invite flow — sends Telegram deep link)
-app.post('/api/partner/register', (req, res) => {
+app.post('/api/partner/register', authenticatePartner, (req, res) => {
   const { telegram } = req.body;
 
   if (!telegram) {
@@ -429,7 +430,8 @@ app.post('/api/partner/register', (req, res) => {
     createdAt:          new Date().toISOString(),
     activatedAt:        null,
     expiresAt:          null,
-    source:             'cabinet_invite'
+    source:             'cabinet_invite',
+    invitedBy:          req.partner?.partnerId || null   // ← кто пригласил
   };
 
   DB.partners[partnerId] = partner;
@@ -1342,6 +1344,25 @@ app.post('/api/gift/topup', (req, res) => {
   gt.quota += Math.max(1, Math.min(parseInt(add) || 10, 500));
   persistGuests();
   res.json({ success: true, quota: gt.quota, used: gt.used, remaining: gt.quota - gt.used });
+});
+
+// GET /api/partner/referrals — list partners invited by this partner
+app.get('/api/partner/referrals', authenticatePartner, (req, res) => {
+  const me = req.partner;
+  const referrals = Object.values(DB.partners)
+    .filter(p => p.invitedBy === me.partnerId)
+    .map(p => ({
+      id:          p.id,
+      telegram:    p.telegram,
+      firstName:   p.firstName || '',
+      lastName:    p.lastName  || '',
+      status:      p.status,
+      packageType: p.packageType || null,
+      createdAt:   p.createdAt,
+      activatedAt: p.activatedAt || null
+    }))
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json({ success: true, referrals });
 });
 
 // GET /api/partner/guests — list guest tokens created by this partner
