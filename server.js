@@ -64,6 +64,15 @@ app.use(helmet({
 const ALLOWED_ORIGIN = (process.env.SITE_URL || process.env.ALLOWED_ORIGIN || 'http://localhost:3000').replace(/\/$/, '');
 app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
+
+// ── INTERCEPT: gift_quota redirect BEFORE static files ──
+app.use((req, res, next) => {
+  if (req.query.gift_quota) {
+    return res.redirect(301, 'https://t.me/BitbonPartnerBot');
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Global rate limiting (100 req / 15 min per IP)
@@ -1386,10 +1395,6 @@ app.get('/api/partner/guests', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  // ── Server-side redirect for gift_quota — no HTML loaded ──
-  if (req.query.gift_quota) {
-    return res.redirect(301, 'https://t.me/BitbonPartnerBot');
-  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
