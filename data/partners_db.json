@@ -20,6 +20,32 @@
     "activatedAt": "2026-04-25T06:35:56.643Z",
     "expiresAt": "2026-05-25T06:35:56.643Z",
     "source": "cabinet_invite",
-    "completedAt": "2026-04-24T14:30:06.814Z"
+    "completedAt": "2026-04-24T14:30:06.814Z",
+    "role": "admin"
+  },
+  "prt_97a9ce3c50294557": {
+    "id": "prt_97a9ce3c50294557",
+    "firstName": "Надежда",
+    "lastName": "Жданенко",
+    "email": "nadezhda.zhdanenko@gmail.com",
+    "phone": "+380969519149",
+    "telegram": "@NadezhdaZHN",
+    "walletAddress": "",
+    "inviteToken": null,
+    "telegramChatId": "2107679623",
+    "status": "pending_payment",
+    "packageType": "starter",
+    "apiKey": null,
+    "pinHash": "$2a$08$HTGpdxgFDsvkvvLa9HA9V.mGCTxnz2XauytdJFCECZB4FtScu5LkC",
+    "role": "partner",
+    "requestsLimit": 0,
+    "requestsUsed": 0,
+    "metaresourcesLimit": 0,
+    "metaresourcesUsed": 0,
+    "createdAt": "2026-04-27T11:37:04.368Z",
+    "activatedAt": null,
+    "expiresAt": null,
+    "source": "self_registration",
+    "completedAt": "2026-04-27T11:38:01.428Z"
   }
 }

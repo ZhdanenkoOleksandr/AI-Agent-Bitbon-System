@@ -30,7 +30,10 @@
       "Bash(curl -s http://localhost:3000/)",
       "Bash(curl -s http://localhost:3000/api/auth/web-token?wt=test)",
       "Bash(curl -s 'http://localhost:3000/api/auth/web-token?wt=test')",
-      "Bash(curl -s 'http://localhost:3000/')"
+      "Bash(curl -s 'http://localhost:3000/')",
+      "Bash(npm run:*)",
+      "Bash(npx vercel:*)",
+      "Bash(curl -s \"https://ai-agent-bitbon-system.vercel.app/?gift_quota=20\")"
     ],
     "additionalDirectories": [
       "/tmp/Expert-colorist/src/components",

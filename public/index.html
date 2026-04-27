@@ -1497,6 +1497,22 @@ textarea::placeholder{color:var(--text3)}
 </div>
 
 <script>
+// ── gift_quota redirect → Telegram bot [PRIORITY] ──
+(function handleGiftQuotaRedirect() {
+  if (typeof URLSearchParams === 'undefined') return; // fallback for old browsers
+  var params = new URLSearchParams(window.location.search);
+  var quota = params.get('gift_quota');
+  if (quota) {
+    try {
+      localStorage.setItem('pendingGiftQuota', quota);
+      window.location.href = 'https://t.me/BitbonPartnerBot';
+    } catch(e) {
+      // fallback: just try the redirect without localStorage
+      window.location.href = 'https://t.me/BitbonPartnerBot';
+    }
+  }
+})();
+
 mermaid.initialize({startOnLoad:false,theme:'base',themeVariables:{primaryColor:'#1e3a5f',primaryTextColor:'#ffffff',primaryBorderColor:'#3b82f6',lineColor:'#60a5fa',background:'#0a0d12',mainBkg:'#1e3a5f',nodeBorder:'#3b82f6',defaultLinkColor:'#60a5fa',titleColor:'#fbbf24',fontFamily:'Onest,sans-serif',fontSize:'14px'},flowchart:{curve:'basis',padding:20,htmlLabels:false},securityLevel:'loose'});
 
 // ═══ CONFIGURATION ═══
@@ -3117,16 +3133,6 @@ function getFetchOptions(method, body) {
   return opts;
 }
 
-// ── gift_quota redirect → Telegram bot ────────────────────────────────
-(function handleGiftQuotaRedirect() {
-  var params = new URLSearchParams(window.location.search);
-  var quota = params.get('gift_quota');
-  if (!quota) return;
-  // Store so it can be displayed when user returns
-  localStorage.setItem('pendingGiftQuota', quota);
-  // Redirect to the Telegram bot
-  window.location.href = 'https://t.me/BitbonPartnerBot';
-})();
 
 // ── Claim gift on page load ───────────────────────────────────────────
 (function claimGiftOnLoad() {
