@@ -1,12 +1,4 @@
 {
-  "name": "ai-agent-bitbon-system",
-  "redirects": [
-    {
-      "source": "/?gift_quota=:quota",
-      "destination": "https://t.me/BitbonPartnerBot",
-      "permanent": false
-    }
-  ],
   "experimentalServices": {
     "web": {
       "routePrefix": "/",
