@@ -3655,6 +3655,7 @@ function renderHeaderNav() {
 }
 
 function selectPlan(plan) {
+  if (_demoCabinetMode) return; // demo cabinet — plan selection is display-only
   currentPlan = plan;
   usedRequests = 0;
   usedMeta = 0;
