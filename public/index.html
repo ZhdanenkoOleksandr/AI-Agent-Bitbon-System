@@ -2712,19 +2712,90 @@ async function submitPayment() {
 }
 
 // ═══ CABINET ═══
+var _demoCabinetMode = false;
+
 function openCabinet() {
   var jwt = sessionStorage.getItem('jwt');
 
   if (!jwt) {
-    // JWT нет — показать модалку входа (Telegram или PIN)
-    openLoginModal();
+    var g = getGiftState();
+    if (g.active) {
+      // gift mode → open demo cabinet (no auth required)
+      _openDemoCabinet();
+    } else {
+      openLoginModal();
+    }
     return;
   }
 
-  // JWT есть — пользователь уже авторизован, открываем кабинет
+  _demoCabinetMode = false;
   var userData = null;
   try { userData = JSON.parse(sessionStorage.getItem('user')); } catch(e) {}
   _openCabinetContent(userData);
+}
+
+function _openDemoCabinet() {
+  _demoCabinetMode = true;
+  var g = getGiftState();
+  var left = g.free - g.used;
+
+  // Banner: gift stats + register CTA
+  var banner = document.getElementById('cab-demo-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'cab-demo-banner';
+    banner.style.cssText = 'background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(16,185,129,0.08));border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap';
+    var modal = document.querySelector('#cabinet-overlay .modal');
+    modal.insertBefore(banner, modal.querySelector('.tab-row'));
+  }
+  banner.style.display = 'flex';
+  banner.innerHTML =
+    '<div style="flex:1;min-width:180px">' +
+      '<div style="font-size:13px;font-weight:600;color:var(--accent2);margin-bottom:3px">🎁 Демо-режим · ' + left + ' из ' + g.free + ' запросов</div>' +
+      '<div style="font-size:11px;color:var(--text2);line-height:1.4">Зарегистрируйтесь как партнёр — получите полный доступ, API ключ и инструменты</div>' +
+    '</div>' +
+    '<button onclick="closeCabinet();setLevel(\'partner\')" style="padding:9px 18px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:\'Onest\',sans-serif;white-space:nowrap">🤝 Стать партнёром</button>';
+
+  // Stats: show gift usage
+  document.getElementById('cab-used').textContent    = g.used;
+  document.getElementById('cab-remain').textContent  = left;
+  document.getElementById('cab-meta').textContent    = usedMeta;
+  document.getElementById('cab-plan-label').textContent = '🎁 Демо · ' + left + ' подарочных запросов';
+  document.getElementById('cab-partner-name').textContent = 'Демо-кабинет';
+  document.querySelector('#cabinet-overlay .modal-title').textContent = '🏛️ Демо-кабинет';
+
+  // Disable "Invite Partner" block in tools tab
+  var inviteBlock = document.querySelector('#cab-tab-tools [style*="rgba(139,92,246"]');
+  if (inviteBlock) {
+    inviteBlock.style.opacity = '0.35';
+    inviteBlock.style.pointerEvents = 'none';
+    inviteBlock.style.position = 'relative';
+    var lock = inviteBlock.querySelector('#demo-invite-lock');
+    if (!lock) {
+      lock = document.createElement('div');
+      lock.id = 'demo-invite-lock';
+      lock.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;pointer-events:auto';
+      lock.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:8px 16px;font-size:12px;color:var(--text2)">🔒 Доступно после регистрации</div>';
+      inviteBlock.style.position = 'relative';
+      inviteBlock.appendChild(lock);
+    }
+    lock.style.display = 'flex';
+  }
+
+  document.getElementById('cabinet-overlay').classList.remove('hidden');
+  switchCabTab('info');
+  refreshShareUrl();
+}
+
+function _restoreCabinetAfterDemo() {
+  _demoCabinetMode = false;
+  var banner = document.getElementById('cab-demo-banner');
+  if (banner) banner.style.display = 'none';
+  var lock = document.getElementById('demo-invite-lock');
+  if (lock) lock.style.display = 'none';
+  var inviteBlock = document.querySelector('#cab-tab-tools [style*="rgba(139,92,246"]');
+  if (inviteBlock) { inviteBlock.style.opacity = ''; inviteBlock.style.pointerEvents = ''; }
+  document.querySelector('#cabinet-overlay .modal-title').textContent = '🏛️ Кабинет партнёра';
 }
 
 function _openCabinetContent(userData) {
@@ -2753,7 +2824,10 @@ function _openCabinetContent(userData) {
   loadReferrals();
 }
 
-function closeCabinet() { document.getElementById('cabinet-overlay').classList.add('hidden'); }
+function closeCabinet() {
+  document.getElementById('cabinet-overlay').classList.add('hidden');
+  if (_demoCabinetMode) _restoreCabinetAfterDemo();
+}
 
 function openLoginModal() {
   document.getElementById('login-required-modal').classList.remove('hidden');
@@ -3217,6 +3291,13 @@ function getFetchOptions(method, body) {
   }
   // Update admin login button visibility
   updateAdminLoginButton();
+
+  // restore previous session for returning users (only if no fresh gift_quota in URL)
+  if (!new URLSearchParams(window.location.search).get('gift_quota')) {
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!userMode) restoreSession();
+    });
+  }
 })();
 
 // ── Admin Cabinet Login ────────────────────────────────────────────────
@@ -3411,6 +3492,41 @@ function renderCabSubtabs() {
 }
 
 function renderFooterNav() { renderHeaderNav(); }
+
+// ── Session persistence ──────────────────────────────────────────────
+function saveSession() {
+  try {
+    localStorage.setItem('session_userMode',  userMode  || '');
+    localStorage.setItem('session_userLevel', userLevel || '');
+    localStorage.setItem('session_history',   JSON.stringify(history.slice(-6)));
+  } catch(e) {}
+}
+
+function restoreSession() {
+  try {
+    var mode  = localStorage.getItem('session_userMode');
+    var level = localStorage.getItem('session_userLevel');
+    var hist  = localStorage.getItem('session_history');
+    if (!mode || mode === 'partner' || mode === 'admin') return; // don't auto-restore privileged sessions
+    if (mode) {
+      userMode  = mode;
+      userLevel = level || 'beginner';
+      var screen = document.getElementById('level-screen');
+      if (screen) screen.classList.add('hidden');
+      updateHeaderButtons(mode);
+      updateAdminLoginButton();
+    }
+    if (hist) {
+      var parsed = JSON.parse(hist);
+      if (parsed.length) {
+        history = parsed;
+        parsed.forEach(function(m) {
+          addMessage(m.role === 'user' ? 'user' : 'bot', m.content, null, false);
+        });
+      }
+    }
+  } catch(e) {}
+}
 
 function updateGiftCounter() {
   renderHeaderNav(); // refresh hdr-requests
@@ -4076,6 +4192,8 @@ async function sendMessage() {
       updateGiftCounter();
     }
     if (history.length > 14) history = history.slice(-14);
+    // persist session for returning users
+    saveSession();
   } catch(err) {
     removeTyping();
     console.error('Chat error:', err);
