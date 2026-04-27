@@ -992,6 +992,21 @@ textarea::placeholder{color:var(--text3)}
       <span id="login-tg-text">✈️ Зарегистрироваться через Telegram</span>
     </a>
     <div id="login-tg-note" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Бот соберёт данные и установит ваш PIN-код</div>
+
+    <!-- Demo cabinet -->
+    <div style="display:flex;align-items:center;gap:10px;margin:18px 0 12px">
+      <div style="flex:1;height:1px;background:var(--border2)"></div>
+      <span style="font-size:11px;color:var(--text3)">или</span>
+      <div style="flex:1;height:1px;background:var(--border2)"></div>
+    </div>
+    <button onclick="closeLoginModal();_openDemoCabinet()"
+      style="width:100%;padding:13px;background:transparent;border:1.5px solid var(--border2);border-radius:10px;color:var(--text2);font-size:14px;font-family:'Onest',sans-serif;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px"
+      onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--text)';this.style.background='rgba(59,130,246,0.06)'"
+      onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)';this.style.background='transparent'">
+      <span style="font-size:18px">🏛️</span>
+      <span>Войти в Демо-кабинет</span>
+    </button>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:6px">Просмотр без регистрации · ограниченный доступ</div>
   </div>
 </div>
 
