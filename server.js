@@ -1457,6 +1457,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// ── TELEGRAM BOT INIT — module level so it's ready before first request ──
+// On Vercel, app.listen() callback fires AFTER requests can arrive,
+// so we must initialise here, not inside the callback.
+{
+  const isVercel = !!process.env.VERCEL;
+  console.log('🤖 Bot mode:', isVercel ? 'webhook (Vercel)' : 'polling (local)');
+  telegramBot = initBot(
+    DB, persistData, generatePartnerId, generateWebToken, persistWebTokens,
+    (pin) => bcrypt.hashSync(String(pin), 8),
+    isVercel ? 'webhook' : null
+  );
+  console.log('🤖 telegramBot:', telegramBot ? 'initialised' : 'NULL — check token');
+}
+
 // ── START ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n══════════════════════════════════════════`);
@@ -1466,18 +1480,6 @@ app.listen(PORT, () => {
   console.log(`  📊 ${DB.metaresources.length} metaresources in KB`);
   console.log(`  👥 ${Object.keys(DB.partners).length} partners`);
   console.log(`══════════════════════════════════════════\n`);
-
-  // Telegram bot:
-  // - On Vercel: webhook mode (no polling), register via GET /api/telegram/setup
-  // - Locally: polling mode (auto-starts)
-  const isVercel = !!process.env.VERCEL;
-  console.log('🤖 Bot mode:', isVercel ? 'webhook (Vercel) — call /api/telegram/setup to register' : 'polling (local)');
-
-  telegramBot = initBot(
-    DB, persistData, generatePartnerId, generateWebToken, persistWebTokens,
-    (pin) => bcrypt.hashSync(String(pin), 8),  // hashPin
-    isVercel ? 'webhook' : null                // 'webhook' = no polling; null = polling
-  );
 });
 
 // ── Graceful shutdown — save DB before exit ───────────────────────────
