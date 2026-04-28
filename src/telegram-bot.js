@@ -64,7 +64,17 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
     return null;
   }
 
-  const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+  // Сначала удаляем webhook — иначе polling не получит обновления
+  const bot = new TelegramBot(BOT_TOKEN, { polling: false });
+  bot.deleteWebhook()
+    .then(() => {
+      console.log('✅ Webhook удалён, запускаем polling...');
+      bot.startPolling();
+    })
+    .catch(e => {
+      console.warn('⚠️  deleteWebhook warn:', e.message, '— всё равно пробуем polling');
+      bot.startPolling();
+    });
   botInstance = bot;
   console.log('🤖 Telegram бот запущен');
 
@@ -109,6 +119,7 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
   bot.onText(/\/start (.+)/, (msg, match) => {
     const chatId  = msg.chat.id;
     const token   = match[1];
+    console.log(`📥 [BOT] /start TOKEN from chatId=${chatId} user=${msg.from.username || 'no_username'} token=${token}`);
     const username = msg.from.username ? '@' + msg.from.username : null;
 
     // Нулевой пользователь — игнорируем токен, используем PIN flow
@@ -160,6 +171,7 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
 
   // ── /start без токена (также ловит /start@BotUsername в группах) ───
   bot.onText(/^\/start(@\w+)?$/, (msg) => {
+    console.log(`📥 [BOT] /start from chatId=${msg.chat.id} user=${msg.from.username || 'no_username'}`);
     handleStart(msg.chat.id, msg);
   });
 
