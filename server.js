@@ -203,7 +203,7 @@ function authenticatePartner(req, res, next) {
   if (!token) return res.status(401).json({ error: 'No token provided' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    if (decoded.role !== 'partner') throw new Error('Not partner');
+    if (decoded.role !== 'partner' && decoded.role !== 'admin') throw new Error('Not partner');
     req.partner = decoded;
     next();
   } catch (e) {
