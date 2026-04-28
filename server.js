@@ -42,6 +42,10 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || (() => {
 })();
 
 // ── MIDDLEWARE ────────────────────────────────────────────────────────
+// Trust Vercel / Heroku / Railway reverse proxy — fixes express-rate-limit
+// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR and enables correct client IP detection
+app.set('trust proxy', 1);
+
 // CSP: frontend uses inline scripts, styles and event handlers extensively
 app.use(helmet({
   contentSecurityPolicy: {
@@ -60,9 +64,12 @@ app.use(helmet({
   }
 }));
 
-// CORS: restrict to configured origin only
-const ALLOWED_ORIGIN = (process.env.SITE_URL || process.env.ALLOWED_ORIGIN || 'http://localhost:3000').replace(/\/$/, '');
-app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
+// CORS: allow Vercel deployment URLs + configured SITE_URL
+const _siteUrl = process.env.SITE_URL || '';
+const corsOrigin = _siteUrl && !_siteUrl.includes('localhost')
+  ? [_siteUrl.replace(/\/$/, ''), /\.vercel\.app$/]
+  : true; // dev: allow all origins
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 
 // gift_quota param is handled client-side in public/index.html
