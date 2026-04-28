@@ -16,7 +16,7 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-const { initBot, notifyPartnerActivated } = require('./src/telegram-bot');
+const { createHandler, setWebhook, getWebhookInfo } = require('./src/telegram-webhook');
 
 // Anthropic API — поддержка обоих имён переменной
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
@@ -79,33 +79,32 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── TELEGRAM WEBHOOK (before rate limiter so Telegram IPs aren't throttled) ──
-let telegramBot = null;
+let handleUpdate = null;
 
 // Receives updates from Telegram when webhook is registered
-app.post('/api/telegram', express.json(), (req, res) => {
-  try {
-    if (telegramBot) telegramBot.processUpdate(req.body);
-  } catch (e) {
-    console.error('Telegram processUpdate error:', e.message);
+app.post('/api/telegram', express.json(), async (req, res) => {
+  res.sendStatus(200); // always ack immediately so Telegram doesn't retry
+  if (handleUpdate) {
+    try { await handleUpdate(req.body); }
+    catch (e) { console.error('Telegram handleUpdate error:', e.message); }
   }
-  res.sendStatus(200);
 });
 
 // One-time setup: call GET /api/telegram/setup after each deployment to register webhook
 // URL to call: https://ai-agent-bitbon-system.vercel.app/api/telegram/setup
 app.get('/api/telegram/setup', async (req, res) => {
-  if (!telegramBot) {
-    return res.status(503).json({ ok: false, error: 'Bot not initialised (check TELEGRAM_BOT_TOKEN)' });
+  if (!process.env.TELEGRAM_BOT_TOKEN) {
+    return res.status(503).json({ ok: false, error: 'TELEGRAM_BOT_TOKEN not set' });
   }
   // Derive the stable webhook URL from the incoming request host
   const host = req.headers['x-forwarded-host'] || req.headers.host || '';
   const protocol = req.headers['x-forwarded-proto'] || 'https';
   const webhookUrl = `${protocol}://${host}/api/telegram`;
   try {
-    await telegramBot.setWebhook(webhookUrl);
-    const info = await telegramBot.getWebHookInfo();
-    console.log('✅ Webhook set to:', webhookUrl);
-    return res.json({ ok: true, webhook: webhookUrl, info });
+    const setResult = await setWebhook(webhookUrl);
+    const info      = await getWebhookInfo();
+    console.log('✅ Webhook set to:', webhookUrl, setResult);
+    return res.json({ ok: true, webhook: webhookUrl, setResult, info });
   } catch (e) {
     console.error('❌ setWebhook error:', e.message);
     return res.status(500).json({ ok: false, error: e.message });
@@ -1461,14 +1460,11 @@ app.use((err, req, res, next) => {
 // On Vercel, app.listen() callback fires AFTER requests can arrive,
 // so we must initialise here, not inside the callback.
 {
-  const isVercel = !!process.env.VERCEL;
-  console.log('🤖 Bot mode:', isVercel ? 'webhook (Vercel)' : 'polling (local)');
-  telegramBot = initBot(
-    DB, persistData, generatePartnerId, generateWebToken, persistWebTokens,
-    (pin) => bcrypt.hashSync(String(pin), 8),
-    isVercel ? 'webhook' : null
+  handleUpdate = createHandler(
+    DB, persistData, generatePartnerId,
+    (pin) => bcrypt.hashSync(String(pin), 8)
   );
-  console.log('🤖 telegramBot:', telegramBot ? 'initialised' : 'NULL — check token');
+  console.log('🤖 Telegram handler:', handleUpdate ? 'ready' : 'NULL — check TELEGRAM_BOT_TOKEN');
 }
 
 // ── START ─────────────────────────────────────────────────────────────
