@@ -71,9 +71,9 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
 
   if (webhookUrl) {
     // ── Webhook mode (Vercel / production) ──────────────────────────
-    bot.setWebhook(webhookUrl)
-      .then(() => console.log('✅ Webhook установлен:', webhookUrl))
-      .catch(e => console.error('❌ setWebhook error:', e.message));
+    // Webhook URL is registered externally via GET /api/telegram/setup
+    // Here we just prepare the bot to process incoming updates via processUpdate()
+    console.log('🤖 Telegram bot ready (webhook mode — register via /api/telegram/setup)');
   } else {
     // ── Polling mode (local dev) ─────────────────────────────────────
     bot.deleteWebhook()

@@ -78,6 +78,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ── TELEGRAM WEBHOOK (before rate limiter so Telegram IPs aren't throttled) ──
 let telegramBot = null;
+
+// Receives updates from Telegram when webhook is registered
 app.post('/api/telegram', express.json(), (req, res) => {
   try {
     if (telegramBot) telegramBot.processUpdate(req.body);
@@ -85,6 +87,27 @@ app.post('/api/telegram', express.json(), (req, res) => {
     console.error('Telegram processUpdate error:', e.message);
   }
   res.sendStatus(200);
+});
+
+// One-time setup: call GET /api/telegram/setup after each deployment to register webhook
+// URL to call: https://ai-agent-bitbon-system.vercel.app/api/telegram/setup
+app.get('/api/telegram/setup', async (req, res) => {
+  if (!telegramBot) {
+    return res.status(503).json({ ok: false, error: 'Bot not initialised (check TELEGRAM_BOT_TOKEN)' });
+  }
+  // Derive the stable webhook URL from the incoming request host
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const protocol = req.headers['x-forwarded-proto'] || 'https';
+  const webhookUrl = `${protocol}://${host}/api/telegram`;
+  try {
+    await telegramBot.setWebhook(webhookUrl);
+    const info = await telegramBot.getWebHookInfo();
+    console.log('✅ Webhook set to:', webhookUrl);
+    return res.json({ ok: true, webhook: webhookUrl, info });
+  } catch (e) {
+    console.error('❌ setWebhook error:', e.message);
+    return res.status(500).json({ ok: false, error: e.message });
+  }
 });
 
 // Global rate limiting (100 req / 15 min per IP)
@@ -1442,21 +1465,16 @@ app.listen(PORT, () => {
   console.log(`  👥 ${Object.keys(DB.partners).length} partners`);
   console.log(`══════════════════════════════════════════\n`);
 
-  // Telegram bot — webhook on Vercel/production, polling locally
-  // Vercel sets VERCEL_PROJECT_PRODUCTION_URL (stable) or VERCEL_URL (per-deploy)
-  const _siteBase =
-    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` :
-    process.env.VERCEL_URL                    ? `https://${process.env.VERCEL_URL}` :
-    (process.env.SITE_URL || '');
-  const botWebhookUrl = _siteBase && !_siteBase.includes('localhost')
-    ? `${_siteBase}/api/telegram`
-    : null;
-  console.log('🤖 Bot mode:', botWebhookUrl ? `webhook → ${botWebhookUrl}` : 'polling (local)');
+  // Telegram bot:
+  // - On Vercel: webhook mode (no polling), register via GET /api/telegram/setup
+  // - Locally: polling mode (auto-starts)
+  const isVercel = !!process.env.VERCEL;
+  console.log('🤖 Bot mode:', isVercel ? 'webhook (Vercel) — call /api/telegram/setup to register' : 'polling (local)');
 
   telegramBot = initBot(
     DB, persistData, generatePartnerId, generateWebToken, persistWebTokens,
     (pin) => bcrypt.hashSync(String(pin), 8),  // hashPin
-    botWebhookUrl                              // null = polling, string = webhook
+    isVercel ? 'webhook' : null                // 'webhook' = no polling; null = polling
   );
 });
 
