@@ -2664,9 +2664,10 @@ async function submitRegistration() {
   if (!tg.startsWith('@')) tg = '@' + tg;
 
   try {
+    var _jwt0 = sessionStorage.getItem('jwt') || '';
     var resp = await fetch(API_BASE + '/api/partner/register', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _jwt0},
       body: JSON.stringify({ telegram: tg })
     });
     var data = await resp.json();
@@ -3040,8 +3041,10 @@ async function cabSubmitRegistration() {
   if (!tg) { result.innerHTML = '<div class="form-error">Введите Telegram партнёра</div>'; return; }
   if (!tg.startsWith('@')) tg = '@' + tg;
   try {
+    var _jwt = sessionStorage.getItem('jwt') || '';
     var resp = await fetch(API_BASE + '/api/partner/register', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _jwt},
       body: JSON.stringify({ telegram: tg, giftQuota: partnerGiftQuota })
     });
     var data = await resp.json();
