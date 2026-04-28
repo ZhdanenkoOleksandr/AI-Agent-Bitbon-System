@@ -21,9 +21,11 @@ const { initBot, notifyPartnerActivated } = require('./src/telegram-bot');
 // Anthropic API — поддержка обоих имён переменной
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY;
 
-// Debug: Log API key status
+// Debug: Log configuration status (values never printed, only presence)
 console.log('🔑 API Configuration:');
 console.log('   ANTHROPIC_API_KEY:', ANTHROPIC_API_KEY ? '✓ Configured' : '❌ NOT SET');
+console.log('   TELEGRAM_BOT_TOKEN:', process.env.TELEGRAM_BOT_TOKEN ? '✓ Configured' : '❌ NOT SET');
+console.log('   VERCEL env:', process.env.VERCEL || 'not set');
 console.log('   Environment:', process.env.NODE_ENV || 'development');
 
 const app = express();
