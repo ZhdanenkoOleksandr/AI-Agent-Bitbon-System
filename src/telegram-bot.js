@@ -58,25 +58,28 @@ const sessions = {};
 let botInstance = null;
 
 // ── INIT ──────────────────────────────────────────────────────────────
-function initBot(db, persistData, generatePartnerId, generateWebToken, persistWebTokens, hashPin) {
+function initBot(db, persistData, generatePartnerId, generateWebToken, persistWebTokens, hashPin, webhookUrl) {
   if (!BOT_TOKEN) {
     console.warn('⚠️  TELEGRAM_BOT_TOKEN не задан — Telegram бот отключён');
     return null;
   }
 
-  // Сначала удаляем webhook — иначе polling не получит обновления
-  const bot = new TelegramBot(BOT_TOKEN, { polling: false });
-  bot.deleteWebhook()
-    .then(() => {
-      console.log('✅ Webhook удалён, запускаем polling...');
-      bot.startPolling();
-    })
-    .catch(e => {
-      console.warn('⚠️  deleteWebhook warn:', e.message, '— всё равно пробуем polling');
-      bot.startPolling();
-    });
+  // webHook:false — мы сами управляем режимом (webhook или polling)
+  const bot = new TelegramBot(BOT_TOKEN, { webHook: false });
   botInstance = bot;
-  console.log('🤖 Telegram бот запущен');
+  console.log('🤖 Telegram бот инициализирован');
+
+  if (webhookUrl) {
+    // ── Webhook mode (Vercel / production) ──────────────────────────
+    bot.setWebhook(webhookUrl)
+      .then(() => console.log('✅ Webhook установлен:', webhookUrl))
+      .catch(e => console.error('❌ setWebhook error:', e.message));
+  } else {
+    // ── Polling mode (local dev) ─────────────────────────────────────
+    bot.deleteWebhook()
+      .then(() => { console.log('✅ Webhook удалён, запускаем polling...'); bot.startPolling(); })
+      .catch(e => { console.warn('⚠️  deleteWebhook warn:', e.message); bot.startPolling(); });
+  }
 
   // ── Конфигурация бота: описание + команды (видны ДО нажатия Start) ─
   const apiBase = `https://api.telegram.org/bot${BOT_TOKEN}`;

@@ -69,6 +69,17 @@ app.use(express.json({ limit: '1mb' }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ── TELEGRAM WEBHOOK (before rate limiter so Telegram IPs aren't throttled) ──
+let telegramBot = null;
+app.post('/api/telegram', express.json(), (req, res) => {
+  try {
+    if (telegramBot) telegramBot.processUpdate(req.body);
+  } catch (e) {
+    console.error('Telegram processUpdate error:', e.message);
+  }
+  res.sendStatus(200);
+});
+
 // Global rate limiting (100 req / 15 min per IP)
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -100,16 +111,22 @@ const DB = {
 };
 
 // ── DATA FILES ───────────────────────────────────────────────────────
-const DATA_DIR = path.join(__dirname, 'data');
+// On Vercel (serverless) the repo filesystem is read-only.
+// Writable runtime data goes to /tmp; static read-only data stays in ./data.
+const STATIC_DIR   = path.join(__dirname, 'data');
+const DATA_DIR     = process.env.VERCEL ? '/tmp/bitbon' : path.join(__dirname, 'data');
 
 function loadJSON(filename) {
-  try {
-    const filepath = path.join(DATA_DIR, filename);
-    if (fs.existsSync(filepath)) {
-      return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+  // Try writable DATA_DIR first (runtime writes), then STATIC_DIR (repo data)
+  for (const dir of [DATA_DIR, STATIC_DIR]) {
+    try {
+      const filepath = path.join(dir, filename);
+      if (fs.existsSync(filepath)) {
+        return JSON.parse(fs.readFileSync(filepath, 'utf8'));
+      }
+    } catch (e) {
+      console.error(`Error loading ${filename} from ${dir}:`, e.message);
     }
-  } catch (e) {
-    console.error(`Error loading ${filename}:`, e.message);
   }
   return null;
 }
@@ -1418,10 +1435,21 @@ app.listen(PORT, () => {
   console.log(`  👥 ${Object.keys(DB.partners).length} partners`);
   console.log(`══════════════════════════════════════════\n`);
 
-  // Start Telegram bot
+  // Telegram bot — webhook on Vercel/production, polling locally
+  // Vercel sets VERCEL_PROJECT_PRODUCTION_URL (stable) or VERCEL_URL (per-deploy)
+  const _siteBase =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` :
+    process.env.VERCEL_URL                    ? `https://${process.env.VERCEL_URL}` :
+    (process.env.SITE_URL || '');
+  const botWebhookUrl = _siteBase && !_siteBase.includes('localhost')
+    ? `${_siteBase}/api/telegram`
+    : null;
+  console.log('🤖 Bot mode:', botWebhookUrl ? `webhook → ${botWebhookUrl}` : 'polling (local)');
+
   telegramBot = initBot(
     DB, persistData, generatePartnerId, generateWebToken, persistWebTokens,
-    (pin) => bcrypt.hashSync(String(pin), 8)   // hashPin — для хранения PIN партнёров
+    (pin) => bcrypt.hashSync(String(pin), 8),  // hashPin
+    botWebhookUrl                              // null = polling, string = webhook
   );
 });
 
