@@ -1,0 +1,90 @@
+{
+  "name": "Bitbon Partner Registration → Google Sheets",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": 0,
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": { "x": 0, "y": 0 },
+        "restore": {
+          "parameters": {
+            "hook": {
+              "label": "Bitbon Registration Webhook",
+              "data": {
+                "editable": true,
+                "headers": [],
+                "stringBody": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "module": "google-sheets:addRow",
+      "version": 2,
+      "parameters": {
+        "spreadsheetId": "1DE720IOYwBzV8LVsPQKjGZfioluSHdwG_9yEtQFitms",
+        "sheetId": "1866730065",
+        "includesHeaders": true,
+        "__IMTCONN__": 0
+      },
+      "mapper": {
+        "values": {
+          "A": "{{1.date}}",
+          "B": "{{1.partnerId}}",
+          "C": "{{1.firstName}}",
+          "D": "{{1.lastName}}",
+          "E": "{{1.phone}}",
+          "F": "{{1.telegram}}",
+          "G": "{{1.plan}}",
+          "H": "{{1.status}}",
+          "I": "{{1.source}}",
+          "J": "{{1.pin}}"
+        }
+      },
+      "metadata": {
+        "designer": { "x": 300, "y": 0 },
+        "restore": {
+          "parameters": {
+            "spreadsheetId": {
+              "label": "Bitbon Partners Registration"
+            },
+            "sheetId": {
+              "label": "Лист1"
+            },
+            "__IMTCONN__": {
+              "label": "Нужно подключить Google аккаунт"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "eu1.make.com"
+  }
+}
