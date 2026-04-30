@@ -558,6 +558,46 @@ app.post('/api/admin/create-invite', authenticateAdmin, (req, res) => {
   });
 });
 
+// ══════════════════════════════════════════════════════════════════════
+// INVITE: WEB REGISTRATION FLOW
+// ══════════════════════════════════════════════════════════════════════
+
+// Validate invite token (called on page load with ?invite=TOKEN)
+app.get('/api/invite/validate', (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(400).json({ valid: false, error: 'Token required' });
+
+  const partner = Object.values(DB.partners).find(p => p.inviteToken === token);
+  if (!partner) return res.json({ valid: false, error: 'Приглашение не найдено или истекло' });
+  if (partner.status !== 'invited') return res.json({ valid: false, error: 'Это приглашение уже использовано' });
+
+  res.json({ valid: true, telegram: partner.telegram, partnerId: partner.id });
+});
+
+// Complete registration via web form
+app.post('/api/invite/complete', (req, res) => {
+  const { token, firstName, lastName, email, phone, walletAddress } = req.body;
+
+  if (!token || !firstName || !lastName || !email) {
+    return res.status(400).json({ success: false, error: 'Заполните обязательные поля: имя, фамилия, email' });
+  }
+
+  const partner = Object.values(DB.partners).find(p => p.inviteToken === token);
+  if (!partner) return res.status(404).json({ success: false, error: 'Приглашение не найдено' });
+  if (partner.status !== 'invited') return res.status(400).json({ success: false, error: 'Это приглашение уже использовано' });
+
+  partner.firstName     = firstName.trim();
+  partner.lastName      = lastName.trim();
+  partner.email         = email.trim().toLowerCase();
+  partner.phone         = (phone || '').trim();
+  partner.walletAddress = (walletAddress || '').trim();
+  partner.status        = 'registered';
+  partner.registeredAt  = new Date().toISOString();
+  persistData();
+
+  res.json({ success: true, message: 'Данные сохранены! Ожидайте активации от администратора.', partnerId: partner.id });
+});
+
 // Partner: Submit payment info
 app.post('/api/partner/payment', (req, res) => {
   const { partnerId, txHash, amountBB, packageType } = req.body;

@@ -413,6 +413,25 @@ textarea::placeholder{color:var(--text3)}
 .corrections-toggle-btn{width:36px;height:36px;position:fixed;bottom:20px;right:20px;background:var(--gold);color:#000;border:none;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(245,158,11,0.3);transition:all 0.2s;z-index:240}
 .corrections-toggle-btn:hover{transform:scale(1.1);box-shadow:0 6px 16px rgba(245,158,11,0.4)}
 
+/* ═══ SHARE MODE BUTTONS ═══ */
+.share-mode-btn{flex:1;padding:7px 4px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:'Onest',sans-serif;transition:all 0.18s}
+.share-mode-btn.active{background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.5);color:var(--green)}
+.share-mode-btn:hover:not(.active){border-color:var(--border);color:var(--text)}
+
+/* ═══ INVITE REGISTRATION SCREEN ═══ */
+.invite-screen{display:none;position:fixed;inset:0;z-index:500;background:var(--bg);overflow-y:auto;padding:32px 20px 40px}
+.invite-screen.visible{display:flex;flex-direction:column;align-items:center}
+.invite-screen-inner{width:100%;max-width:480px}
+.invite-screen-logo{font-size:40px;text-align:center;margin-bottom:8px}
+.invite-screen-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;font-family:'Onest',sans-serif}
+.invite-screen-sub{font-size:14px;color:var(--text2);text-align:center;margin-bottom:28px;line-height:1.5}
+.invite-tg-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(0,136,204,0.12);border:1px solid rgba(0,136,204,0.3);border-radius:20px;font-size:13px;color:var(--text2);margin-bottom:24px;font-family:'Onest',sans-serif}
+.invite-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.invite-success{text-align:center;padding:32px 20px}
+.invite-success-icon{font-size:56px;margin-bottom:16px}
+.invite-success-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px;font-family:'Onest',sans-serif}
+.invite-success-text{font-size:14px;color:var(--text2);line-height:1.6}
+
 /* ═══ MOBILE FIRST — 480px и меньше (смартфоны) ═══ */
 @media(max-width:480px){
   :root{--radius:12px;--radius-sm:8px}
@@ -841,6 +860,64 @@ textarea::placeholder{color:var(--text3)}
   <div class="level-note">Партнёры Системы Bitbon получают API-доступ к AI агенту для своих клиентов</div>
 </div>
 
+<!-- ═══ INVITE REGISTRATION SCREEN ═══ -->
+<div class="invite-screen" id="invite-screen">
+  <div class="invite-screen-inner">
+    <div class="invite-screen-logo">🤝</div>
+    <div class="invite-screen-title">Регистрация партнёра</div>
+    <div class="invite-screen-sub">Вас пригласили в Систему Bitbon. Заполните данные для регистрации — администратор активирует ваш аккаунт.</div>
+
+    <div id="invite-reg-form">
+      <!-- Telegram badge (pre-filled) -->
+      <div style="text-align:center;margin-bottom:20px">
+        <span class="invite-tg-badge">✈️ <span id="invite-tg-display">—</span></span>
+      </div>
+
+      <div class="invite-form-row">
+        <div class="form-group">
+          <label class="form-label">Имя *</label>
+          <input class="form-input" id="inv-first-name" placeholder="Иван" autocomplete="given-name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Фамилия *</label>
+          <input class="form-input" id="inv-last-name" placeholder="Иванов" autocomplete="family-name">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input class="form-input" id="inv-email" type="email" placeholder="ivan@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Телефон</label>
+        <input class="form-input" id="inv-phone" type="tel" placeholder="+7 900 000-00-00" autocomplete="tel">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Кошелёк Bitbon <span style="color:var(--text3);font-weight:400">(необязательно)</span></label>
+        <input class="form-input" id="inv-wallet" placeholder="Адрес кошелька">
+      </div>
+
+      <div id="inv-error" style="display:none;color:var(--red,#e74c3c);font-size:13px;margin-bottom:12px;padding:10px 14px;background:rgba(239,68,68,0.08);border-radius:8px;border:1px solid rgba(239,68,68,0.2)"></div>
+
+      <button class="form-btn primary" id="inv-submit-btn" onclick="submitInviteRegistration()" style="margin-top:8px;font-size:15px;padding:14px">
+        ✅ Подтвердить регистрацию
+      </button>
+      <div style="margin-top:16px;font-size:12px;color:var(--text3);text-align:center;line-height:1.5">
+        После отправки данных администратор активирует ваш аккаунт и вы получите доступ к системе
+      </div>
+    </div>
+
+    <!-- Success state -->
+    <div id="invite-reg-success" style="display:none" class="invite-success">
+      <div class="invite-success-icon">✅</div>
+      <div class="invite-success-title">Данные сохранены!</div>
+      <div class="invite-success-text">Ваша заявка отправлена администратору. После активации вы получите уведомление в Telegram и сможете войти в систему.</div>
+      <button class="form-btn primary" onclick="document.getElementById('invite-screen').classList.remove('visible');document.getElementById('level-screen').style.display=''" style="margin-top:24px">
+        Перейти на главную
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ SHARE CLIENT OVERLAY ═══ -->
 <div class="overlay hidden" id="share-client-overlay">
   <div class="modal" style="max-width:420px">
@@ -1146,9 +1223,11 @@ textarea::placeholder{color:var(--text3)}
 
       <!-- Поделиться с клиентом -->
       <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:16px;margin-bottom:14px">
-        <div id="cab-share-title" style="font-weight:600;color:var(--green);margin-bottom:6px;font-size:14px">👤 Поделиться с клиентом</div>
-        <div id="cab-share-desc" style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">
-          Выберите количество запросов и отправьте ссылку через любой мессенджер.
+        <div id="cab-share-title" style="font-weight:600;color:var(--green);margin-bottom:10px;font-size:14px">Поделиться</div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button class="share-mode-btn active" id="share-mode-client"   onclick="setShareMode('client')">👤 Клиент</button>
+          <button class="share-mode-btn"        id="share-mode-business" onclick="setShareMode('business')">💼 Бизнес</button>
+          <button class="share-mode-btn"        id="share-mode-partner"  onclick="setShareMode('partner')">🤝 Партнёр</button>
         </div>
 
         <!-- Счётчик запросов -->
@@ -1170,59 +1249,9 @@ textarea::placeholder{color:var(--text3)}
           <div id="cab-share-url" style="font-size:11px;color:var(--text2);flex:1;word-break:break-all"></div>
           <button onclick="cabCopyShareUrl()" style="flex-shrink:0;padding:5px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--surface);color:var(--text2);font-size:11px;cursor:pointer;font-family:'Onest',sans-serif">📋</button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
-          <button class="share-messenger-btn" onclick="cabShareTelegram()" style="background:rgba(0,136,204,0.12);border:1px solid rgba(0,136,204,0.3);font-size:11px;min-height:54px;gap:4px">
-            <span style="font-size:18px">✈️</span><span>Telegram</span>
-          </button>
-          <button class="share-messenger-btn" onclick="cabShareWhatsApp()" style="background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.3);font-size:11px;min-height:54px;gap:4px">
-            <span style="font-size:18px">💬</span><span>WhatsApp</span>
-          </button>
-          <button class="share-messenger-btn" onclick="cabShareViber()" style="background:rgba(127,63,191,0.1);border:1px solid rgba(127,63,191,0.3);font-size:11px;min-height:54px;gap:4px">
-            <span style="font-size:18px">📳</span><span>Viber</span>
-          </button>
-          <button class="share-messenger-btn" onclick="cabShareEmail()" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);font-size:11px;min-height:54px;gap:4px">
-            <span style="font-size:18px">📧</span><span>Email</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Пригласить партнёра -->
-      <div id="cab-invite-partner-wrap" style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.25);border-radius:12px;padding:16px">
-        <div id="cab-invite-title" style="font-weight:600;color:var(--purple);margin-bottom:6px;font-size:14px">🤝 Пригласить партнёра</div>
-        <div id="cab-invite-desc" style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">
-          Введите Telegram — бот автоматически напишет партнёру и соберёт все данные.
-        </div>
-
-        <!-- Счётчик запросов для партнёра -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 14px">
-          <span id="cab-gift-label2" style="font-size:12px;color:var(--text2);flex:1">🎁 Запросов в подарок:</span>
-          <div style="display:flex;align-items:center;gap:8px">
-            <button onclick="changePartnerGiftQuota(-5)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Onest',sans-serif">−</button>
-            <span id="partner-gift-quota-val" style="font-size:16px;font-weight:700;color:var(--purple);min-width:32px;text-align:center">20</span>
-            <button onclick="changePartnerGiftQuota(5)" style="width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Onest',sans-serif">+</button>
-          </div>
-          <div style="display:flex;gap:4px">
-            <button onclick="setPartnerGiftQuota(20)" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text3);font-size:10px;cursor:pointer;font-family:'Onest',sans-serif">20</button>
-            <button onclick="setPartnerGiftQuota(50)" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text3);font-size:10px;cursor:pointer;font-family:'Onest',sans-serif">50</button>
-            <button onclick="setPartnerGiftQuota(100)" style="padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:var(--surface);color:var(--text3);font-size:10px;cursor:pointer;font-family:'Onest',sans-serif">100</button>
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-bottom:10px">
-          <input class="form-input" id="cab-reg-telegram" placeholder="@username" style="font-size:14px;padding:11px 14px">
-        </div>
-        <button id="cab-create-invite-btn" class="form-btn primary" onclick="cabSubmitRegistration()" style="margin-top:0">
-          📩 Создать приглашение
+        <button class="share-messenger-btn" onclick="cabShareTelegram()" style="width:100%;background:rgba(0,136,204,0.12);border:1px solid rgba(0,136,204,0.3);font-size:13px;min-height:54px;gap:6px">
+          <span style="font-size:22px">✈️</span><span>Telegram</span>
         </button>
-        <div id="cab-reg-result" style="margin-top:12px"></div>
-        <div id="cab-invite-block" style="display:none;margin-top:14px;padding:14px;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:10px">
-          <div style="font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Ссылка-приглашение</div>
-          <div id="cab-invite-link-text" style="font-size:12px;color:var(--text);word-break:break-all;margin-bottom:10px"></div>
-          <div style="display:flex;gap:8px">
-            <button class="form-btn" onclick="cabCopyInviteLink()" style="flex:1;padding:9px;font-size:12px">📋 Скопировать</button>
-            <button class="form-btn" onclick="cabOpenInviteLink()" style="flex:1;padding:9px;font-size:12px;background:rgba(139,92,246,0.2)">📲 Открыть</button>
-          </div>
-        </div>
       </div>
 
       <!-- Настройки видимости для клиентов -->
@@ -1739,8 +1768,8 @@ var TRANSLATIONS = {
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
     cab_tools_desc:'Інструменти для привернення клієнтів та розширення партнерської мережі.',
-    cab_share_title:'👤 Поділитися з клієнтом',
-    cab_share_desc:'Виберіть кількість запитів та відправте посилання через будь-який месенджер.',
+    cab_share_title:'Поділитися',
+    cab_share_desc:'',
     cab_requests_gift:'🎁 Запитів у подарунок:',
     cab_invite_title:'🤝 Запросити партнера',
     cab_invite_desc:'Введіть Telegram — бот автоматично напише партнеру та збере всі дані.',
@@ -1891,8 +1920,8 @@ var TRANSLATIONS = {
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
     cab_tools_desc:'Tools to attract clients and expand your partner network.',
-    cab_share_title:'👤 Share with client',
-    cab_share_desc:'Choose the number of requests and send a link via any messenger.',
+    cab_share_title:'Share',
+    cab_share_desc:'',
     cab_requests_gift:'🎁 Complimentary requests:',
     cab_invite_title:'🤝 Invite a partner',
     cab_invite_desc:'Enter Telegram — the bot will automatically write to the partner and collect all data.',
@@ -2043,8 +2072,8 @@ var TRANSLATIONS = {
     cab_link_label:'Telegram',
     cab_link_placeholder:'https://t.me/yourname',
     cab_tools_desc:'Инструменты для привлечения клиентов и расширения партнёрской сети.',
-    cab_share_title:'👤 Поделиться с клиентом',
-    cab_share_desc:'Выберите количество запросов и отправьте ссылку через любой мессенджер.',
+    cab_share_title:'Поделиться',
+    cab_share_desc:'',
     cab_requests_gift:'🎁 Запросов в подарок:',
     cab_invite_title:'🤝 Пригласить партнёра',
     cab_invite_desc:'Введите Telegram — бот автоматически напишет партнёру и соберёт все данные.',
@@ -2312,12 +2341,7 @@ function applyI18n() {
   set('admin-btn-new-partner', 'admin_btn_new_partner');
   // Cabinet Tools tab — all texts
   set('cab-share-title', 'cab_share_title');
-  set('cab-share-desc', 'cab_share_desc');
   set('cab-gift-label1', 'cab_requests_gift');
-  set('cab-invite-title', 'cab_invite_title');
-  set('cab-invite-desc', 'cab_invite_desc');
-  set('cab-gift-label2', 'cab_requests_gift');
-  set('cab-create-invite-btn', 'cab_create_invite');
   set('cab-visibility-title', 'cab_visibility_title');
   set('cab-toggle-economy', 'cab_toggle_economy');
   set('cab-toggle-economy-sub', 'cab_toggle_economy_sub');
@@ -3034,6 +3058,16 @@ function cabShareEmail() {
   window.open('mailto:?subject=' + encodeURIComponent('AI-агент Системы Bitbon') + '&body=' + encodeURIComponent('Здравствуйте!\n\nAI-агент Системы Bitbon:\n' + url), '_blank');
 }
 
+// ── Share mode selector ───────────────────────────────────────────────
+var _shareMode = 'client';
+function setShareMode(mode) {
+  _shareMode = mode;
+  document.querySelectorAll('.share-mode-btn').forEach(function(b) {
+    b.classList.toggle('active', b.id === 'share-mode-' + mode);
+  });
+  refreshShareUrl();
+}
+
 // ── Кабинет: Пригласить партнёра ─────────────────────────────────────
 async function cabSubmitRegistration() {
   var tg = document.getElementById('cab-reg-telegram').value.trim();
@@ -3228,6 +3262,98 @@ function getFetchOptions(method, body) {
     }
   }).catch(function(){});
 })();
+
+// ── Handle invite registration URL (?invite=TOKEN) ───────────────────
+var _inviteToken = null;
+
+(function handleInviteUrl() {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('invite');
+  if (!token) return;
+  _inviteToken = token;
+
+  // Hide level screen immediately
+  document.addEventListener('DOMContentLoaded', function() {
+    var ls = document.getElementById('level-screen');
+    if (ls) ls.classList.add('hidden');
+    var screen = document.getElementById('invite-screen');
+    if (screen) screen.classList.add('visible');
+  });
+
+  // Validate token and pre-fill telegram
+  fetch(API_BASE + '/api/invite/validate?token=' + encodeURIComponent(token))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.valid) {
+        // Token invalid — show error in form
+        document.addEventListener('DOMContentLoaded', function() {
+          var err = document.getElementById('inv-error');
+          if (err) { err.textContent = '❌ ' + (d.error || 'Приглашение недействительно'); err.style.display = 'block'; }
+          var btn = document.getElementById('inv-submit-btn');
+          if (btn) btn.disabled = true;
+        });
+        return;
+      }
+      // Pre-fill telegram badge
+      document.addEventListener('DOMContentLoaded', function() {
+        var el = document.getElementById('invite-tg-display');
+        if (el && d.telegram) el.textContent = d.telegram;
+      });
+    })
+    .catch(function() {});
+})();
+
+async function submitInviteRegistration() {
+  var firstName = (document.getElementById('inv-first-name').value || '').trim();
+  var lastName  = (document.getElementById('inv-last-name').value || '').trim();
+  var email     = (document.getElementById('inv-email').value || '').trim();
+  var phone     = (document.getElementById('inv-phone').value || '').trim();
+  var wallet    = (document.getElementById('inv-wallet').value || '').trim();
+  var errEl     = document.getElementById('inv-error');
+  var btn       = document.getElementById('inv-submit-btn');
+
+  errEl.style.display = 'none';
+
+  if (!firstName || !lastName || !email) {
+    errEl.textContent = '❌ Заполните обязательные поля: Имя, Фамилия, Email';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errEl.textContent = '❌ Введите корректный email';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Сохраняем...';
+
+  try {
+    var resp = await fetch(API_BASE + '/api/invite/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: _inviteToken, firstName, lastName, email, phone, walletAddress: wallet })
+    });
+    var data = await resp.json();
+    if (data.success) {
+      // Show success state
+      document.getElementById('invite-reg-form').style.display = 'none';
+      document.getElementById('invite-reg-success').style.display = 'block';
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      errEl.textContent = '❌ ' + (data.error || 'Ошибка сервера');
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '✅ Подтвердить регистрацию';
+    }
+  } catch(e) {
+    errEl.textContent = '❌ Ошибка соединения с сервером';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '✅ Подтвердить регистрацию';
+  }
+}
 
 // ── Handle plain gift_quota URL (open bot directly with gifted requests) ──
 (function handleGiftQuotaUrl() {

@@ -649,6 +649,10 @@ async function notifyPartnerActivated(telegramChatId, partner) {
 }
 
 function getInviteLink(inviteToken) {
+  const siteUrl = process.env.SITE_URL || '';
+  if (siteUrl) {
+    return `${siteUrl.replace(/\/$/, '')}/?invite=${inviteToken}`;
+  }
   if (!BOT_USERNAME) return null;
   return `https://t.me/${BOT_USERNAME}?start=${inviteToken}`;
 }
