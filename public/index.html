@@ -968,7 +968,12 @@ textarea::placeholder{color:var(--text3)}
 
     <!-- Registration form -->
     <div id="register-form">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px">
+      <div class="form-group" style="margin-top:20px">
+        <label class="form-label">Telegram *</label>
+        <input class="form-input" id="reg-telegram" placeholder="@username" autocomplete="username" style="font-size:15px;padding:13px 14px">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
         <div class="form-group">
           <label class="form-label">Фамилия *</label>
           <input class="form-input" id="reg-last-name" placeholder="Иванов" autocomplete="family-name" style="font-size:15px;padding:13px 14px">
@@ -978,17 +983,24 @@ textarea::placeholder{color:var(--text3)}
           <input class="form-input" id="reg-first-name" placeholder="Иван" autocomplete="given-name" style="font-size:15px;padding:13px 14px">
         </div>
       </div>
+
       <div class="form-group" style="margin-top:12px">
         <label class="form-label">Телефон *</label>
-        <input class="form-input" id="reg-phone" type="tel" placeholder="+7 900 000-00-00" autocomplete="tel" style="font-size:15px;padding:13px 14px">
+        <input class="form-input" id="reg-phone" type="tel" placeholder="+380 00 000-00-00" autocomplete="tel" style="font-size:15px;padding:13px 14px">
       </div>
+
       <div class="form-group" style="margin-top:12px">
         <label class="form-label" style="display:flex;align-items:center;gap:6px">
-          Telegram
-          <span style="font-size:10px;color:var(--text3);font-weight:400;padding:2px 6px;background:var(--surface2);border-radius:4px">скоро</span>
+          Link
+          <span style="font-size:10px;color:var(--text3);font-weight:400;padding:2px 6px;background:var(--surface2);border-radius:4px">неактивно</span>
         </label>
-        <input class="form-input" id="reg-telegram" placeholder="@username" disabled
+        <input class="form-input" id="reg-link" placeholder="Ссылка-приглашение" disabled
           style="font-size:15px;padding:13px 14px;opacity:0.45;cursor:not-allowed">
+      </div>
+
+      <div class="form-group" style="margin-top:12px">
+        <label class="form-label">ПИН *</label>
+        <input class="form-input" id="reg-pin" type="password" placeholder="Ваш PIN-код (4-8 символов)" autocomplete="new-password" style="font-size:15px;padding:13px 14px;letter-spacing:0.3em">
       </div>
 
       <div id="reg-result" style="margin-top:12px"></div>
@@ -996,9 +1008,6 @@ textarea::placeholder{color:var(--text3)}
       <button class="form-btn primary" id="reg-submit-btn" onclick="submitRegistration()" style="margin-top:16px;font-size:15px;padding:14px">
         ✅ Отправить заявку
       </button>
-      <div style="margin-top:12px;font-size:11px;color:var(--text3);text-align:center;line-height:1.5">
-        Данные сохраняются в защищённой системе. Администратор свяжется в течение 24 часов.
-      </div>
     </div>
 
     <!-- Success state -->
@@ -2684,7 +2693,7 @@ function openRegister() {
   var success = document.getElementById('register-success');
   var result = document.getElementById('reg-result');
   var btn = document.getElementById('reg-submit-btn');
-  if (form) { form.style.display = ''; ['reg-last-name','reg-first-name','reg-phone'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; }); }
+  if (form) { form.style.display = ''; ['reg-telegram','reg-last-name','reg-first-name','reg-phone','reg-link','reg-pin'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; }); }
   if (success) success.style.display = 'none';
   if (result) result.innerHTML = '';
   if (btn) { btn.disabled = false; btn.textContent = '✅ Отправить заявку'; }
@@ -2706,18 +2715,27 @@ function selectRegPlan(pkg) {
 var currentInviteLink = '';
 
 async function submitRegistration() {
+  var telegram  = (document.getElementById('reg-telegram').value || '').trim();
   var lastName  = (document.getElementById('reg-last-name').value || '').trim();
   var firstName = (document.getElementById('reg-first-name').value || '').trim();
   var phone     = (document.getElementById('reg-phone').value || '').trim();
+  var pin       = (document.getElementById('reg-pin').value || '').trim();
   var result    = document.getElementById('reg-result');
   var btn       = document.getElementById('reg-submit-btn');
 
   result.innerHTML = '';
 
-  if (!lastName || !firstName || !phone) {
-    result.innerHTML = '<div class="form-error">❌ Заполните обязательные поля: Фамилия, Имя, Телефон</div>';
+  if (!telegram || !lastName || !firstName || !phone || !pin) {
+    result.innerHTML = '<div class="form-error">❌ Заполните все обязательные поля</div>';
     return;
   }
+
+  if (pin.length < 4) {
+    result.innerHTML = '<div class="form-error">❌ ПИН должен быть минимум 4 символа</div>';
+    return;
+  }
+
+  if (!telegram.startsWith('@')) telegram = '@' + telegram;
 
   btn.disabled = true;
   btn.textContent = '⏳ Отправляем...';
@@ -2726,7 +2744,7 @@ async function submitRegistration() {
     var resp = await fetch(API_BASE + '/api/register/self', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ firstName, lastName, phone })
+      body: JSON.stringify({ telegram, firstName, lastName, phone, pin })
     });
     var data = await resp.json();
     if (data.success) {

@@ -450,10 +450,14 @@ app.post('/api/admin/deactivate', authenticateAdmin, (req, res) => {
 // ══════════════════════════════════════════════════════════════════════
 
 app.post('/api/register/self', async (req, res) => {
-  const { firstName, lastName, phone, telegram } = req.body;
+  const { firstName, lastName, phone, telegram, pin } = req.body;
 
-  if (!firstName || !lastName || !phone) {
-    return res.status(400).json({ success: false, error: 'Заполните обязательные поля: Имя, Фамилия, Телефон' });
+  if (!firstName || !lastName || !phone || !pin) {
+    return res.status(400).json({ success: false, error: 'Заполните обязательные поля: Имя, Фамилия, Телефон, ПИН' });
+  }
+
+  if (pin.length < 4) {
+    return res.status(400).json({ success: false, error: 'ПИН должен быть минимум 4 символа' });
   }
 
   const partnerId = generatePartnerId();
@@ -464,6 +468,7 @@ app.post('/api/register/self', async (req, res) => {
     email:              '',
     telegram:           (telegram || '').trim(),
     phone:              phone.trim(),
+    pin:                pin.trim(),
     walletAddress:      '',
     inviteToken:        null,
     telegramChatId:     null,
