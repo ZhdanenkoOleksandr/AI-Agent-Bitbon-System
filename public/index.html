@@ -1089,14 +1089,14 @@ textarea::placeholder{color:var(--text3)}
       <div style="flex:1;height:1px;background:var(--border2)"></div>
     </div>
 
-    <!-- Telegram registration -->
-    <a href="https://t.me/BitbonPartnerBot" target="_blank" rel="noopener"
-      style="display:block;text-align:center;padding:13px;background:linear-gradient(135deg,rgba(0,136,204,0.15),rgba(0,136,204,0.05));border:1.5px solid rgba(0,136,204,0.35);border-radius:10px;color:var(--text2);text-decoration:none;font-size:14px;font-family:'Onest',sans-serif;transition:all 0.2s"
-      onmouseover="this.style.borderColor='rgba(0,136,204,0.6)';this.style.color='var(--text1)'"
-      onmouseout="this.style.borderColor='rgba(0,136,204,0.35)';this.style.color='var(--text2)'">
-      <span id="login-tg-text">✈️ Зарегистрироваться через Telegram</span>
-    </a>
-    <div id="login-tg-note" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Бот соберёт данные и установит ваш PIN-код</div>
+    <!-- Partner registration -->
+    <button onclick="closeLoginModal();openRegister()"
+      style="display:block;width:100%;text-align:center;padding:13px;background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(139,92,246,0.05));border:1.5px solid rgba(139,92,246,0.35);border-radius:10px;color:var(--text2);text-decoration:none;font-size:14px;font-family:'Onest',sans-serif;transition:all 0.2s;cursor:pointer"
+      onmouseover="this.style.borderColor='rgba(139,92,246,0.6)';this.style.color='var(--text1)'"
+      onmouseout="this.style.borderColor='rgba(139,92,246,0.35)';this.style.color='var(--text2)'">
+      <span id="login-tg-text">🤝 Регистрация Партнера</span>
+    </button>
+    <div id="login-tg-note" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">Заполните форму и получите доступ к системе</div>
 
     <!-- Demo cabinet -->
     <div style="display:flex;align-items:center;gap:10px;margin:18px 0 12px">
@@ -1762,8 +1762,8 @@ var TRANSLATIONS = {
     msg_whatsapp:'💬 WhatsApp',
     msg_viber:'📳 Viber',
     msg_email:'📧 Email',
-    reg_title:'🤝 Запросити Партнера',
-    reg_sub:'Введіть Telegram партнера — бот автоматично напише йому та збере всі дані.',
+    reg_title:'🤝 Регистрация Партнера',
+    reg_sub:'',
     reg_tg_label:'Telegram партнера *',
     reg_btn:'📩 Створити запрошення',
     reg_invite_label:'Посилання-запрошення',
@@ -1782,8 +1782,8 @@ var TRANSLATIONS = {
     login_pin:'Введіть ваш PIN-код:',
     login_btn:'Увійти',
     login_not_partner:'ще не партнер?',
-    login_tg:'✈️ Зареєструватися через Telegram',
-    login_tg_note:'Бот збере дані та встановить ваш PIN-код',
+    login_tg:'🤝 Регистрация Партнера',
+    login_tg_note:'Заполните форму и получите доступ к системе',
     cab_title:'🏛️ Кабінет партнера',
     cab_subtitle:'Управління підпискою та API',
     cab_tab_info:'📊 Статистика',
@@ -1914,8 +1914,8 @@ var TRANSLATIONS = {
     msg_whatsapp:'💬 WhatsApp',
     msg_viber:'📳 Viber',
     msg_email:'📧 Email',
-    reg_title:'🤝 Invite a Partner',
-    reg_sub:"Enter partner's Telegram — the bot will automatically write to them and collect all data.",
+    reg_title:'🤝 Partner Registration',
+    reg_sub:'',
     reg_tg_label:"Partner's Telegram *",
     reg_btn:'📩 Create invitation',
     reg_invite_label:'Invitation link',
@@ -1934,8 +1934,8 @@ var TRANSLATIONS = {
     login_pin:'Enter your PIN code:',
     login_btn:'Login',
     login_not_partner:'not a partner yet?',
-    login_tg:'✈️ Register via Telegram',
-    login_tg_note:'Bot will collect data and set your PIN code',
+    login_tg:'🤝 Partner Registration',
+    login_tg_note:'Fill out the form and gain system access',
     cab_title:'🏛️ Partner cabinet',
     cab_subtitle:'Subscription and API management',
     cab_tab_info:'📊 Statistics',
@@ -2066,8 +2066,8 @@ var TRANSLATIONS = {
     msg_whatsapp:'💬 WhatsApp',
     msg_viber:'📳 Viber',
     msg_email:'📧 Email',
-    reg_title:'🤝 Пригласить Партнёра',
-    reg_sub:'Введите Telegram партнёра — бот автоматически напишет ему и соберёт все данные.',
+    reg_title:'🤝 Регистрация Партнера',
+    reg_sub:'',
     reg_tg_label:'Telegram партнёра *',
     reg_btn:'📩 Создать приглашение',
     reg_invite_label:'Ссылка-приглашение',
@@ -2086,8 +2086,8 @@ var TRANSLATIONS = {
     login_pin:'Введите ваш PIN-код:',
     login_btn:'Войти',
     login_not_partner:'ещё не партнёр?',
-    login_tg:'✈️ Зарегистрироваться через Telegram',
-    login_tg_note:'Бот соберёт данные и установит ваш PIN-код',
+    login_tg:'🤝 Регистрация Партнера',
+    login_tg_note:'Заполните форму и получите доступ к системе',
     cab_title:'🏛️ Кабинет партнёра',
     cab_subtitle:'Управление подпиской и API',
     cab_tab_info:'📊 Статистика',
