@@ -611,19 +611,34 @@ async function completeRegistration(bot, chatId, sess, db, persistData, hashPin)
 async function appendToSheets(partner) {
   if (!SHEETS_WEBHOOK) return;
   try {
+    // DEBUG: Проверяем что в partner объекте
+    console.log('🔍 DEBUG partner объект:');
+    console.log('  partnerId:', partner.id);
+    console.log('  firstName:', partner.firstName);
+    console.log('  lastName:', partner.lastName);
+    console.log('  phone:', partner.phone);
+    console.log('  telegram:', partner.telegram);
+    console.log('  pin (ТУТ ГЛАВНОЕ):', partner.pin);
+    console.log('  status:', partner.status);
+    console.log('  source:', partner.source);
+
     const payload = {
       date: new Date().toLocaleString('ru-RU'),
       partnerId: partner.id,
       firstName: partner.firstName,
       lastName:  partner.lastName,
-      email:     partner.email,
+      email:     partner.email || '',
       phone:     partner.phone,
       telegram:  partner.telegram,
       pin:       partner.pin || '',
-      plan:      partner.packageType,
-      status:    partner.status
+      plan:      partner.packageType || '',
+      status:    partner.status,
+      source:    partner.source || ''
     };
-    console.log('📊 Отправляем в Sheets:', JSON.stringify(payload, null, 2));
+
+    console.log('📊 ОТПРАВЛЯЕМ В SHEETS:');
+    console.log('📊 ПИН в payload:', payload.pin);
+    console.log('📊 Полный payload:', JSON.stringify(payload, null, 2));
 
     const response = await fetch(SHEETS_WEBHOOK, {
       method: 'POST',
@@ -631,8 +646,12 @@ async function appendToSheets(partner) {
       body: JSON.stringify(payload)
     });
     console.log('📊 Sheets ответ статус:', response.status);
+    if (!response.ok) {
+      console.error('📊 Sheets ошибка ответа:', await response.text());
+    }
   } catch (e) {
     console.error('📊 Sheets ошибка:', e.message);
+    console.error('📊 Stack:', e.stack);
   }
 }
 
