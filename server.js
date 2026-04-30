@@ -446,6 +446,55 @@ app.post('/api/admin/deactivate', authenticateAdmin, (req, res) => {
 
 
 // ══════════════════════════════════════════════════════════════════════
+// SELF-REGISTRATION FROM SITE (кнопка "Стать партнёром")
+// ══════════════════════════════════════════════════════════════════════
+
+app.post('/api/register/self', async (req, res) => {
+  const { firstName, lastName, phone, telegram } = req.body;
+
+  if (!firstName || !lastName || !phone) {
+    return res.status(400).json({ success: false, error: 'Заполните обязательные поля: Имя, Фамилия, Телефон' });
+  }
+
+  const partnerId = generatePartnerId();
+  const partner = {
+    id:                 partnerId,
+    firstName:          firstName.trim(),
+    lastName:           lastName.trim(),
+    email:              '',
+    telegram:           (telegram || '').trim(),
+    phone:              phone.trim(),
+    walletAddress:      '',
+    inviteToken:        null,
+    telegramChatId:     null,
+    status:             'pending',
+    packageType:        null,
+    apiKey:             null,
+    requestsLimit:      0,
+    requestsUsed:       0,
+    metaresourcesLimit: 0,
+    metaresourcesUsed:  0,
+    createdAt:          new Date().toISOString(),
+    activatedAt:        null,
+    expiresAt:          null,
+    source:             'self_registration'
+  };
+
+  DB.partners[partnerId] = partner;
+  persistData();
+
+  // Record to Google Sheets
+  try {
+    const { appendToSheets } = require('./src/telegram-bot');
+    await appendToSheets(partner);
+  } catch (e) {
+    console.error('Sheets error on self-registration:', e.message);
+  }
+
+  res.json({ success: true, message: 'Заявка принята! Администратор свяжется с вами.', partnerId });
+});
+
+// ══════════════════════════════════════════════════════════════════════
 // PARTNER REGISTRATION & AUTH
 // ══════════════════════════════════════════════════════════════════════
 
