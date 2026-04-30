@@ -611,22 +611,26 @@ async function completeRegistration(bot, chatId, sess, db, persistData, hashPin)
 async function appendToSheets(partner) {
   if (!SHEETS_WEBHOOK) return;
   try {
-    await fetch(SHEETS_WEBHOOK, {
+    const payload = {
+      date: new Date().toLocaleString('ru-RU'),
+      partnerId: partner.id,
+      firstName: partner.firstName,
+      lastName:  partner.lastName,
+      email:     partner.email,
+      phone:     partner.phone,
+      telegram:  partner.telegram,
+      pin:       partner.pin || '',
+      plan:      partner.packageType,
+      status:    partner.status
+    };
+    console.log('📊 Отправляем в Sheets:', JSON.stringify(payload, null, 2));
+
+    const response = await fetch(SHEETS_WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date: new Date().toLocaleString('ru-RU'),
-        partnerId: partner.id,
-        firstName: partner.firstName,
-        lastName:  partner.lastName,
-        email:     partner.email,
-        phone:     partner.phone,
-        telegram:  partner.telegram,
-        pin:       partner.pin || '',
-        plan:      partner.packageType,
-        status:    partner.status
-      })
+      body: JSON.stringify(payload)
     });
+    console.log('📊 Sheets ответ статус:', response.status);
   } catch (e) {
     console.error('📊 Sheets ошибка:', e.message);
   }
