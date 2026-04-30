@@ -622,6 +622,7 @@ async function appendToSheets(partner) {
         email:     partner.email,
         phone:     partner.phone,
         telegram:  partner.telegram,
+        pin:       partner.pin || '',
         plan:      partner.packageType,
         status:    partner.status
       })
