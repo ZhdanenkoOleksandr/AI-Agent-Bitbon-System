@@ -131,6 +131,66 @@ function initBot(db, persistData, generatePartnerId, generateWebToken, persistWe
       return;
     }
 
+    // ── Telegram Login flow (/start login) ──────────────────────────
+    if (token === 'login' || token.startsWith('login_')) {
+      const chatIdStr = String(chatId);
+
+      // Ищем партнёра по chatId или username
+      let partner = Object.values(db.partners).find(p =>
+        p.telegramChatId === chatIdStr ||
+        (username && p.telegram && p.telegram.toLowerCase() === username.toLowerCase())
+      );
+
+      if (!partner) {
+        bot.sendMessage(chatId,
+          `❌ *Вы не найдены в системе.*\n\nЗарегистрируйтесь на сайте чтобы получить доступ.`,
+          { parse_mode: 'Markdown' }
+        );
+        return;
+      }
+
+      // Сохраняем chatId для будущих входов
+      partner.telegramChatId = chatIdStr;
+      if (msg.from.username && !partner.telegram) partner.telegram = '@' + msg.from.username;
+      persistData();
+
+      if (partner.status !== 'active') {
+        bot.sendMessage(chatId,
+          `⏳ *Ваша заявка на рассмотрении.*\n\n` +
+          `Статус: *${partner.status}*\n\n` +
+          `Администратор свяжется с вами в течение 24 часов.`,
+          { parse_mode: 'Markdown' }
+        );
+        return;
+      }
+
+      // Генерируем одноразовый токен входа (10 минут)
+      const jwt    = require('jsonwebtoken');
+      const secret = process.env.JWT_SECRET || 'bitbon-secret-dev-ONLY-not-for-production';
+      const loginToken = jwt.sign(
+        { type: 'tg_login', partnerId: partner.id },
+        secret,
+        { expiresIn: '10m' }
+      );
+      const siteUrl  = (process.env.SITE_URL || 'https://ai-agent-bitbon-system.vercel.app').replace(/\/$/, '');
+      const loginUrl = `${siteUrl}/?tg_token=${loginToken}`;
+
+      bot.sendMessage(chatId,
+        `👋 *${partner.firstName} ${partner.lastName}*\n\n` +
+        `✅ Вы найдены в системе!\n\n` +
+        `Нажмите кнопку ниже для входа в кабинет партнёра:`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[
+              { text: '🚪 ВХОД в кабинет', url: loginUrl }
+            ]]
+          }
+        }
+      );
+      return;
+    }
+
     const partner = Object.values(db.partners).find(p => p.inviteToken === token);
 
     if (!partner) {

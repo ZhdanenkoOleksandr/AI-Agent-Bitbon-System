@@ -786,6 +786,38 @@ app.post('/api/auth/pin', pinLimiter, (req, res) => {
   });
 });
 
+// GET /api/auth/tg-token?token=JWT — Telegram login: обменять одноразовый токен на сессию
+app.get('/api/auth/tg-token', (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(400).json({ error: 'No token' });
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (payload.type !== 'tg_login') return res.status(401).json({ error: 'Invalid token type' });
+    const partner = DB.partners[payload.partnerId];
+    if (!partner || partner.status !== 'active') {
+      return res.status(404).json({ error: 'Partner not found or inactive' });
+    }
+    const sessionToken = jwt.sign(
+      { role: partner.role || 'partner', partnerId: partner.id, telegram: partner.telegram,
+        name: `${partner.firstName} ${partner.lastName}` },
+      JWT_SECRET, { expiresIn: '7d' }
+    );
+    res.json({
+      success: true, jwt: sessionToken,
+      user: {
+        id: partner.id, role: partner.role || 'partner',
+        fullName: `${partner.firstName} ${partner.lastName}`,
+        email: partner.email, telegram: partner.telegram, status: partner.status,
+        packageType: partner.packageType, requestsUsed: partner.requestsUsed,
+        requestsLimit: partner.requestsLimit, metaresourcesUsed: partner.metaresourcesUsed,
+        metaresourcesLimit: partner.metaresourcesLimit, expiresAt: partner.expiresAt
+      }
+    });
+  } catch (e) {
+    res.status(401).json({ error: 'Invalid or expired token' });
+  }
+});
+
 // GET /api/auth/web-token?wt=TOKEN
 app.get('/api/auth/web-token', (req, res) => {
   const { wt } = req.query;
