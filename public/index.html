@@ -329,6 +329,26 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .meta-cta-btn.secondary{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
 .meta-cta-btn.secondary:hover{border-color:var(--accent);color:var(--accent2)}
 
+/* WEB4 TRANSITION SLIDER */
+.web4-slider{border:1px solid rgba(139,92,246,0.4);border-radius:var(--radius);overflow:hidden;margin-top:16px;display:none;max-width:600px;margin-left:auto;margin-right:auto}
+.web4-slider.active{display:block}
+.web4-slider-header{background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(59,130,246,0.2));padding:13px 18px;border-bottom:1px solid rgba(139,92,246,0.3);display:flex;justify-content:space-between;align-items:center}
+.web4-slider-title{font-size:13px;font-weight:700;color:#c4b5fd}
+.web4-slider-count{font-size:11px;color:var(--text2)}
+.web4-slide{padding:18px 20px;min-height:120px}
+.web4-slide-num{font-size:10px;font-weight:700;color:rgba(139,92,246,0.8);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.web4-slide-title{font-size:14px;font-weight:700;color:#c4b5fd;margin-bottom:10px;line-height:1.4}
+.web4-slide-text{font-size:13px;color:var(--text2);line-height:1.65}
+.web4-outro{margin-top:12px;padding:11px 14px;border-radius:var(--radius-sm);background:rgba(59,130,246,0.06);border-left:3px solid rgba(139,92,246,0.6);font-size:12px;color:var(--text2);line-height:1.6;font-style:italic;display:none}
+.web4-outro.visible{display:block}
+.web4-slider-nav{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-top:1px solid rgba(139,92,246,0.2)}
+.web4-nav-btn{height:28px;padding:0 12px;border-radius:6px;border:1px solid rgba(139,92,246,0.4);background:rgba(139,92,246,0.08);color:#c4b5fd;cursor:pointer;font-size:11px;font-family:'Onest',sans-serif;transition:all 0.2s}
+.web4-nav-btn:hover:not(:disabled){border-color:rgba(139,92,246,0.8);background:rgba(139,92,246,0.15)}
+.web4-nav-btn:disabled{opacity:0.3;cursor:default}
+.web4-dots{display:flex;gap:4px;align-items:center}
+.web4-dot{width:5px;height:5px;border-radius:50%;background:rgba(139,92,246,0.3);transition:all 0.2s;cursor:pointer}
+.web4-dot.active{background:rgba(139,92,246,0.9);width:14px;border-radius:3px}
+
 .diagram-container{margin:11px 0;padding:16px 12px 12px;background:#0a0d12;border:1px solid var(--border2);border-radius:var(--radius);position:relative;overflow-x:auto}
 .diagram-label{position:absolute;top:-8px;left:14px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);background:var(--bot-bg);padding:0 8px;font-weight:600}
 .mermaid{display:flex;justify-content:center;align-items:center;min-height:60px}
@@ -1550,9 +1570,25 @@ textarea::placeholder{color:var(--text3)}
             <ul class="welcome-panel-list">
               <li onclick="ask('Как подключить бизнес к Системе Bitbon?')">Подключить бизнес</li>
               <li onclick="startMetaWizard()">🏗️ Создать Метаресурс</li>
+              <li onclick="openWeb4Slider()">🌐 Переход в Web4</li>
               <li onclick="ask('Как стать партнёром Bitbon и зарабатывать?')">Стать партнёром</li>
               <li onclick="ask('Покажи примеры метаресурсов из базы знаний')">Примеры метаресурсов</li>
             </ul>
+          </div>
+        </div>
+
+        <!-- WEB4 Transition Steps Slider -->
+        <div class="web4-slider" id="web4-slider">
+          <div class="web4-slider-header">
+            <span class="web4-slider-title">🌐 10 шагов перехода в Web4</span>
+            <span class="web4-slider-count"><span id="web4-cur">1</span> / 10</span>
+          </div>
+          <div class="web4-slide" id="web4-slide-content"></div>
+          <div class="web4-outro" id="web4-outro">Мы создали среду тотального доверия, где каждый из вас может стать архитектором своей экономической деятельности. Система Bitbon — это платформа, которая выходит за пределы узких инвестиционных площадок прямо в реальный бизнес и сервисы.</div>
+          <div class="web4-slider-nav">
+            <button class="web4-nav-btn" id="web4-prev" onclick="web4Nav(-1)">← Назад</button>
+            <div class="web4-dots" id="web4-dots"></div>
+            <button class="web4-nav-btn" id="web4-next" onclick="web4Nav(1)">Далее →</button>
           </div>
         </div>
       </div>
@@ -4050,6 +4086,93 @@ function updateSidebar(text) {
     item.onclick = function() { ask('Объясни: ' + t); };
     gl.appendChild(item);
   });
+}
+
+// ═══ WEB4 TRANSITION SLIDER ═══
+var web4Step = 0;
+var web4Steps = [
+  {
+    title: 'Данные как актив',
+    text: 'В Web2 ваши данные — это сырьё для корпораций. В Web4 данные становятся защищённым суверенным активом с регулируемыми правами доступа. Бизнес получает контроль над своим цифровым следом, превращая информацию в ликвидный капитал.'
+  },
+  {
+    title: 'Токенизация жизненного цикла, а не только объекта',
+    text: 'В Системе Bitbon токенизируется весь процесс: от создания и регистрации актива до согласования, заключения сделки, исполнения и учёта последующих действий. Это обеспечивает 100% прозрачность всей цепочки создания ценности.'
+  },
+  {
+    title: 'Снижение «экономического трения»',
+    text: 'Традиционные механизмы Web2 перегружены посредниками и бюрократией. Токенизация активов в Web4 радикально снижает трение в обороте за счёт автоматизации и изменения самой механики владения и распределения доступа.'
+  },
+  {
+    title: 'Принцип «Программный код порождает право»',
+    text: 'В Web4 правовые отношения вшиты в цифровые регламенты. Сделки, обязательства и процессы исполнения становятся программно подтверждаемыми, что исключает «человеческий фактор» и административное принуждение.'
+  },
+  {
+    title: 'Токенизация прав и отношений (больше, чем финтех)',
+    text: 'Взгляд классических институциональных игроков, таких как BlackRock, пока ограничен финансовыми инструментами. Мы токенизируем документы, сделки, доступ, имущественные и личные неимущественные права, а также деловую репутацию.'
+  },
+  {
+    title: 'Использование организационно-правовой инфраструктуры',
+    text: 'Web4 в Системе Bitbon — это не просто «технология ради технологии». Это платформа, объединяющая публичный контракт, закреплённые роли участников и правовую децентрализацию. Бизнес получает легальный фундамент для работы в любой юрисдикции.'
+  },
+  {
+    title: 'Переход к сервисам и доступности',
+    text: 'Вместо владения сложной IT-инфраструктурой бизнес интегрируется в сервисный слой Web4. Это позволяет управлять правами на активы через API и готовые сценарии доступа, открывая рынок для совершенно новых категорий участников.'
+  },
+  {
+    title: 'Репутационный капитал как новый вид обеспечения',
+    text: 'В Web4 деловая репутация токенизируется и становится осязаемым активом. Бизнес может использовать свой «репутационный профиль» (AURA) для подтверждения надёжности — снижая потребность в традиционных залогах и дорогих страховках.'
+  },
+  {
+    title: 'Прямое соединение учёта, права и исполнения',
+    text: 'Новая парадигма объединяет четыре уровня: данные, документы (доказуемую форму), сервисы доступа и контракт с его автоматическим исполнением. Бизнес в реальном секторе работает с токенизированными товарами и услугами напрямую.'
+  },
+  {
+    title: 'Ставка на системную готовность',
+    text: 'Инфраструктурный сдвиг требует времени. Simcord строил основу для этого перехода с 2018 года. Для бизнеса это означает вход не в «хайповый продукт», а в глубокий инфраструктурный слой, где тренд подтверждён глобальными игроками, а полная архитектура реализована в Системе Bitbon.'
+  }
+];
+
+function openWeb4Slider() {
+  var el = document.getElementById('web4-slider');
+  if (!el) return;
+  web4Step = 0;
+  el.classList.add('active');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  web4Render();
+}
+
+function web4Nav(dir) {
+  web4Step = Math.max(0, Math.min(9, web4Step + dir));
+  web4Render();
+}
+
+function web4Go(i) {
+  web4Step = i;
+  web4Render();
+}
+
+function web4Render() {
+  var s = web4Steps[web4Step];
+  document.getElementById('web4-cur').textContent = web4Step + 1;
+  document.getElementById('web4-slide-content').innerHTML =
+    '<div class="web4-slide-num">Шаг ' + (web4Step + 1) + ' из 10</div>' +
+    '<div class="web4-slide-title">' + s.title + '</div>' +
+    '<div class="web4-slide-text">' + s.text + '</div>';
+  document.getElementById('web4-prev').disabled = web4Step === 0;
+  document.getElementById('web4-next').disabled = web4Step === 9;
+  var outro = document.getElementById('web4-outro');
+  if (outro) outro.classList.toggle('visible', web4Step === 9);
+  var dots = document.getElementById('web4-dots');
+  if (dots) {
+    dots.innerHTML = '';
+    for (var i = 0; i < 10; i++) {
+      var d = document.createElement('div');
+      d.className = 'web4-dot' + (i === web4Step ? ' active' : '');
+      d.setAttribute('onclick', 'web4Go(' + i + ')');
+      dots.appendChild(d);
+    }
+  }
 }
 
 // ═══ META WIZARD ═══
