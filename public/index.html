@@ -252,6 +252,11 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .suggestion-btn.meta-suggest:hover{border-color:var(--purple);background:rgba(139,92,246,0.1)}
 .suggestion-btn.biz-suggest{border-color:rgba(245,158,11,0.3);color:var(--gold)}
 .suggestion-btn.biz-suggest:hover{border-color:var(--gold);background:rgba(245,158,11,0.1)}
+.suggestion-btn.web4-suggest{border-color:rgba(139,92,246,0.5);color:#c4b5fd;background:rgba(139,92,246,0.06)}
+.suggestion-btn.web4-suggest:hover{border-color:var(--purple);background:rgba(139,92,246,0.14)}
+.suggestion-btn.sug-secondary{border-color:rgba(99,120,140,0.25);color:var(--text3);background:transparent;font-size:10px}
+.suggestion-btn.sug-secondary:hover{border-color:var(--border2);color:var(--text2);background:var(--surface2)}
+.sug-row-sep{flex-basis:100%;height:3px;flex-shrink:0}
 
 /* CHAT */
 .chat{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px;display:flex;flex-direction:column;gap:18px;scroll-behavior:smooth;min-height:0}
@@ -532,6 +537,7 @@ textarea::placeholder{color:var(--text3)}
   .suggestions::-webkit-scrollbar{height:2px}
   .suggestions::-webkit-scrollbar-thumb{background:rgba(99,179,237,0.3);border-radius:2px}
   .suggestion-btn{flex-shrink:0;font-size:10px;padding:4px 10px;min-height:30px}
+  .sug-row-sep{display:none}
 
   /* CHAT AREA MOBILE */
   .chat{padding:10px;gap:10px}
@@ -717,6 +723,7 @@ textarea::placeholder{color:var(--text3)}
 
   .suggestions{padding:7px 16px;gap:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
   .suggestion-btn{flex-shrink:0;font-size:11px;padding:5px 12px;min-height:34px}
+  .sug-row-sep{display:none}
 
   .chat{padding:14px}
   .welcome-icon{font-size:36px}
@@ -1907,7 +1914,7 @@ var TRANSLATIONS = {
     msg_biz:'Чудово! Я допоможу підключити ваш бізнес до Системи Bitbon.\n\nНатисніть 🏗️ **Метаресурс** щоб створити демо вашого бізнесу, або задайте питання.',
     msg_user:'Ласкаво просимо! Я розповім про Систему Bitbon простою мовою.\n\nОберіть тему або задайте будь-яке питання.',
     sug_admin_stat:'📊 Статистика',sug_admin_partners:'🤝 Партнери',sug_admin_status:'✅ Статус',sug_admin_logs:'📋 Логи',sug_admin_sessions:'👥 Сесії',
-    sug_biz_meta:'🏗️ Створити Метаресурс',sug_biz_connect:'Підключити бізнес',sug_biz_examples:'Приклади з бази',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Стати партнером',
+    sug_biz_web4:'🌐 Перехід в Web4',sug_biz_meta:'🏗️ Створити Метаресурс',sug_biz_connect:'Підключити бізнес',sug_biz_examples:'Приклади з бази',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Стати партнером',
     sug_user_what:'Що таке Bitbon?',sug_user_aura:'АУРА',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ крипто',sug_user_meta:'🏗️ Метаресурс',
     ask_admin_stat:'Покажи статистику користувачів',ask_admin_partners:'Список всіх партнерів',ask_admin_status:'Перевірити статус системи',ask_admin_logs:'Останні логи',ask_admin_sessions:'Список активних сесій',
     ask_biz_connect:'Як підключити бізнес до Bitbon?',ask_biz_examples:'Покажи приклади метаресурсів з бази знань',ask_biz_bonpay:'Як працює Bonpay для бізнесу?',ask_biz_partner:'Як стати партнером?',
@@ -2058,7 +2065,7 @@ var TRANSLATIONS = {
     msg_biz:"Great! I'll help connect your business to the Bitbon System.\n\nPress 🏗️ **Metaresource** to create a demo of your business, or ask a question.",
     msg_user:"Welcome! I'll tell you about the Bitbon System in simple language.\n\nChoose a topic or ask any question.",
     sug_admin_stat:'📊 Statistics',sug_admin_partners:'🤝 Partners',sug_admin_status:'✅ Status',sug_admin_logs:'📋 Logs',sug_admin_sessions:'👥 Sessions',
-    sug_biz_meta:'🏗️ Create Metaresource',sug_biz_connect:'Connect business',sug_biz_examples:'Base examples',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Become a partner',
+    sug_biz_web4:'🌐 Web4 Transition',sug_biz_meta:'🏗️ Create Metaresource',sug_biz_connect:'Connect business',sug_biz_examples:'Base examples',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Become a partner',
     sug_user_what:'What is Bitbon?',sug_user_aura:'AURA',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ crypto',sug_user_meta:'🏗️ Metaresource',
     ask_admin_stat:'Show user statistics',ask_admin_partners:'List of all partners',ask_admin_status:'Check system status',ask_admin_logs:'Latest logs',ask_admin_sessions:'List of active sessions',
     ask_biz_connect:'How to connect my business to Bitbon?',ask_biz_examples:'Show metaresource examples from the knowledge base',ask_biz_bonpay:'How does Bonpay work for business?',ask_biz_partner:'How to become a partner?',
@@ -2209,7 +2216,7 @@ var TRANSLATIONS = {
     msg_biz:'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.',
     msg_user:'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.',
     sug_admin_stat:'📊 Статистика',sug_admin_partners:'🤝 Партнёры',sug_admin_status:'✅ Статус',sug_admin_logs:'📋 Логи',sug_admin_sessions:'👥 Сессии',
-    sug_biz_meta:'🏗️ Создать Метаресурс',sug_biz_connect:'Подключить бизнес',sug_biz_examples:'Примеры из базы',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Стать партнёром',
+    sug_biz_web4:'🌐 Переход в Web4',sug_biz_meta:'🏗️ Создать Метаресурс',sug_biz_connect:'Подключить бизнес',sug_biz_examples:'Примеры из базы',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Стать партнёром',
     sug_user_what:'Что такое Bitbon?',sug_user_aura:'АУРА',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ крипто',sug_user_meta:'🏗️ Метаресурс',
     ask_admin_stat:'Покажи статистику пользователей',ask_admin_partners:'Список всех партнёров',ask_admin_status:'Проверить статус системы',ask_admin_logs:'Последние логи',ask_admin_sessions:'Список активных сессий',
     ask_biz_connect:'Как подключить бизнес к Bitbon?',ask_biz_examples:'Покажи примеры метаресурсов из базы знаний',ask_biz_bonpay:'Как работает Bonpay для бизнеса?',ask_biz_partner:'Как стать партнёром?',
@@ -2657,11 +2664,13 @@ function updateSuggestionsBar(mode) {
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_admin_sessions') + '\')">' + i18n('sug_admin_sessions') + '</button>';
   } else if (mode === 'business') {
     bar.innerHTML =
+      '<button class="suggestion-btn web4-suggest" onclick="openWeb4Slider()">' + i18n('sug_biz_web4') + '</button>' +
       '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">' + i18n('sug_biz_meta') + '</button>' +
-      '<button class="suggestion-btn biz-suggest" onclick="ask(\'' + i18n('ask_biz_connect') + '\')">' + i18n('sug_biz_connect') + '</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_biz_examples') + '\')">' + i18n('sug_biz_examples') + '</button>' +
-      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_biz_bonpay') + '\')">' + i18n('sug_biz_bonpay') + '</button>' +
-      '<button class="suggestion-btn biz-suggest" onclick="ask(\'' + i18n('ask_biz_partner') + '\')">' + i18n('sug_biz_partner') + '</button>';
+      '<div class="sug-row-sep"></div>' +
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_connect') + '\')">' + i18n('sug_biz_connect') + '</button>' +
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_examples') + '\')">' + i18n('sug_biz_examples') + '</button>' +
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_bonpay') + '\')">' + i18n('sug_biz_bonpay') + '</button>' +
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_partner') + '\')">' + i18n('sug_biz_partner') + '</button>';
   } else {
     bar.innerHTML =
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_what') + '\')">' + i18n('sug_user_what') + '</button>' +
