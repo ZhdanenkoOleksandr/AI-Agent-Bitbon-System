@@ -138,7 +138,6 @@ const DB = {
   metaresources: [],  // Created metaresources (knowledge base learning)
   sessions: {},       // admin sessions
   guestTokens: {},    // token -> { partnerId, quota, used, createdAt }
-  webTokens: {}       // web_token -> { username, createdAt, expiresAt }
 };
 
 // ── DATA FILES ───────────────────────────────────────────────────────
@@ -199,10 +198,6 @@ DB.payments = savedPayments;
 let savedGuests = loadJSON('guests_db.json') || {};
 DB.guestTokens = savedGuests;
 
-// Load web tokens (for first login via Telegram)
-let savedWebTokens = loadJSON('web_tokens_db.json') || {};
-DB.webTokens = savedWebTokens;
-
 // ── HELPERS ──────────────────────────────────────────────────────────
 function hashApiKey(key) {
   return bcrypt.hashSync(key, 8);
@@ -218,10 +213,6 @@ function generateApiKey() {
 
 function generatePartnerId() {
   return 'prt_' + uuidv4().replace(/-/g, '').substring(0, 16);
-}
-
-function generateWebToken() {
-  return uuidv4().replace(/-/g, '').substring(0, 24);
 }
 
 function getPackageLimits(packageType) {
@@ -261,10 +252,6 @@ function authenticatePartner(req, res, next) {
 
 function persistGuests() {
   saveJSON('guests_db.json', DB.guestTokens);
-}
-
-function persistWebTokens() {
-  saveJSON('web_tokens_db.json', DB.webTokens);
 }
 
 function persistData() {
@@ -499,158 +486,6 @@ app.post('/api/register/self', async (req, res) => {
   res.json({ success: true, message: 'Заявка принята! Администратор свяжется с вами.', partnerId });
 });
 
-// ══════════════════════════════════════════════════════════════════════
-// PARTNER REGISTRATION & AUTH
-// ══════════════════════════════════════════════════════════════════════
-
-// Register new partner (invite flow — sends Telegram deep link)
-app.post('/api/partner/register', authenticatePartner, (req, res) => {
-  const { telegram } = req.body;
-
-  if (!telegram) {
-    return res.status(400).json({ error: 'Укажите Telegram партнёра' });
-  }
-
-  // Генерация уникального токена для deep link
-  const inviteToken = uuidv4().replace(/-/g, '').substring(0, 20);
-  const partnerId   = generatePartnerId();
-
-  const partner = {
-    id:                 partnerId,
-    firstName:          '',
-    lastName:           '',
-    email:              '',
-    telegram:           telegram.trim().startsWith('@') ? telegram.trim() : '@' + telegram.trim(),
-    phone:              '',
-    walletAddress:      '',
-    inviteToken,
-    telegramChatId:     null,
-    status:             'invited',
-    packageType:        null,
-    apiKey:             null,
-    requestsLimit:      0,
-    requestsUsed:       0,
-    metaresourcesLimit: 0,
-    metaresourcesUsed:  0,
-    createdAt:          new Date().toISOString(),
-    activatedAt:        null,
-    expiresAt:          null,
-    source:             'cabinet_invite',
-    invitedBy:          req.partner?.partnerId || null   // ← кто пригласил
-  };
-
-  DB.partners[partnerId] = partner;
-  persistData();
-
-  const { getInviteLink } = require('./src/telegram-bot');
-  const inviteLink = getInviteLink(inviteToken);
-
-  res.json({
-    success:    true,
-    partnerId,
-    inviteToken,
-    inviteLink,
-    telegram:   partner.telegram,
-    message:    `Приглашение создано для ${partner.telegram}. Отправьте партнёру ссылку — бот соберёт все данные автоматически.`
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════
-// ADMIN FUNCTIONS
-// ══════════════════════════════════════════════════════════════════════
-
-// Admin: Create invitation link for new partner
-app.post('/api/admin/create-invite', authenticateAdmin, (req, res) => {
-  const { telegram } = req.body;
-
-  if (!telegram) {
-    return res.status(400).json({ error: 'Укажите Telegram партнёра' });
-  }
-
-  // Генерация уникального токена для deep link
-  const inviteToken = uuidv4().replace(/-/g, '').substring(0, 20);
-  const partnerId   = generatePartnerId();
-
-  const partner = {
-    id:                 partnerId,
-    firstName:          '',
-    lastName:           '',
-    email:              '',
-    telegram:           telegram.trim().startsWith('@') ? telegram.trim() : '@' + telegram.trim(),
-    phone:              '',
-    walletAddress:      '',
-    inviteToken,
-    telegramChatId:     null,
-    status:             'invited',
-    packageType:        null,
-    apiKey:             null,
-    role:               'partner',
-    requestsLimit:      0,
-    requestsUsed:       0,
-    metaresourcesLimit: 0,
-    metaresourcesUsed:  0,
-    createdAt:          new Date().toISOString(),
-    activatedAt:        null,
-    expiresAt:          null,
-    source:             'admin_invite',
-    createdByAdmin:     req.admin?.adminName || 'unknown'
-  };
-
-  DB.partners[partnerId] = partner;
-  persistData();
-
-  const { getInviteLink } = require('./src/telegram-bot');
-  const inviteLink = getInviteLink(inviteToken);
-
-  res.json({
-    success:    true,
-    partnerId,
-    inviteToken,
-    inviteLink,
-    telegram:   partner.telegram,
-    message:    `✅ Приглашение создано для ${partner.telegram}`
-  });
-});
-
-// ══════════════════════════════════════════════════════════════════════
-// INVITE: WEB REGISTRATION FLOW
-// ══════════════════════════════════════════════════════════════════════
-
-// Validate invite token (called on page load with ?invite=TOKEN)
-app.get('/api/invite/validate', (req, res) => {
-  const { token } = req.query;
-  if (!token) return res.status(400).json({ valid: false, error: 'Token required' });
-
-  const partner = Object.values(DB.partners).find(p => p.inviteToken === token);
-  if (!partner) return res.json({ valid: false, error: 'Приглашение не найдено или истекло' });
-  if (partner.status !== 'invited') return res.json({ valid: false, error: 'Это приглашение уже использовано' });
-
-  res.json({ valid: true, telegram: partner.telegram, partnerId: partner.id });
-});
-
-// Complete registration via web form
-app.post('/api/invite/complete', (req, res) => {
-  const { token, firstName, lastName, email, phone, walletAddress } = req.body;
-
-  if (!token || !firstName || !lastName || !email) {
-    return res.status(400).json({ success: false, error: 'Заполните обязательные поля: имя, фамилия, email' });
-  }
-
-  const partner = Object.values(DB.partners).find(p => p.inviteToken === token);
-  if (!partner) return res.status(404).json({ success: false, error: 'Приглашение не найдено' });
-  if (partner.status !== 'invited') return res.status(400).json({ success: false, error: 'Это приглашение уже использовано' });
-
-  partner.firstName     = firstName.trim();
-  partner.lastName      = lastName.trim();
-  partner.email         = email.trim().toLowerCase();
-  partner.phone         = (phone || '').trim();
-  partner.walletAddress = (walletAddress || '').trim();
-  partner.status        = 'registered';
-  partner.registeredAt  = new Date().toISOString();
-  persistData();
-
-  res.json({ success: true, message: 'Данные сохранены! Ожидайте активации от администратора.', partnerId: partner.id });
-});
 
 // Partner: Submit payment info
 app.post('/api/partner/payment', (req, res) => {
@@ -698,39 +533,6 @@ app.post('/api/admin/confirm-payment', authenticateAdmin, (req, res) => {
   res.json({ success: true, payment, message: 'Платёж подтверждён. Теперь активируйте API ключ для партнёра.' });
 });
 
-// Partner login (by email — returns JWT)
-app.post('/api/partner/login', (req, res) => {
-  const { email, partnerId } = req.body;
-  const partner = Object.values(DB.partners).find(
-    p => p.email === email?.toLowerCase() || p.id === partnerId
-  );
-  if (!partner) return res.status(404).json({ error: 'Partner not found' });
-
-  const token = jwt.sign(
-    { role: 'partner', partnerId: partner.id, name: `${partner.firstName} ${partner.lastName}` },
-    JWT_SECRET,
-    { expiresIn: '7d' }
-  );
-
-  res.json({
-    success: true,
-    token,
-    partner: {
-      id: partner.id,
-      fullName: `${partner.firstName} ${partner.lastName}`,
-      email: partner.email,
-      status: partner.status,
-      packageType: partner.packageType,
-      requestsUsed: partner.requestsUsed,
-      requestsLimit: partner.requestsLimit,
-      metaresourcesUsed: partner.metaresourcesUsed,
-      metaresourcesLimit: partner.metaresourcesLimit,
-      expiresAt: partner.expiresAt
-    }
-  });
-});
-
-// Auth: Exchange web token (first login via Telegram)
 // POST /api/auth/pin — вход по PIN для всех партнёров
 app.post('/api/auth/pin', pinLimiter, (req, res) => {
   const { pin } = req.body;
@@ -772,116 +574,6 @@ app.post('/api/auth/pin', pinLimiter, (req, res) => {
     user: {
       id: partner.id,
       role: partner.role || 'partner',
-      fullName: `${partner.firstName} ${partner.lastName}`,
-      email: partner.email,
-      telegram: partner.telegram,
-      status: partner.status,
-      packageType: partner.packageType,
-      requestsUsed: partner.requestsUsed,
-      requestsLimit: partner.requestsLimit,
-      metaresourcesUsed: partner.metaresourcesUsed,
-      metaresourcesLimit: partner.metaresourcesLimit,
-      expiresAt: partner.expiresAt
-    }
-  });
-});
-
-// GET /api/auth/tg-token?token=JWT — Telegram login: обменять одноразовый токен на сессию
-app.get('/api/auth/tg-token', (req, res) => {
-  const { token } = req.query;
-  if (!token) return res.status(400).json({ error: 'No token' });
-  try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    if (payload.type !== 'tg_login') return res.status(401).json({ error: 'Invalid token type' });
-    const partner = DB.partners[payload.partnerId];
-    if (!partner || partner.status !== 'active') {
-      return res.status(404).json({ error: 'Partner not found or inactive' });
-    }
-    const sessionToken = jwt.sign(
-      { role: partner.role || 'partner', partnerId: partner.id, telegram: partner.telegram,
-        name: `${partner.firstName} ${partner.lastName}` },
-      JWT_SECRET, { expiresIn: '7d' }
-    );
-    res.json({
-      success: true, jwt: sessionToken,
-      user: {
-        id: partner.id, role: partner.role || 'partner',
-        fullName: `${partner.firstName} ${partner.lastName}`,
-        email: partner.email, telegram: partner.telegram, status: partner.status,
-        packageType: partner.packageType, requestsUsed: partner.requestsUsed,
-        requestsLimit: partner.requestsLimit, metaresourcesUsed: partner.metaresourcesUsed,
-        metaresourcesLimit: partner.metaresourcesLimit, expiresAt: partner.expiresAt
-      }
-    });
-  } catch (e) {
-    res.status(401).json({ error: 'Invalid or expired token' });
-  }
-});
-
-// GET /api/auth/web-token?wt=TOKEN
-app.get('/api/auth/web-token', (req, res) => {
-  const { wt } = req.query;
-
-  if (!wt) {
-    return res.status(400).json({ error: 'Missing web token' });
-  }
-
-  const tokenData = DB.webTokens[wt];
-
-  // Check if token exists
-  if (!tokenData) {
-    return res.status(404).json({ error: 'Token not found or expired' });
-  }
-
-  // Check if token is expired
-  if (new Date() > new Date(tokenData.expiresAt)) {
-    delete DB.webTokens[wt];
-    persistWebTokens();
-    return res.status(401).json({ error: 'Token expired' });
-  }
-
-  // Find partner by Telegram username (skip for admin tokens)
-  let partner = null;
-  if (!tokenData.isAdmin) {
-    partner = Object.values(DB.partners).find(
-      p => p.telegram === tokenData.username || p.telegram === '@' + tokenData.username
-    );
-
-    if (!partner) {
-      return res.status(404).json({ error: 'Partner not found' });
-    }
-  }
-
-  // Generate JWT session token (admin or partner)
-  const jwtPayload = {
-    role: tokenData.isAdmin ? 'admin' : 'partner',
-    telegram: tokenData.username
-  };
-
-  if (tokenData.isAdmin) {
-    jwtPayload.adminName = tokenData.username;
-  } else {
-    jwtPayload.partnerId = partner.id;
-    jwtPayload.name = `${partner.firstName} ${partner.lastName}`;
-  }
-
-  const sessionToken = jwt.sign(jwtPayload, JWT_SECRET, { expiresIn: '7d' });
-
-  // Clean up used web token
-  delete DB.webTokens[wt];
-  persistWebTokens();
-
-  res.json({
-    success: true,
-    jwt: sessionToken,
-    user: tokenData.isAdmin ? {
-      id: 'admin',
-      role: 'admin',
-      username: tokenData.username,
-      fullName: 'Administrator'
-    } : {
-      id: partner.id,
-      role: 'partner',
       fullName: `${partner.firstName} ${partner.lastName}`,
       email: partner.email,
       telegram: partner.telegram,
@@ -1586,10 +1278,7 @@ app.use((err, req, res, next) => {
 // On Vercel, app.listen() callback fires AFTER requests can arrive,
 // so we must initialise here, not inside the callback.
 {
-  handleUpdate = createHandler(
-    DB, persistData, generatePartnerId,
-    (pin) => bcrypt.hashSync(String(pin), 8)
-  );
+  handleUpdate = createHandler(DB);
   console.log('🤖 Telegram handler:', handleUpdate ? 'ready' : 'NULL — check TELEGRAM_BOT_TOKEN');
 }
 

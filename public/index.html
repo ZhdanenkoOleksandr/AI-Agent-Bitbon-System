@@ -835,13 +835,6 @@ textarea::placeholder{color:var(--text3)}
   <div class="level-title">AI Агент Системы Bitbon</div>
   <div class="level-sub">Выберите кто вы — агент адаптирует глубину, терминологию и примеры</div>
 
-  <div style="text-align:center;margin-bottom:24px">
-    <button onclick="loginWithTelegram()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,rgba(0,136,204,0.15),rgba(0,136,204,0.05));border:1.5px solid rgba(0,136,204,0.3);border-radius:12px;color:var(--text1);font-weight:500;font-size:14px;font-family:'Onest',sans-serif;transition:all 0.2s;cursor:pointer" onmouseover="this.style.background='linear-gradient(135deg,rgba(0,136,204,0.25),rgba(0,136,204,0.1))';this.style.borderColor='rgba(0,136,204,0.5)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(0,136,204,0.15),rgba(0,136,204,0.05))';this.style.borderColor='rgba(0,136,204,0.3)'">
-      <span style="font-size:20px">✈️</span>
-      <span>Войти через Telegram</span>
-    </button>
-  </div>
-
   <div class="level-cards">
     <button class="level-card" onclick="setLevel('user')">
       <span class="level-icon">👤</span>
@@ -1081,15 +1074,6 @@ textarea::placeholder{color:var(--text3)}
       </div>
       <div id="login-pin-error" style="color:var(--red,#e74c3c);font-size:12px;text-align:center;margin-top:8px;display:none"></div>
     </div>
-
-    <!-- Telegram login -->
-    <button onclick="loginWithTelegram()"
-      style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;background:linear-gradient(135deg,rgba(0,136,204,0.12),rgba(0,136,204,0.04));border:1.5px solid rgba(0,136,204,0.35);border-radius:10px;color:var(--text1);font-size:14px;font-weight:600;font-family:'Onest',sans-serif;cursor:pointer;transition:all 0.2s;margin-bottom:16px"
-      onmouseover="this.style.borderColor='rgba(0,136,204,0.7)';this.style.background='rgba(0,136,204,0.18)'"
-      onmouseout="this.style.borderColor='rgba(0,136,204,0.35)';this.style.background='linear-gradient(135deg,rgba(0,136,204,0.12),rgba(0,136,204,0.04))'">
-      <span style="font-size:20px">✈️</span>
-      <span>Войти через Telegram</span>
-    </button>
 
     <!-- Divider -->
     <div style="display:flex;align-items:center;gap:10px;margin:18px 0">
@@ -1755,7 +1739,6 @@ var TRANSLATIONS = {
     page_title:'Bitbon AI — Агент Системи Bitbon',
     level_title:'AI Агент Системи Bitbon',
     level_sub:'Оберіть, хто ви — агент адаптує глибину, термінологію та приклади',
-    level_tg:'Увійти через Telegram',
     level_user_title:'Я користувач',
     level_user_desc:'Хочу дізнатися про Bitbon, Web 4.0 та можливості системи',
     level_biz_title:'Я представляю бізнес',
@@ -1907,7 +1890,6 @@ var TRANSLATIONS = {
     page_title:'Bitbon AI — Bitbon System Agent',
     level_title:'AI Agent of the Bitbon System',
     level_sub:'Choose who you are — the agent adapts depth, terminology and examples',
-    level_tg:'Sign in via Telegram',
     level_user_title:"I'm a user",
     level_user_desc:'Want to learn about Bitbon, Web 4.0 and system capabilities',
     level_biz_title:'I represent a business',
@@ -2059,7 +2041,6 @@ var TRANSLATIONS = {
     page_title:'Bitbon AI — Агент Системы Bitbon',
     level_title:'AI Агент Системы Bitbon',
     level_sub:'Выберите кто вы — агент адаптирует глубину, терминологию и примеры',
-    level_tg:'Войти через Telegram',
     level_user_title:'Я пользователь',
     level_user_desc:'Хочу узнать о Bitbon, Web 4.0 и возможностях системы',
     level_biz_title:'Я представляю бизнес',
@@ -2252,7 +2233,6 @@ function applyI18n() {
   // Level screen
   setQ('.level-title', 'level_title');
   setQ('.level-sub', 'level_sub');
-  setQ('#level-screen a span:last-child', 'level_tg');
   var lcards = document.querySelectorAll('#level-screen .level-card');
   if (lcards[0]) { lcards[0].querySelector('.level-card-title').textContent = t.level_user_title; lcards[0].querySelector('.level-card-desc').textContent = t.level_user_desc; }
   if (lcards[1]) { lcards[1].querySelector('.level-card-title').textContent = t.level_biz_title; lcards[1].querySelector('.level-card-desc').textContent = t.level_biz_desc; }
@@ -3332,40 +3312,6 @@ function getFetchOptions(method, body) {
       localStorage.setItem('guestUsed', d.used);
     }
   }).catch(function(){});
-})();
-
-// ── Telegram Login ────────────────────────────────────────────────────
-function loginWithTelegram() {
-  var botUsername = 'CandidatesZhdanenko_bot';
-  window.open('https://t.me/' + botUsername + '?start=login', '_blank');
-}
-
-// ── Handle Telegram login URL (?tg_token=TOKEN) ───────────────────────
-(function handleTgTokenUrl() {
-  var params = new URLSearchParams(window.location.search);
-  var token = params.get('tg_token');
-  if (!token) return;
-
-  document.addEventListener('DOMContentLoaded', function() {
-    fetch(API_BASE + '/api/auth/tg-token?token=' + encodeURIComponent(token))
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        if (d.success && d.jwt) {
-          sessionStorage.setItem('jwt', d.jwt);
-          sessionStorage.setItem('user', JSON.stringify(d.user));
-          localStorage.setItem('role', d.user.role);
-          window.history.replaceState({}, '', window.location.pathname);
-          openCabinet(d.jwt, d.user);
-        } else {
-          openLoginModal();
-          setTimeout(function() {
-            var err = document.getElementById('login-pin-error');
-            if (err) { err.textContent = '❌ Ссылка устарела. Нажмите «Войти через Telegram» снова.'; err.style.display = 'block'; }
-          }, 300);
-        }
-      })
-      .catch(function() {});
-  });
 })();
 
 // ── Handle invite registration URL (?invite=TOKEN) ───────────────────
