@@ -336,6 +336,11 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 
 /* WEB4 TRANSITION SLIDER */
 .web4-slider{border:1px solid rgba(139,92,246,0.4);border-radius:var(--radius);overflow:hidden;margin-top:16px;display:none;max-width:600px;margin-left:auto;margin-right:auto}
+.web4-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px}
+.web4-modal-box{background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:var(--radius);width:100%;max-width:560px;overflow:hidden;animation:fadeUp 0.2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.web4-modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0;transition:color 0.2s}
+.web4-modal-close:hover{color:var(--text)}
 .web4-slider.active{display:block}
 .web4-slider-header{background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(59,130,246,0.2));padding:13px 18px;border-bottom:1px solid rgba(139,92,246,0.3);display:flex;justify-content:space-between;align-items:center}
 .web4-slider-title{font-size:13px;font-weight:700;color:#c4b5fd}
@@ -4143,11 +4148,34 @@ var web4Steps = [
 ];
 
 function openWeb4Slider() {
-  var el = document.getElementById('web4-slider');
-  if (!el) return;
+  var existing = document.getElementById('web4-modal');
+  if (existing) { existing.remove(); return; }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'web4-modal';
+  overlay.className = 'web4-modal-overlay';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+  overlay.innerHTML =
+    '<div class="web4-modal-box">' +
+      '<div class="web4-slider-header">' +
+        '<span class="web4-slider-title">🌐 10 шагов перехода в Web4</span>' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<span class="web4-slider-count"><span id="web4-cur">1</span> / 10</span>' +
+          '<button class="web4-modal-close" onclick="document.getElementById(\'web4-modal\').remove()">×</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="web4-slide" id="web4-slide-content"></div>' +
+      '<div class="web4-outro" id="web4-outro">Мы создали среду тотального доверия, где каждый из вас может стать архитектором своей экономической деятельности. Система Bitbon — это платформа, которая выходит за пределы узких инвестиционных площадок прямо в реальный бизнес и сервисы.</div>' +
+      '<div class="web4-slider-nav">' +
+        '<button class="web4-nav-btn" id="web4-prev" onclick="web4Nav(-1)">← Назад</button>' +
+        '<div class="web4-dots" id="web4-dots"></div>' +
+        '<button class="web4-nav-btn" id="web4-next" onclick="web4Nav(1)">Далее →</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
   web4Step = 0;
-  el.classList.add('active');
-  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   web4Render();
 }
 
