@@ -222,7 +222,9 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 /* HEADER */
 .header{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--surface);flex-shrink:0}
 .header-left{display:flex;align-items:center;gap:10px;flex-shrink:0;min-width:0}
-.header-center{display:flex;align-items:center;gap:5px;flex:1;justify-content:center;flex-wrap:wrap;min-width:0}
+.header-center{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;justify-content:center;min-width:0}
+.fnav-row{display:flex;align-items:center;gap:7px;justify-content:center;width:100%}
+.fnav-row-2{justify-content:space-evenly}
 .hdr-info-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .hdr-role{font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap;display:none}
 .hdr-role.role-partner{color:var(--product-partner)}
@@ -525,6 +527,7 @@ textarea::placeholder{color:var(--text3)}
     padding:6px 12px 8px;
     overflow-x:auto;
     overflow-y:hidden;
+    flex-direction:row;
     flex-wrap:nowrap;
     justify-content:flex-start;
     gap:6px;
@@ -533,6 +536,7 @@ textarea::placeholder{color:var(--text3)}
     -webkit-overflow-scrolling:touch;
   }
   .header-center::-webkit-scrollbar{display:none}
+  .fnav-row{display:contents}
   /* Кнопки навигации в хедере — компактнее */
   .header-center .fnav-l1{padding:5px 12px;font-size:11px;flex-shrink:0}
   .header-center .cab-subtab{padding:5px 10px;font-size:11px;flex-shrink:0;margin-bottom:0}
@@ -3844,26 +3848,27 @@ function renderHeaderNav() {
   // ── Центр: навигационные кнопки ──────────────────────────────────────
   center.innerHTML = '';
 
-  // Слой 1 — Консультация Партнёр (для всех) или ничего (для партнёра — есть кнопка Кабинет справа)
+  var links = loadPartnerLinks();
+
+  // Строка 1 — Консультация Партнёра (для не-партнёра)
   if (!isPartner) {
+    var row1 = document.createElement('div');
+    row1.className = 'fnav-row';
     var cab = document.createElement('button');
     cab.className = 'fnav-l1';
     cab.innerHTML = i18n('nav_consult');
-    var _tgLink = loadPartnerLinks().telegram;
+    var _tgLink = links.telegram;
     cab.onclick = _tgLink
       ? function() { window.open(_tgLink, '_blank'); }
       : function() { openCabinet(); };
-    center.appendChild(cab);
+    row1.appendChild(cab);
+    center.appendChild(row1);
   }
 
-  // Слой 2 — саб-таби по тумблерам (используют партнёрские ссылки если заданы)
-  var links = loadPartnerLinks();
+  // Строка 2 — саб-табы по тумблерам
   if (s.showEconomy || s.showBrand || s.showMeta) {
-    if (!isPartner && center.children.length) {
-      var sep = document.createElement('span');
-      sep.className = 'fnav-sep';
-      center.appendChild(sep);
-    }
+    var row2 = document.createElement('div');
+    row2.className = 'fnav-row fnav-row-2';
     if (s.showEconomy) {
       var e = document.createElement('button');
       e.className = 'cab-subtab st-economy';
@@ -3871,7 +3876,7 @@ function renderHeaderNav() {
       e.onclick = links.economy
         ? function() { window.open(links.economy, '_blank'); }
         : function() { openCabinet(); setTimeout(function(){ switchCabTab('economy'); }, 50); };
-      center.appendChild(e);
+      row2.appendChild(e);
     }
     if (s.showBrand) {
       var b = document.createElement('button');
@@ -3880,7 +3885,7 @@ function renderHeaderNav() {
       b.onclick = links.brand
         ? function() { window.open(links.brand, '_blank'); }
         : function() { openCabinet(); setTimeout(function(){ switchCabTab('brand'); }, 50); };
-      center.appendChild(b);
+      row2.appendChild(b);
     }
     if (s.showMeta) {
       var m = document.createElement('button');
@@ -3889,8 +3894,9 @@ function renderHeaderNav() {
       m.onclick = links.meta
         ? function() { window.open(links.meta, '_blank'); }
         : function() { startMetaWizard(); };
-      center.appendChild(m);
+      row2.appendChild(m);
     }
+    center.appendChild(row2);
   }
 
   // ── Ліворуч від стрілочки: роль + запросы + Кабинет ─────────────────
