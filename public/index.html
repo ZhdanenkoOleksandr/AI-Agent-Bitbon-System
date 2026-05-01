@@ -229,6 +229,13 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .hdr-role.role-business{color:var(--product-economy)}
 .hdr-role.role-user{color:var(--accent2)}
 .hdr-requests{font-size:10px;color:var(--text3);white-space:nowrap;display:none}
+.mode-group{display:flex;border:1px solid var(--border2);border-radius:20px;overflow:hidden;flex-shrink:0}
+.mode-pill{height:28px;padding:0 11px;background:transparent;border:none;border-right:1px solid var(--border2);color:var(--text3);font-family:'Onest',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.mode-pill:last-child{border-right:none}
+.mode-pill:hover{color:var(--text);background:var(--surface2)}
+.mode-pill.mp-active-biz{background:rgba(245,158,11,0.12);color:var(--gold);font-weight:700}
+.mode-pill.mp-active-partner{background:rgba(52,211,153,0.1);color:var(--product-partner);font-weight:700}
+.mode-pill.mp-active-user{background:rgba(59,130,246,0.1);color:var(--accent2);font-weight:700}
 .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
 .header-info h1{font-size:13px;font-weight:600}
 .header-info p{font-size:11px;color:var(--text2)}
@@ -544,7 +551,8 @@ textarea::placeholder{color:var(--text3)}
   .level-badge{display:none!important}
   .req-counter{display:none!important}
   .sidebar-toggle{width:32px;height:32px;font-size:15px;flex-shrink:0}
-  #mode-switch-btn{width:32px;height:32px;padding:0;justify-content:center}
+  .mode-group{border-radius:16px}
+  .mode-pill{height:26px;padding:0 8px;font-size:9px}
 
   /* SIDEBAR MOBILE — выдвижная */
   .sidebar{position:fixed;left:0;top:0;width:260px;height:100vh;height:100dvh;z-index:1000;transform:translateX(-100%);transition:transform 0.3s ease}
@@ -1553,14 +1561,17 @@ textarea::placeholder{color:var(--text3)}
       <div class="header-right">
         <!-- Роль + запросы + Кабинет (левее стрелочки) -->
         <div class="hdr-info-right" id="hdr-info-right">
-          <span class="hdr-role" id="hdr-role"></span>
           <span class="hdr-requests" id="hdr-requests"></span>
           <button id="hbtn-cabinet" class="header-btn" onclick="openCabinet()" style="display:none"></button>
         </div>
         <span class="level-badge" id="level-badge" style="display:none"></span>
         <span class="req-counter" id="req-counter" style="display:none"></span>
         <button id="hbtn-admin" class="header-btn" onclick="openAdmin()" style="border-color:rgba(239,68,68,0.4);color:var(--red);display:none">🔧 Админ</button>
-        <button class="header-btn" id="mode-switch-btn" onclick="openModeSwitch()" title="Сменить режим доступа">↔️</button>
+        <div class="mode-group" id="mode-group">
+          <button class="mode-pill" id="mpill-business" onclick="switchLevel('business')">Бизнес</button>
+          <button class="mode-pill" id="mpill-partner" onclick="switchLevel('partner')">Партнер</button>
+          <button class="mode-pill" id="mpill-user" onclick="switchLevel('user')">Пользователь</button>
+        </div>
         <!-- Language Switcher -->
         <div class="lang-switcher" id="lang-switcher">
           <button class="lang-btn" onclick="toggleLangDropdown()">🌐 <span id="lang-current">УКР</span></button>
@@ -1606,7 +1617,7 @@ textarea::placeholder{color:var(--text3)}
         <!-- WEB4 Transition Steps Slider -->
         <div class="web4-slider" id="web4-slider">
           <div class="web4-slider-header">
-            <span class="web4-slider-title">🌐 10 шагов перехода в Web4</span>
+            <span class="web4-slider-title">🌐 Переход Бизнеса в WEB4</span>
             <span class="web4-slider-count"><span id="web4-cur">1</span> / 10</span>
           </div>
           <div class="web4-slide" id="web4-slide-content"></div>
@@ -2593,6 +2604,15 @@ function setLevel(level) {
 }
 
 // ═══ MODE SWITCHING (без скрытия level-screen) ═══
+function updateModePills() {
+  var map = { business: 'mp-active-biz', partner: 'mp-active-partner', user: 'mp-active-user' };
+  ['business', 'partner', 'user'].forEach(function(m) {
+    var el = document.getElementById('mpill-' + m);
+    if (!el) return;
+    el.className = 'mode-pill' + (userMode === m || (m === 'partner' && userMode === 'admin') ? ' ' + map[m === 'admin' ? 'partner' : m] : '');
+  });
+}
+
 function openModeSwitch() {
   const overlay = document.getElementById('mode-switch-overlay');
   if (overlay) overlay.classList.remove('hidden');
@@ -2664,6 +2684,7 @@ function switchLevel(level) {
 
   // Update header buttons visibility
   updateHeaderButtons(level);
+  updateModePills();
 
   // Close modal
   closeModeSwitch();
@@ -3868,29 +3889,24 @@ function renderHeaderNav() {
   var reqEl  = document.getElementById('hdr-requests');
   var cabBtn = document.getElementById('hbtn-cabinet');
 
-  if (roleEl) {
-    var roleName = i18n('role_user'); var roleClass = 'role-user';
-    if (userMode === 'partner' || userMode === 'admin') { roleName = i18n('role_partner'); roleClass = 'role-partner'; }
-    else if (userMode === 'business') { roleName = i18n('role_business'); roleClass = 'role-business'; }
-    roleEl.className = 'hdr-role ' + roleClass;
-    roleEl.textContent = roleName;
-    roleEl.style.display = 'inline';
-  }
+  if (roleEl) { roleEl.style.display = 'none'; }
   if (reqEl) {
     if (currentPlan && PLANS[currentPlan]) {
       var p = PLANS[currentPlan];
       var remain = p.requests === Infinity ? '∞' : (p.requests - usedRequests);
       reqEl.textContent = remain + ' ' + i18n('hdr_requests_label');
+      reqEl.style.display = 'inline';
     } else {
       var _gn = getGiftState();
       if (_gn.active) {
         reqEl.textContent = '🎁 ' + (_gn.free - _gn.used) + ' / ' + _gn.free;
+        reqEl.style.display = 'inline';
       } else {
-        reqEl.textContent = i18n('hdr_demo_mode');
+        reqEl.style.display = 'none';
       }
     }
-    reqEl.style.display = 'inline';
   }
+  updateModePills();
   if (cabBtn) {
     if (isPartner) {
       cabBtn.innerHTML = '🗂️ ' + i18n('hdr_cabinet');
@@ -4205,7 +4221,7 @@ function openWeb4Slider() {
   overlay.innerHTML =
     '<div class="web4-modal-box">' +
       '<div class="web4-slider-header">' +
-        '<span class="web4-slider-title">🌐 10 шагов перехода в Web4</span>' +
+        '<span class="web4-slider-title">🌐 Переход Бизнеса в WEB4</span>' +
         '<div style="display:flex;align-items:center;gap:10px">' +
           '<span class="web4-slider-count"><span id="web4-cur">1</span> / 10</span>' +
           '<button class="web4-modal-close" onclick="document.getElementById(\'web4-modal\').remove()">×</button>' +
