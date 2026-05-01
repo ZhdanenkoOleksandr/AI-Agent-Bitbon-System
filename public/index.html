@@ -1562,16 +1562,16 @@ textarea::placeholder{color:var(--text3)}
         <!-- Роль + запросы + Кабинет (левее стрелочки) -->
         <div class="hdr-info-right" id="hdr-info-right">
           <span class="hdr-requests" id="hdr-requests"></span>
-          <button id="hbtn-cabinet" class="header-btn" onclick="openCabinet()" style="display:none"></button>
         </div>
         <span class="level-badge" id="level-badge" style="display:none"></span>
         <span class="req-counter" id="req-counter" style="display:none"></span>
         <button id="hbtn-admin" class="header-btn" onclick="openAdmin()" style="border-color:rgba(239,68,68,0.4);color:var(--red);display:none">🔧 Админ</button>
         <div class="mode-group" id="mode-group">
+          <button class="mode-pill" id="mpill-user" onclick="switchLevel('user')">Пользователь</button>
           <button class="mode-pill" id="mpill-business" onclick="switchLevel('business')">Бизнес</button>
           <button class="mode-pill" id="mpill-partner" onclick="switchLevel('partner')">Партнер</button>
-          <button class="mode-pill" id="mpill-user" onclick="switchLevel('user')">Пользователь</button>
         </div>
+        <button id="hbtn-cabinet" class="header-btn" onclick="openCabinet()" style="display:none"></button>
         <!-- Language Switcher -->
         <div class="lang-switcher" id="lang-switcher">
           <button class="lang-btn" onclick="toggleLangDropdown()">🌐 <span id="lang-current">УКР</span></button>
@@ -1944,11 +1944,11 @@ var TRANSLATIONS = {
     msg_biz:'Чудово! Я допоможу підключити ваш бізнес до Системи Bitbon.\n\nНатисніть 🏗️ **Метаресурс** щоб створити демо вашого бізнесу, або задайте питання.',
     msg_user:'Ласкаво просимо! Я розповім про Систему Bitbon простою мовою.\n\nОберіть тему або задайте будь-яке питання.',
     sug_admin_stat:'📊 Статистика',sug_admin_partners:'🤝 Партнери',sug_admin_status:'✅ Статус',sug_admin_logs:'📋 Логи',sug_admin_sessions:'👥 Сесії',
-    sug_biz_web4:'🌐 Перехід в Web4',sug_biz_meta:'🏗️ Створити Метаресурс',sug_biz_connect:'Підключити бізнес',sug_biz_examples:'Приклади з бази',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Стати партнером',
-    sug_user_what:'Що таке Bitbon?',sug_user_aura:'АУРА',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ крипто',sug_user_meta:'🏗️ Метаресурс',
+    sug_biz_web4:'🌐 Перехід в Web4',sug_biz_meta:'🏗️ Створити Метаресурс',sug_biz_connect:'Як підключити бізнес?',sug_biz_examples:'Приклади метаресурсів',sug_biz_bonpay:'Як працює Bonpay?',sug_biz_partner:'Як стати партнером?',sug_biz_tokenize:'Токенізація активів',sug_biz_api:'Інтеграція API',sug_biz_roi:'ROI від Web4',sug_biz_legal:'Правові аспекти',
+    sug_user_what:'Що таке Bitbon?',sug_user_aura:'Що таке АУРА?',sug_user_web40:'Web 4.0 vs Web 3.0?',sug_user_diff:'Bitbon vs крипто?',sug_user_meta:'Що таке Метаресурс?',sug_user_reputation:'Репутація AURA',sug_user_earn:'Як заробляти?',sug_user_token:'Токенізація активів',sug_user_start:'З чого почати?',sug_user_trust:'Чому Bitbon безпечний?',
     ask_admin_stat:'Покажи статистику користувачів',ask_admin_partners:'Список всіх партнерів',ask_admin_status:'Перевірити статус системи',ask_admin_logs:'Останні логи',ask_admin_sessions:'Список активних сесій',
-    ask_biz_connect:'Як підключити бізнес до Bitbon?',ask_biz_examples:'Покажи приклади метаресурсів з бази знань',ask_biz_bonpay:'Як працює Bonpay для бізнесу?',ask_biz_partner:'Як стати партнером?',
-    ask_user_what:'Що таке Система Bitbon простими словами?',ask_user_aura:'Що таке АУРА?',ask_user_web40:'Чим Web 4.0 відрізняється від Web 3.0?',ask_user_diff:'У чому відмінність Bitbon від криптовалют?',
+    ask_biz_connect:'Як підключити бізнес до Системи Bitbon?',ask_biz_examples:'Покажи приклади метаресурсів з бази знань',ask_biz_bonpay:'Як працює Bonpay для бізнесу?',ask_biz_partner:'Як стати партнером?',ask_biz_tokenize:'Як токенізувати активи компанії в Системі Bitbon?',ask_biz_api:'Як інтегрувати бізнес через API Bitbon?',ask_biz_roi:'Який ROI від переходу бізнесу в Web4?',ask_biz_legal:'Які правові аспекти потрібно врахувати при вході в Web4?',
+    ask_user_what:'Що таке Система Bitbon простими словами?',ask_user_aura:'Що таке АУРА і як вона працює?',ask_user_web40:'Чим Web 4.0 відрізняється від Web 3.0?',ask_user_diff:'У чому відмінність Bitbon від криптовалют?',ask_user_meta:'Що таке Метаресурс і як він працює?',ask_user_reputation:'Як працює репутація AURA в Системі Bitbon?',ask_user_earn:'Як заробляти в Системі Bitbon?',ask_user_token:'Що таке токенізація активів у Web4?',ask_user_start:'З чого почати роботу з Системою Bitbon?',ask_user_trust:'Чому Система Bitbon є безпечною і надійною?',
     share_tg_text:'AI-агент Системи Bitbon — запитайте все про Web 4.0 та Bitbon: ',
     share_email_subject:'AI-агент Системи Bitbon',
     share_email_body:'Добрий день!\n\nПропоную ознайомитися з AI-агентом Системи Bitbon:\n',
@@ -2095,11 +2095,11 @@ var TRANSLATIONS = {
     msg_biz:"Great! I'll help connect your business to the Bitbon System.\n\nPress 🏗️ **Metaresource** to create a demo of your business, or ask a question.",
     msg_user:"Welcome! I'll tell you about the Bitbon System in simple language.\n\nChoose a topic or ask any question.",
     sug_admin_stat:'📊 Statistics',sug_admin_partners:'🤝 Partners',sug_admin_status:'✅ Status',sug_admin_logs:'📋 Logs',sug_admin_sessions:'👥 Sessions',
-    sug_biz_web4:'🌐 Web4 Transition',sug_biz_meta:'🏗️ Create Metaresource',sug_biz_connect:'Connect business',sug_biz_examples:'Base examples',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Become a partner',
-    sug_user_what:'What is Bitbon?',sug_user_aura:'AURA',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ crypto',sug_user_meta:'🏗️ Metaresource',
+    sug_biz_web4:'🌐 Web4 Transition',sug_biz_meta:'🏗️ Create Metaresource',sug_biz_connect:'How to connect?',sug_biz_examples:'Metaresource examples',sug_biz_bonpay:'How does Bonpay work?',sug_biz_partner:'Become a partner?',sug_biz_tokenize:'Asset tokenization',sug_biz_api:'API integration',sug_biz_roi:'ROI from Web4',sug_biz_legal:'Legal aspects',
+    sug_user_what:'What is Bitbon?',sug_user_aura:'What is AURA?',sug_user_web40:'Web 4.0 vs Web 3.0?',sug_user_diff:'Bitbon vs crypto?',sug_user_meta:'What is a Metaresource?',sug_user_reputation:'AURA reputation',sug_user_earn:'How to earn?',sug_user_token:'Asset tokenization',sug_user_start:'How to get started?',sug_user_trust:'Why is Bitbon safe?',
     ask_admin_stat:'Show user statistics',ask_admin_partners:'List of all partners',ask_admin_status:'Check system status',ask_admin_logs:'Latest logs',ask_admin_sessions:'List of active sessions',
-    ask_biz_connect:'How to connect my business to Bitbon?',ask_biz_examples:'Show metaresource examples from the knowledge base',ask_biz_bonpay:'How does Bonpay work for business?',ask_biz_partner:'How to become a partner?',
-    ask_user_what:'What is the Bitbon System in simple words?',ask_user_aura:'What is AURA?',ask_user_web40:'How is Web 4.0 different from Web 3.0?',ask_user_diff:'What is the difference between Bitbon and cryptocurrencies?',
+    ask_biz_connect:'How to connect my business to the Bitbon System?',ask_biz_examples:'Show metaresource examples from the knowledge base',ask_biz_bonpay:'How does Bonpay work for business?',ask_biz_partner:'How to become a partner?',ask_biz_tokenize:'How to tokenize company assets in the Bitbon System?',ask_biz_api:'How to integrate a business via Bitbon API?',ask_biz_roi:'What is the ROI of transitioning a business to Web4?',ask_biz_legal:'What legal aspects should be considered when entering Web4?',
+    ask_user_what:'What is the Bitbon System in simple words?',ask_user_aura:'What is AURA and how does it work?',ask_user_web40:'How is Web 4.0 different from Web 3.0?',ask_user_diff:'What is the difference between Bitbon and cryptocurrencies?',ask_user_meta:'What is a Metaresource and how does it work?',ask_user_reputation:'How does AURA reputation work in the Bitbon System?',ask_user_earn:'How to earn in the Bitbon System?',ask_user_token:'What is asset tokenization in Web4?',ask_user_start:'How to get started with the Bitbon System?',ask_user_trust:'Why is the Bitbon System safe and reliable?',
     share_tg_text:'Bitbon System AI agent — ask anything about Web 4.0 and Bitbon: ',
     share_email_subject:'Bitbon System AI agent',
     share_email_body:'Hello!\n\nI would like to share the Bitbon System AI agent with you:\n',
@@ -2246,11 +2246,11 @@ var TRANSLATIONS = {
     msg_biz:'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.',
     msg_user:'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.',
     sug_admin_stat:'📊 Статистика',sug_admin_partners:'🤝 Партнёры',sug_admin_status:'✅ Статус',sug_admin_logs:'📋 Логи',sug_admin_sessions:'👥 Сессии',
-    sug_biz_web4:'🌐 Переход в Web4',sug_biz_meta:'🏗️ Создать Метаресурс',sug_biz_connect:'Подключить бизнес',sug_biz_examples:'Примеры из базы',sug_biz_bonpay:'Bonpay',sug_biz_partner:'Стать партнёром',
-    sug_user_what:'Что такое Bitbon?',sug_user_aura:'АУРА',sug_user_web40:'Web 4.0 vs 3.0',sug_user_diff:'Bitbon ≠ крипто',sug_user_meta:'🏗️ Метаресурс',
+    sug_biz_web4:'🌐 Переход в Web4',sug_biz_meta:'🏗️ Создать Метаресурс',sug_biz_connect:'Как подключить бизнес?',sug_biz_examples:'Примеры метаресурсов',sug_biz_bonpay:'Как работает Bonpay?',sug_biz_partner:'Как стать партнёром?',sug_biz_tokenize:'Токенизация активов',sug_biz_api:'Интеграция API',sug_biz_roi:'ROI от Web4',sug_biz_legal:'Правовые аспекты',
+    sug_user_what:'Что такое Bitbon?',sug_user_aura:'Что такое АУРА?',sug_user_web40:'Web 4.0 vs Web 3.0?',sug_user_diff:'Bitbon vs крипто?',sug_user_meta:'Что такое Метаресурс?',sug_user_reputation:'Репутация AURA',sug_user_earn:'Как зарабатывать?',sug_user_token:'Токенизация активов',sug_user_start:'С чего начать?',sug_user_trust:'Почему Bitbon безопасен?',
     ask_admin_stat:'Покажи статистику пользователей',ask_admin_partners:'Список всех партнёров',ask_admin_status:'Проверить статус системы',ask_admin_logs:'Последние логи',ask_admin_sessions:'Список активных сессий',
-    ask_biz_connect:'Как подключить бизнес к Bitbon?',ask_biz_examples:'Покажи примеры метаресурсов из базы знаний',ask_biz_bonpay:'Как работает Bonpay для бизнеса?',ask_biz_partner:'Как стать партнёром?',
-    ask_user_what:'Что такое Система Bitbon простыми словами?',ask_user_aura:'Что такое АУРА?',ask_user_web40:'Чем Web 4.0 отличается от Web 3.0?',ask_user_diff:'В чём отличие Bitbon от криптовалют?',
+    ask_biz_connect:'Как подключить бизнес к Системе Bitbon?',ask_biz_examples:'Покажи примеры метаресурсов из базы знаний',ask_biz_bonpay:'Как работает Bonpay для бизнеса?',ask_biz_partner:'Как стать партнёром?',ask_biz_tokenize:'Как токенизировать активы компании в Системе Bitbon?',ask_biz_api:'Как интегрировать бизнес через API Bitbon?',ask_biz_roi:'Какой ROI от перехода бизнеса в Web4?',ask_biz_legal:'Какие правовые аспекты нужно учесть при входе в Web4?',
+    ask_user_what:'Что такое Система Bitbon простыми словами?',ask_user_aura:'Что такое АУРА и как она работает?',ask_user_web40:'Чем Web 4.0 отличается от Web 3.0?',ask_user_diff:'В чём отличие Bitbon от криптовалют?',ask_user_meta:'Что такое Метаресурс и как он работает?',ask_user_reputation:'Как работает репутация AURA в Системе Bitbon?',ask_user_earn:'Как зарабатывать в Системе Bitbon?',ask_user_token:'Что такое токенизация активов в Web4?',ask_user_start:'С чего начать работу с Системой Bitbon?',ask_user_trust:'Почему Система Bitbon безопасна и надёжна?',
     share_tg_text:'AI-агент Системы Bitbon — спросите всё о Web 4.0 и Bitbon: ',
     share_email_subject:'AI-агент Системы Bitbon',
     share_email_body:'Здравствуйте!\n\nПредлагаю ознакомиться с AI-агентом Системы Bitbon:\n',
@@ -2710,14 +2710,23 @@ function updateSuggestionsBar(mode) {
       '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_connect') + '\')">' + i18n('sug_biz_connect') + '</button>' +
       '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_examples') + '\')">' + i18n('sug_biz_examples') + '</button>' +
       '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_bonpay') + '\')">' + i18n('sug_biz_bonpay') + '</button>' +
-      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_partner') + '\')">' + i18n('sug_biz_partner') + '</button>';
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_partner') + '\')">' + i18n('sug_biz_partner') + '</button>' +
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_tokenize') + '\')">' + i18n('sug_biz_tokenize') + '</button>' +
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_api') + '\')">' + i18n('sug_biz_api') + '</button>' +
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_roi') + '\')">' + i18n('sug_biz_roi') + '</button>' +
+      '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_legal') + '\')">' + i18n('sug_biz_legal') + '</button>';
   } else {
     bar.innerHTML =
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_what') + '\')">' + i18n('sug_user_what') + '</button>' +
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_aura') + '\')">' + i18n('sug_user_aura') + '</button>' +
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_web40') + '\')">' + i18n('sug_user_web40') + '</button>' +
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_diff') + '\')">' + i18n('sug_user_diff') + '</button>' +
-      '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">' + i18n('sug_user_meta') + '</button>';
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_meta') + '\')">' + i18n('sug_user_meta') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_reputation') + '\')">' + i18n('sug_user_reputation') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_earn') + '\')">' + i18n('sug_user_earn') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_token') + '\')">' + i18n('sug_user_token') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_start') + '\')">' + i18n('sug_user_start') + '</button>' +
+      '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_trust') + '\')">' + i18n('sug_user_trust') + '</button>';
   }
 }
 
