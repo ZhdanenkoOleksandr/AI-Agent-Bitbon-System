@@ -263,6 +263,8 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .suggestion-btn.biz-suggest:hover{border-color:var(--gold);background:rgba(245,158,11,0.1)}
 .suggestion-btn.web4-suggest{border-color:rgba(139,92,246,0.5);color:#c4b5fd;background:rgba(139,92,246,0.06)}
 .suggestion-btn.web4-suggest:hover{border-color:var(--purple);background:rgba(139,92,246,0.14)}
+.suggestion-btn.access-suggest{border-color:rgba(59,130,246,0.5);color:#93c5fd;background:rgba(59,130,246,0.06)}
+.suggestion-btn.access-suggest:hover{border-color:var(--accent);background:rgba(59,130,246,0.14)}
 .suggestion-btn.sug-secondary{border-color:rgba(99,120,140,0.25);color:var(--text3);background:transparent;font-size:10px}
 .suggestion-btn.sug-secondary:hover{border-color:var(--border2);color:var(--text2);background:var(--surface2)}
 .sug-row-sep{flex-basis:100%;height:3px;flex-shrink:0}
@@ -1948,7 +1950,7 @@ var TRANSLATIONS = {
     msg_biz:'Чудово! Я допоможу підключити ваш бізнес до Системи Bitbon.\n\nНатисніть 🏗️ **Метаресурс** щоб створити демо вашого бізнесу, або задайте питання.',
     msg_user:'Ласкаво просимо! Я розповім про Систему Bitbon простою мовою.\n\nОберіть тему або задайте будь-яке питання.',
     sug_admin_stat:'📊 Статистика',sug_admin_partners:'🤝 Партнери',sug_admin_status:'✅ Статус',sug_admin_logs:'📋 Логи',sug_admin_sessions:'👥 Сесії',
-    sug_biz_web4:'🌐 Перехід в Web4',sug_biz_meta:'🏗️ Створити Метаресурс',sug_biz_connect:'Як підключити бізнес?',sug_biz_examples:'Приклади метаресурсів',sug_biz_bonpay:'Як працює Bonpay?',sug_biz_partner:'Як стати партнером?',sug_biz_tokenize:'Токенізація активів',sug_biz_api:'Інтеграція API',sug_biz_roi:'ROI від Web4',sug_biz_legal:'Правові аспекти',
+    sug_biz_web4:'🌐 Перехід в Web4',sug_biz_access:'🔑 Bitbon доступ',sug_biz_meta:'🏗️ Створити Метаресурс',sug_biz_connect:'Як підключити бізнес?',sug_biz_examples:'Приклади метаресурсів',sug_biz_bonpay:'Як працює Bonpay?',sug_biz_partner:'Як стати партнером?',sug_biz_tokenize:'Токенізація активів',sug_biz_api:'Інтеграція API',sug_biz_roi:'ROI від Web4',sug_biz_legal:'Правові аспекти',
     sug_user_what:'Що таке Bitbon?',sug_user_aura:'Що таке АУРА?',sug_user_web40:'Web 4.0 vs Web 3.0?',sug_user_diff:'Bitbon vs крипто?',sug_user_meta:'Що таке Метаресурс?',sug_user_reputation:'Репутація AURA',sug_user_earn:'Як заробляти?',sug_user_token:'Токенізація активів',sug_user_start:'З чого почати?',sug_user_trust:'Чому Bitbon безпечний?',
     ask_admin_stat:'Покажи статистику користувачів',ask_admin_partners:'Список всіх партнерів',ask_admin_status:'Перевірити статус системи',ask_admin_logs:'Останні логи',ask_admin_sessions:'Список активних сесій',
     ask_biz_connect:'Як підключити бізнес до Системи Bitbon?',ask_biz_examples:'Покажи приклади метаресурсів з бази знань',ask_biz_bonpay:'Як працює Bonpay для бізнесу?',ask_biz_partner:'Як стати партнером?',ask_biz_tokenize:'Як токенізувати активи компанії в Системі Bitbon?',ask_biz_api:'Як інтегрувати бізнес через API Bitbon?',ask_biz_roi:'Який ROI від переходу бізнесу в Web4?',ask_biz_legal:'Які правові аспекти потрібно врахувати при вході в Web4?',
@@ -2099,7 +2101,7 @@ var TRANSLATIONS = {
     msg_biz:"Great! I'll help connect your business to the Bitbon System.\n\nPress 🏗️ **Metaresource** to create a demo of your business, or ask a question.",
     msg_user:"Welcome! I'll tell you about the Bitbon System in simple language.\n\nChoose a topic or ask any question.",
     sug_admin_stat:'📊 Statistics',sug_admin_partners:'🤝 Partners',sug_admin_status:'✅ Status',sug_admin_logs:'📋 Logs',sug_admin_sessions:'👥 Sessions',
-    sug_biz_web4:'🌐 Web4 Transition',sug_biz_meta:'🏗️ Create Metaresource',sug_biz_connect:'How to connect?',sug_biz_examples:'Metaresource examples',sug_biz_bonpay:'How does Bonpay work?',sug_biz_partner:'Become a partner?',sug_biz_tokenize:'Asset tokenization',sug_biz_api:'API integration',sug_biz_roi:'ROI from Web4',sug_biz_legal:'Legal aspects',
+    sug_biz_web4:'🌐 Web4 Transition',sug_biz_access:'🔑 Bitbon Access',sug_biz_meta:'🏗️ Create Metaresource',sug_biz_connect:'How to connect?',sug_biz_examples:'Metaresource examples',sug_biz_bonpay:'How does Bonpay work?',sug_biz_partner:'Become a partner?',sug_biz_tokenize:'Asset tokenization',sug_biz_api:'API integration',sug_biz_roi:'ROI from Web4',sug_biz_legal:'Legal aspects',
     sug_user_what:'What is Bitbon?',sug_user_aura:'What is AURA?',sug_user_web40:'Web 4.0 vs Web 3.0?',sug_user_diff:'Bitbon vs crypto?',sug_user_meta:'What is a Metaresource?',sug_user_reputation:'AURA reputation',sug_user_earn:'How to earn?',sug_user_token:'Asset tokenization',sug_user_start:'How to get started?',sug_user_trust:'Why is Bitbon safe?',
     ask_admin_stat:'Show user statistics',ask_admin_partners:'List of all partners',ask_admin_status:'Check system status',ask_admin_logs:'Latest logs',ask_admin_sessions:'List of active sessions',
     ask_biz_connect:'How to connect my business to the Bitbon System?',ask_biz_examples:'Show metaresource examples from the knowledge base',ask_biz_bonpay:'How does Bonpay work for business?',ask_biz_partner:'How to become a partner?',ask_biz_tokenize:'How to tokenize company assets in the Bitbon System?',ask_biz_api:'How to integrate a business via Bitbon API?',ask_biz_roi:'What is the ROI of transitioning a business to Web4?',ask_biz_legal:'What legal aspects should be considered when entering Web4?',
@@ -2250,7 +2252,7 @@ var TRANSLATIONS = {
     msg_biz:'Отлично! Я помогу подключить ваш бизнес к Системе Bitbon.\n\nНажмите 🏗️ **Метаресурс** чтобы создать демо вашего бизнеса, или задайте вопрос.',
     msg_user:'Добро пожаловать! Я расскажу о Системе Bitbon простым языком.\n\nВыберите тему или задайте любой вопрос.',
     sug_admin_stat:'📊 Статистика',sug_admin_partners:'🤝 Партнёры',sug_admin_status:'✅ Статус',sug_admin_logs:'📋 Логи',sug_admin_sessions:'👥 Сессии',
-    sug_biz_web4:'🌐 Переход в Web4',sug_biz_meta:'🏗️ Создать Метаресурс',sug_biz_connect:'Как подключить бизнес?',sug_biz_examples:'Примеры метаресурсов',sug_biz_bonpay:'Как работает Bonpay?',sug_biz_partner:'Как стать партнёром?',sug_biz_tokenize:'Токенизация активов',sug_biz_api:'Интеграция API',sug_biz_roi:'ROI от Web4',sug_biz_legal:'Правовые аспекты',
+    sug_biz_web4:'🌐 Переход в Web4',sug_biz_access:'🔑 Bitbon доступ',sug_biz_meta:'🏗️ Создать Метаресурс',sug_biz_connect:'Как подключить бизнес?',sug_biz_examples:'Примеры метаресурсов',sug_biz_bonpay:'Как работает Bonpay?',sug_biz_partner:'Как стать партнёром?',sug_biz_tokenize:'Токенизация активов',sug_biz_api:'Интеграция API',sug_biz_roi:'ROI от Web4',sug_biz_legal:'Правовые аспекты',
     sug_user_what:'Что такое Bitbon?',sug_user_aura:'Что такое АУРА?',sug_user_web40:'Web 4.0 vs Web 3.0?',sug_user_diff:'Bitbon vs крипто?',sug_user_meta:'Что такое Метаресурс?',sug_user_reputation:'Репутация AURA',sug_user_earn:'Как зарабатывать?',sug_user_token:'Токенизация активов',sug_user_start:'С чего начать?',sug_user_trust:'Почему Bitbon безопасен?',
     ask_admin_stat:'Покажи статистику пользователей',ask_admin_partners:'Список всех партнёров',ask_admin_status:'Проверить статус системы',ask_admin_logs:'Последние логи',ask_admin_sessions:'Список активных сессий',
     ask_biz_connect:'Как подключить бизнес к Системе Bitbon?',ask_biz_examples:'Покажи примеры метаресурсов из базы знаний',ask_biz_bonpay:'Как работает Bonpay для бизнеса?',ask_biz_partner:'Как стать партнёром?',ask_biz_tokenize:'Как токенизировать активы компании в Системе Bitbon?',ask_biz_api:'Как интегрировать бизнес через API Bitbon?',ask_biz_roi:'Какой ROI от перехода бизнеса в Web4?',ask_biz_legal:'Какие правовые аспекты нужно учесть при входе в Web4?',
@@ -2709,6 +2711,7 @@ function updateSuggestionsBar(mode) {
   } else if (mode === 'business') {
     bar.innerHTML =
       '<button class="suggestion-btn web4-suggest" onclick="openWeb4Slider()">' + i18n('sug_biz_web4') + '</button>' +
+      '<button class="suggestion-btn access-suggest" onclick="openBitbonAccess()">' + i18n('sug_biz_access') + '</button>' +
       '<button class="suggestion-btn meta-suggest" onclick="startMetaWizard()">' + i18n('sug_biz_meta') + '</button>' +
       '<div class="sug-row-sep"></div>' +
       '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_connect') + '\')">' + i18n('sug_biz_connect') + '</button>' +
@@ -4298,6 +4301,133 @@ function web4Render() {
       var d = document.createElement('div');
       d.className = 'web4-dot' + (i === web4Step ? ' active' : '');
       d.setAttribute('onclick', 'web4Go(' + i + ')');
+      dots.appendChild(d);
+    }
+  }
+}
+
+// ═══ BITBON ACCESS SLIDER ═══
+var bitbonAccessStep = 0;
+var bitbonAccessDir = 1;
+var bitbonAccessSteps = [
+  {
+    icon: '🔑',
+    title: 'Фундаментальный ресурс доступа',
+    from: 'Разрозненные системы доступа, каждая со своими ключами и правилами. Единого языка нет.',
+    to: 'Bitbon — универсальный ресурс доступа. "Чернила и ручка" для всей децентрализованной инфраструктуры.',
+    text: 'Без Bitbon нет доступа к сервисам, транзакциям, метаконтрактам. Это фундаментальный слой — не дополнительная опция, а базовое условие участия в Системе.'
+  },
+  {
+    icon: '✍️',
+    title: 'Реализация цифровых волевых актов',
+    from: 'Волеизъявление через бумажные документы, подписи и нотариусов. Долго, дорого, оспоримо.',
+    to: 'Любое значимое действие = цифровой волевой акт в распределённом реестре. Юридически значимо и доказуемо.',
+    text: 'Права и обязательства фиксируются мгновенно и неоспоримо. Bitbon обеспечивает доказуемость каждого волевого акта без посредников и судебных процедур.'
+  },
+  {
+    icon: '🔄',
+    title: 'Управление полным жизненным циклом права',
+    from: 'Право возникает, но его жизненный цикл не прослеживается. История изменений теряется в документах.',
+    to: 'Полная цепочка: контроль доступа → метадокументы → исполнение метаконтрактов. Автоматически.',
+    text: 'Bitbon управляет правом от возникновения до исполнения: история, автоматизация изменений состояний и чёткое отражение текущей ситуации. Ничего не теряется.'
+  },
+  {
+    icon: '🛡️',
+    title: 'Создание среды достоверных данных',
+    from: 'Данные фрагментированы, дублированы, без контекста и правового статуса. Доверие требует посредников.',
+    to: 'Контекст, происхождение и правовой статус данных сохраняются. Среда тотального доверия без посредников.',
+    text: 'Bitbon решает проблему информационного шума: каждая запись несёт полный контекст и доказательство своего происхождения. Фрагментация и дублирование исключены на уровне архитектуры.'
+  },
+  {
+    icon: '⚙️',
+    title: 'Автоматизация и технологический консенсус',
+    from: 'Бумажные журналы, ручные подтверждения, локальные базы без связи. Консенсус через администраторов.',
+    to: 'Локальные подтверждения → сеть распределённого консенсуса. Автоматически, без административного принуждения.',
+    text: 'Технологический консенсус заменяет административное принуждение. Система работает автоматически, устраняя человеческий фактор из критических бизнес-процессов.'
+  },
+  {
+    icon: '🚀',
+    title: 'Стратегическое преимущество и готовность к будущему',
+    from: 'Вход в новые технологии — риск без гарантий. Инфраструктура сырая, стандарты не установлены.',
+    to: 'Ценность Bitbon растёт вместе со средой. Ранний вход = позиция в основании новой цифровой инфраструктуры.',
+    text: 'Bitbon — это не ставка на тренд, а позиционирование в базовой инфраструктуре токенизированных прав, сделок и отношений. Чем раньше интеграция, тем глубже встроенность в новую цифровую экономику.'
+  }
+];
+
+function openBitbonAccess() {
+  var existing = document.getElementById('bitbon-access-modal');
+  if (existing) { existing.remove(); return; }
+
+  var overlay = document.createElement('div');
+  overlay.id = 'bitbon-access-modal';
+  overlay.className = 'web4-modal-overlay';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+  overlay.innerHTML =
+    '<div class="web4-modal-box">' +
+      '<div class="web4-slider-header">' +
+        '<span class="web4-slider-title">🔑 Bitbon — Доступ к Системе</span>' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<span class="web4-slider-count"><span id="bac-cur">1</span> / 6</span>' +
+          '<button class="web4-modal-close" onclick="document.getElementById(\'bitbon-access-modal\').remove()">×</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="web4-slide" id="bac-slide-content"></div>' +
+      '<div class="web4-outro" id="bac-outro">Bitbon — это инфраструктура токенизированных прав, сделок и отношений. Войдите в новую цифровую экономику сейчас — и станьте её частью, а не её пользователем.</div>' +
+      '<div class="web4-slider-nav">' +
+        '<button class="web4-nav-btn" id="bac-prev" onclick="bitbonAccessNav(-1)">← Назад</button>' +
+        '<div class="web4-dots" id="bac-dots"></div>' +
+        '<button class="web4-nav-btn" id="bac-next" onclick="bitbonAccessNav(1)">Далее →</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+  bitbonAccessStep = 0;
+  bitbonAccessRender();
+}
+
+function bitbonAccessNav(dir) {
+  bitbonAccessDir = dir;
+  bitbonAccessStep = Math.max(0, Math.min(5, bitbonAccessStep + dir));
+  bitbonAccessRender();
+}
+
+function bitbonAccessGo(i) {
+  bitbonAccessDir = i >= bitbonAccessStep ? 1 : -1;
+  bitbonAccessStep = i;
+  bitbonAccessRender();
+}
+
+function bitbonAccessRender() {
+  var s = bitbonAccessSteps[bitbonAccessStep];
+  document.getElementById('bac-cur').textContent = bitbonAccessStep + 1;
+
+  var animClass = bitbonAccessDir >= 0 ? 'web4-anim-r' : 'web4-anim-l';
+  var el = document.getElementById('bac-slide-content');
+  el.className = 'web4-slide ' + animClass;
+
+  el.innerHTML =
+    '<div class="web4-slide-icon">' + s.icon + '</div>' +
+    '<div class="web4-slide-num">Шаг ' + (bitbonAccessStep + 1) + ' из 6</div>' +
+    '<div class="web4-slide-title">' + s.title + '</div>' +
+    '<div class="web4-transform">' +
+      '<div class="web4-from"><div class="web4-from-label">Без Bitbon — было</div><div class="web4-from-val">' + s.from + '</div></div>' +
+      '<div class="web4-arr">→</div>' +
+      '<div class="web4-to"><div class="web4-to-label">С Bitbon — стало</div><div class="web4-to-val">' + s.to + '</div></div>' +
+    '</div>' +
+    '<div class="web4-slide-text">' + s.text + '</div>';
+
+  document.getElementById('bac-prev').disabled = bitbonAccessStep === 0;
+  document.getElementById('bac-next').disabled = bitbonAccessStep === 5;
+  var outro = document.getElementById('bac-outro');
+  if (outro) outro.classList.toggle('visible', bitbonAccessStep === 5);
+  var dots = document.getElementById('bac-dots');
+  if (dots) {
+    dots.innerHTML = '';
+    for (var i = 0; i < 6; i++) {
+      var d = document.createElement('div');
+      d.className = 'web4-dot' + (i === bitbonAccessStep ? ' active' : '');
+      d.setAttribute('onclick', 'bitbonAccessGo(' + i + ')');
       dots.appendChild(d);
     }
   }
