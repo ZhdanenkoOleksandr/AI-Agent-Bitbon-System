@@ -349,7 +349,7 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 /* WEB4 TRANSITION SLIDER */
 .web4-slider{border:1px solid rgba(139,92,246,0.4);border-radius:var(--radius);overflow:hidden;margin-top:16px;display:none;max-width:600px;margin-left:auto;margin-right:auto}
 .web4-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px}
-.web4-modal-box{background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:var(--radius);width:100%;max-width:560px;overflow:hidden;animation:fadeUp 0.2s ease}
+.web4-modal-box{background:var(--surface);border:1px solid rgba(139,92,246,0.4);border-radius:var(--radius);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;animation:fadeUp 0.2s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .web4-modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0;transition:color 0.2s}
 .web4-modal-close:hover{color:var(--text)}
@@ -709,6 +709,28 @@ textarea::placeholder{color:var(--text3)}
   /* CORRECTIONS PANEL MOBILE */
   .corrections-panel{width:calc(100% - 20px);right:10px;bottom:10px;max-height:50vh}
   .corrections-toggle-btn{right:10px;bottom:10px}
+
+  /* SLIDER MODALS MOBILE */
+  .web4-modal-overlay{padding:8px}
+  .web4-modal-box{border-radius:var(--radius);max-height:calc(100dvh - 16px)}
+  .web4-slider-header{padding:10px 12px}
+  .web4-slider-title{font-size:11px;line-height:1.3}
+  .web4-slider-count{font-size:10px}
+  .web4-slide{padding:12px 13px;min-height:auto}
+  .web4-slide-icon{font-size:30px;margin-bottom:7px}
+  .web4-slide-num{font-size:9px}
+  .web4-slide-title{font-size:12px;margin-bottom:7px}
+  .web4-slide-text{font-size:11px;line-height:1.5}
+  .web4-transform{flex-direction:column;gap:5px;margin:8px 0 10px}
+  .web4-arr{transform:rotate(90deg);justify-content:center;padding:1px 0;font-size:14px}
+  .web4-from,.web4-to{font-size:11px;padding:7px 10px}
+  .web4-outro{padding:8px 11px;font-size:11px;margin-top:8px}
+  .web4-slider-nav{padding:8px 11px}
+  .web4-nav-btn{height:34px;padding:0 10px;font-size:11px;min-width:60px}
+  .web4-dots{gap:5px;flex-wrap:wrap;justify-content:center;max-width:180px}
+  .web4-dot{width:6px;height:6px}
+  .web4-dot.active{width:16px}
+  .bac-value{font-size:11px;padding:9px 11px;margin:8px 0 10px;line-height:1.5}
 }
 
 /* ═══ TABLET — 481px до 768px ═══ */
@@ -785,6 +807,13 @@ textarea::placeholder{color:var(--text3)}
   .cabinet-stats{grid-template-columns:repeat(3,1fr);gap:8px}
   .form-row{grid-template-columns:1fr;gap:9px}
   .tab-btn{font-size:11px;padding:9px 10px}
+
+  /* SLIDER MODALS TABLET */
+  .web4-modal-overlay{padding:14px}
+  .web4-modal-box{max-height:calc(100dvh - 28px)}
+  .web4-slide{padding:14px 16px}
+  .web4-transform{gap:6px}
+  .bac-value{font-size:12px;padding:10px 13px}
 }
 
 /* ═══ SMALL DESKTOP — 769px+ (вернуть нормальные стили) ═══ */
@@ -1964,7 +1993,13 @@ var TRANSLATIONS = {
     lang_display:'УКР',
     role_user:'Користувач',role_partner:'Партнер',role_business:'Бізнес',
     hdr_requests_label:'запитів',hdr_demo_mode:'демо режим',hdr_cabinet:'Кабінет',
-    cab_visibility_note:'Увімкнені кнопки з\'являться у клієнтів і бізнес-користувачів у верхньому хедері.'
+    cab_visibility_note:'Увімкнені кнопки з\'являться у клієнтів і бізнес-користувачів у верхньому хедері.',
+    slider_prev:'← Назад',slider_next:'Далі →',slider_step:'Крок',slider_of:'з',
+    web4_slider_title:'🌐 Перехід Бізнесу в WEB4',
+    web4_outro:'Ми створили середовище тотальної довіри, де кожен з вас може стати архітектором своєї економічної діяльності. Система Bitbon — це платформа, яка виходить за межі вузьких інвестиційних майданчиків прямо в реальний бізнес та сервіси.',
+    web4_from_label:'Web2 — було',web4_to_label:'Web4 — стало',
+    bac_slider_title:'🔑 Bitbon — Доступ до Системи',
+    bac_outro:'Bitbon — це інфраструктура токенізованих прав, угод і відносин. Увійдіть у нову цифрову економіку зараз — і станьте її частиною, а не її користувачем.'
   },
   en: {
     page_title:'Bitbon AI — Bitbon System Agent',
@@ -2115,7 +2150,13 @@ var TRANSLATIONS = {
     lang_display:'ENG',
     role_user:'User',role_partner:'Partner',role_business:'Business',
     hdr_requests_label:'requests',hdr_demo_mode:'demo mode',hdr_cabinet:'Cabinet',
-    cab_visibility_note:'Enabled buttons will appear for clients and business users in the top header.'
+    cab_visibility_note:'Enabled buttons will appear for clients and business users in the top header.',
+    slider_prev:'← Back',slider_next:'Next →',slider_step:'Step',slider_of:'of',
+    web4_slider_title:'🌐 Business Transition to WEB4',
+    web4_outro:'We created an environment of total trust where each of you can become the architect of your own economic activity. The Bitbon System is a platform that goes beyond narrow investment sites directly into real business and services.',
+    web4_from_label:'Web2 — before',web4_to_label:'Web4 — now',
+    bac_slider_title:'🔑 Bitbon — System Access',
+    bac_outro:'Bitbon is the infrastructure of tokenized rights, deals and relations. Enter the new digital economy now — and become part of it, not just a user.'
   },
   ru: {
     page_title:'Bitbon AI — Агент Системы Bitbon',
@@ -2266,7 +2307,13 @@ var TRANSLATIONS = {
     lang_display:'РУС',
     role_user:'Пользователь',role_partner:'Партнёр',role_business:'Бизнес',
     hdr_requests_label:'запросов',hdr_demo_mode:'демо режим',hdr_cabinet:'Кабинет',
-    cab_visibility_note:'Включённые кнопки появятся у клиентов и бизнес-пользователей в верхнем футере.'
+    cab_visibility_note:'Включённые кнопки появятся у клиентов и бизнес-пользователей в верхнем футере.',
+    slider_prev:'← Назад',slider_next:'Далее →',slider_step:'Шаг',slider_of:'из',
+    web4_slider_title:'🌐 Переход Бизнеса в WEB4',
+    web4_outro:'Мы создали среду тотального доверия, где каждый из вас может стать архитектором своей экономической деятельности. Система Bitbon — это платформа, которая выходит за пределы узких инвестиционных площадок прямо в реальный бизнес и сервисы.',
+    web4_from_label:'Web2 — было',web4_to_label:'Web4 — стало',
+    bac_slider_title:'🔑 Bitbon — Доступ к Системе',
+    bac_outro:'Bitbon — это инфраструктура токенизированных прав, сделок и отношений. Войдите в новую цифровую экономику сейчас — и станьте её частью, а не её пользователем.'
   }
 };
 
@@ -4151,82 +4198,80 @@ function updateSidebar(text) {
   });
 }
 
+// ═══ SLIDER TOUCH SWIPE & KEYBOARD ═══
+function sliderAddSwipe(boxId, navFn) {
+  var box = document.getElementById(boxId);
+  if (!box) return;
+  var startX = 0, startY = 0;
+  box.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, {passive:true});
+  box.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - startX;
+    var dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) navFn(dx < 0 ? 1 : -1);
+  }, {passive:true});
+  // keyboard — only while modal is open
+  var kh = function(e) {
+    if (e.key === 'ArrowRight') navFn(1);
+    else if (e.key === 'ArrowLeft') navFn(-1);
+    else if (e.key === 'Escape') { var m = box.closest('.web4-modal-overlay'); if(m) m.remove(); }
+  };
+  document.addEventListener('keydown', kh);
+  // clean up keyboard listener when modal closes
+  var obs = new MutationObserver(function(ml) {
+    ml.forEach(function(m) {
+      m.removedNodes.forEach(function(n) {
+        if (n.contains && n.contains(box)) { document.removeEventListener('keydown', kh); obs.disconnect(); }
+      });
+    });
+  });
+  obs.observe(document.body, {childList:true});
+}
+
 // ═══ WEB4 TRANSITION SLIDER ═══
 var web4Step = 0;
-var web4Steps = [
-  {
-    icon: '💎',
-    title: 'Данные как актив',
-    from: 'Ваши данные — сырьё для корпораций. Они продаются без вашего ведома.',
-    to: 'Данные — суверенный актив с регулируемыми правами доступа и ликвидностью.',
-    text: 'Бизнес получает контроль над своим цифровым следом, превращая информацию в ликвидный капитал вместо бесплатного ресурса для платформ.'
-  },
-  {
-    icon: '⛓️',
-    title: 'Токенизация жизненного цикла',
-    from: 'Токенизируется только объект — «цифровой фантик» без контекста.',
-    to: 'Токенизируется весь процесс: создание → регистрация → сделка → исполнение.',
-    text: '100% прозрачность цепочки создания ценности. Каждый этап зафиксирован и верифицируем без посредников.'
-  },
-  {
-    icon: '⚡',
-    title: 'Снижение «экономического трения»',
-    from: 'Посредники, бюрократия, ручные проверки на каждом этапе оборота.',
-    to: 'Автоматизация + новая механика владения и распределения доступа.',
-    text: 'Токенизация активов в Web4 радикально снижает издержки оборота — скорость и стоимость сделок меняются кардинально.'
-  },
-  {
-    icon: '📜',
-    title: '«Программный код порождает право»',
-    from: 'Правовые отношения в документах. Исполнение — через людей и суды.',
-    to: 'Сделки и обязательства вшиты в цифровые регламенты. Исполнение — автоматическое.',
-    text: 'Это ключевое отличие модели Bitbon: исключён «человеческий фактор» и административное принуждение.'
-  },
-  {
-    icon: '🔑',
-    title: 'Токенизация прав и отношений',
-    from: 'BlackRock и другие гиганты: только финансовые инструменты.',
-    to: 'Документы, сделки, доступ, имущественные права, репутация — всё токенизировано.',
-    text: 'Мы идём дальше финтеха — охватываем весь спектр правовых отношений, не ограничиваясь деньгами и ценными бумагами.'
-  },
-  {
-    icon: '🏛️',
-    title: 'Организационно-правовая инфраструктура',
-    from: 'Технология ради технологии. Нет правового фундамента.',
-    to: 'Публичный контракт + закреплённые роли + правовая децентрализация.',
-    text: 'Бизнес получает легальный фундамент для работы в правовом поле любой юрисдикции — не нарушая, а опираясь на закон.'
-  },
-  {
-    icon: '🔌',
-    title: 'Переход к сервисам и доступности',
-    from: 'Владение сложной IT-инфраструктурой — дорого и требует экспертизы.',
-    to: 'Интеграция в сервисный слой Web4 через API и готовые сценарии доступа.',
-    text: 'Открывает рынок для совершенно новых категорий участников, которые раньше не могли себе позволить цифровую инфраструктуру.'
-  },
-  {
-    icon: '⭐',
-    title: 'Репутационный капитал — новый залог',
-    from: 'Традиционные залоги, страховки, поручительства. Дорого и медленно.',
-    to: 'AURA-профиль как осязаемый актив для подтверждения надёжности.',
-    text: 'Деловая репутация токенизируется и становится обеспечением — снижая барьеры для честного бизнеса без твёрдых активов.'
-  },
-  {
-    icon: '🔗',
-    title: 'Прямое соединение учёта, права и исполнения',
-    from: 'Четыре разрозненных уровня: данные, документы, сервисы, контракты.',
-    to: 'Данные → Документ → Сервис доступа → Авто-контракт — единая цепь.',
-    text: 'Бизнес реального сектора работает с токенизированными товарами и услугами напрямую, без ручных стыковок между уровнями.'
-  },
-  {
-    icon: '🚀',
-    title: 'Ставка на системную готовность',
-    from: 'Хайповые продукты без инфраструктурной базы. Тренд есть, архитектуры нет.',
-    to: 'Глубокий инфраструктурный слой, строится с 2018. Тренд подтверждён глобально.',
-    text: 'Simcord строил основу с 2018 года. Полная архитектура Web4 реализована именно в Системе Bitbon — не обещана, а уже работает.'
-  }
-];
-
 var web4Dir = 1;
+var web4StepsAll = {
+  ru: [
+    {icon:'💎',title:'Данные как актив',from:'Ваши данные — сырьё для корпораций. Они продаются без вашего ведома.',to:'Данные — суверенный актив с регулируемыми правами доступа и ликвидностью.',text:'Бизнес получает контроль над своим цифровым следом, превращая информацию в ликвидный капитал вместо бесплатного ресурса для платформ.'},
+    {icon:'⛓️',title:'Токенизация жизненного цикла',from:'Токенизируется только объект — «цифровой фантик» без контекста.',to:'Токенизируется весь процесс: создание → регистрация → сделка → исполнение.',text:'100% прозрачность цепочки создания ценности. Каждый этап зафиксирован и верифицируем без посредников.'},
+    {icon:'⚡',title:'Снижение «экономического трения»',from:'Посредники, бюрократия, ручные проверки на каждом этапе оборота.',to:'Автоматизация + новая механика владения и распределения доступа.',text:'Токенизация активов в Web4 радикально снижает издержки оборота — скорость и стоимость сделок меняются кардинально.'},
+    {icon:'📜',title:'«Программный код порождает право»',from:'Правовые отношения в документах. Исполнение — через людей и суды.',to:'Сделки и обязательства вшиты в цифровые регламенты. Исполнение — автоматическое.',text:'Это ключевое отличие модели Bitbon: исключён «человеческий фактор» и административное принуждение.'},
+    {icon:'🔑',title:'Токенизация прав и отношений',from:'BlackRock и другие гиганты: только финансовые инструменты.',to:'Документы, сделки, доступ, имущественные права, репутация — всё токенизировано.',text:'Мы идём дальше финтеха — охватываем весь спектр правовых отношений, не ограничиваясь деньгами и ценными бумагами.'},
+    {icon:'🏛️',title:'Организационно-правовая инфраструктура',from:'Технология ради технологии. Нет правового фундамента.',to:'Публичный контракт + закреплённые роли + правовая децентрализация.',text:'Бизнес получает легальный фундамент для работы в правовом поле любой юрисдикции — не нарушая, а опираясь на закон.'},
+    {icon:'🔌',title:'Переход к сервисам и доступности',from:'Владение сложной IT-инфраструктурой — дорого и требует экспертизы.',to:'Интеграция в сервисный слой Web4 через API и готовые сценарии доступа.',text:'Открывает рынок для совершенно новых категорий участников, которые раньше не могли себе позволить цифровую инфраструктуру.'},
+    {icon:'⭐',title:'Репутационный капитал — новый залог',from:'Традиционные залоги, страховки, поручительства. Дорого и медленно.',to:'AURA-профиль как осязаемый актив для подтверждения надёжности.',text:'Деловая репутация токенизируется и становится обеспечением — снижая барьеры для честного бизнеса без твёрдых активов.'},
+    {icon:'🔗',title:'Прямое соединение учёта, права и исполнения',from:'Четыре разрозненных уровня: данные, документы, сервисы, контракты.',to:'Данные → Документ → Сервис доступа → Авто-контракт — единая цепь.',text:'Бизнес реального сектора работает с токенизированными товарами и услугами напрямую, без ручных стыковок между уровнями.'},
+    {icon:'🚀',title:'Ставка на системную готовность',from:'Хайповые продукты без инфраструктурной базы. Тренд есть, архитектуры нет.',to:'Глубокий инфраструктурный слой, строится с 2018. Тренд подтверждён глобально.',text:'Simcord строил основу с 2018 года. Полная архитектура Web4 реализована именно в Системе Bitbon — не обещана, а уже работает.'}
+  ],
+  uk: [
+    {icon:'💎',title:'Дані як актив',from:'Ваші дані — сировина для корпорацій. Їх продають без вашого відома.',to:'Дані — суверенний актив із регульованими правами доступу та ліквідністю.',text:'Бізнес отримує контроль над своїм цифровим слідом, перетворюючи інформацію на ліквідний капітал замість безкоштовного ресурсу для платформ.'},
+    {icon:'⛓️',title:'Токенізація життєвого циклу',from:'Токенізується лише об\'єкт — «цифровий фантик» без контексту.',to:'Токенізується весь процес: створення → реєстрація → угода → виконання.',text:'100% прозорість ланцюга створення цінності. Кожен етап зафіксований і верифікований без посередників.'},
+    {icon:'⚡',title:'Зниження «економічного тертя»',from:'Посередники, бюрократія, ручні перевірки на кожному етапі обороту.',to:'Автоматизація + нова механіка володіння та розподілу доступу.',text:'Токенізація активів у Web4 радикально знижує витрати обороту — швидкість і вартість угод змінюються кардинально.'},
+    {icon:'📜',title:'«Програмний код породжує право»',from:'Правові відносини в документах. Виконання — через людей і суди.',to:'Угоди та зобов\'язання вшиті в цифрові регламенти. Виконання — автоматичне.',text:'Це ключова відмінність моделі Bitbon: виключено «людський фактор» і адміністративний примус.'},
+    {icon:'🔑',title:'Токенізація прав і відносин',from:'BlackRock та інші гіганти: лише фінансові інструменти.',to:'Документи, угоди, доступ, майнові права, репутація — все токенізовано.',text:'Ми йдемо далі фінтеху — охоплюємо весь спектр правових відносин, не обмежуючись грошима та цінними паперами.'},
+    {icon:'🏛️',title:'Організаційно-правова інфраструктура',from:'Технологія заради технології. Немає правового фундаменту.',to:'Публічний контракт + закріплені ролі + правова децентралізація.',text:'Бізнес отримує легальний фундамент для роботи в правовому полі будь-якої юрисдикції — не порушуючи, а спираючись на закон.'},
+    {icon:'🔌',title:'Перехід до сервісів і доступності',from:'Володіння складною IT-інфраструктурою — дорого і вимагає експертизи.',to:'Інтеграція в сервісний шар Web4 через API та готові сценарії доступу.',text:'Відкриває ринок для зовсім нових категорій учасників, які раніше не могли дозволити собі цифрову інфраструктуру.'},
+    {icon:'⭐',title:'Репутаційний капітал — нова застава',from:'Традиційні застави, страховки, поручительства. Дорого та повільно.',to:'AURA-профіль як відчутний актив для підтвердження надійності.',text:'Ділова репутація токенізується і стає забезпеченням — знижуючи бар\'єри для чесного бізнесу без твердих активів.'},
+    {icon:'🔗',title:'Пряме з\'єднання обліку, права та виконання',from:'Чотири розрізнені рівні: дані, документи, сервіси, контракти.',to:'Дані → Документ → Сервіс доступу → Авто-контракт — єдиний ланцюг.',text:'Бізнес реального сектора працює з токенізованими товарами та послугами безпосередньо, без ручних стиків між рівнями.'},
+    {icon:'🚀',title:'Ставка на системну готовність',from:'Хайпові продукти без інфраструктурної бази. Тренд є, архітектури немає.',to:'Глибокий інфраструктурний шар, будується з 2018. Тренд підтверджений глобально.',text:'Simcord будував основу з 2018 року. Повна архітектура Web4 реалізована саме в Системі Bitbon — не обіцяна, а вже працює.'}
+  ],
+  en: [
+    {icon:'💎',title:'Data as an Asset',from:'Your data is raw material for corporations. Sold without your knowledge.',to:'Data is a sovereign asset with regulated access rights and liquidity.',text:'Business gains control over its digital footprint, turning information into liquid capital instead of a free resource for platforms.'},
+    {icon:'⛓️',title:'Lifecycle Tokenization',from:'Only the object is tokenized — a "digital wrapper" without context.',to:'The entire process is tokenized: creation → registration → deal → execution.',text:'100% transparency in the value creation chain. Every stage is recorded and verifiable without intermediaries.'},
+    {icon:'⚡',title:'Reducing Economic Friction',from:'Intermediaries, bureaucracy, manual checks at every stage of circulation.',to:'Automation + new mechanics of ownership and access distribution.',text:'Asset tokenization in Web4 radically reduces circulation costs — the speed and price of deals change fundamentally.'},
+    {icon:'📜',title:'"Code Generates Rights"',from:'Legal relations exist in documents. Enforcement goes through people and courts.',to:'Deals and obligations are embedded in digital regulations. Execution is automatic.',text:'This is the key distinction of the Bitbon model: the "human factor" and administrative enforcement are eliminated.'},
+    {icon:'🔑',title:'Tokenizing Rights and Relations',from:'BlackRock and other giants: financial instruments only.',to:'Documents, deals, access, property rights, reputation — all tokenized.',text:'We go beyond fintech — covering the entire spectrum of legal relations, not limited to money and securities.'},
+    {icon:'🏛️',title:'Legal-Organizational Infrastructure',from:'Technology for its own sake. No legal foundation.',to:'Public contract + defined roles + legal decentralization.',text:'Business gets a legal foundation to operate in any jurisdiction — not by breaking laws, but by relying on them.'},
+    {icon:'🔌',title:'Services and Accessibility',from:'Owning complex IT infrastructure is expensive and requires expertise.',to:'Integration into the Web4 service layer via API and ready-made access scenarios.',text:'Opens the market to entirely new categories of participants who previously could not afford digital infrastructure.'},
+    {icon:'⭐',title:'Reputational Capital — New Collateral',from:'Traditional collateral, insurance, guarantees. Expensive and slow.',to:'AURA profile as a tangible asset for proving reliability.',text:'Business reputation is tokenized and becomes collateral — lowering barriers for honest businesses without hard assets.'},
+    {icon:'🔗',title:'Direct Connection: Records, Rights & Execution',from:'Four disconnected levels: data, documents, services, contracts.',to:'Data → Document → Access Service → Auto-Contract — a single chain.',text:'Real-sector businesses work with tokenized goods and services directly, with no manual stitching between levels.'},
+    {icon:'🚀',title:'Betting on Systemic Readiness',from:'Hyped products without infrastructure. The trend exists, the architecture does not.',to:'A deep infrastructure layer built since 2018. Trend confirmed globally.',text:'Simcord has been building the foundation since 2018. The full Web4 architecture is implemented in the Bitbon System — not promised, already working.'}
+  ]
+};
+function getWeb4Steps() { return web4StepsAll[currentLang] || web4StepsAll.ru; }
 
 function openWeb4Slider() {
   var existing = document.getElementById('web4-modal');
@@ -4238,26 +4283,27 @@ function openWeb4Slider() {
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
 
   overlay.innerHTML =
-    '<div class="web4-modal-box">' +
+    '<div class="web4-modal-box" id="web4-modal-box">' +
       '<div class="web4-slider-header">' +
-        '<span class="web4-slider-title">🌐 Переход Бизнеса в WEB4</span>' +
+        '<span class="web4-slider-title">' + i18n('web4_slider_title') + '</span>' +
         '<div style="display:flex;align-items:center;gap:10px">' +
           '<span class="web4-slider-count"><span id="web4-cur">1</span> / 10</span>' +
           '<button class="web4-modal-close" onclick="document.getElementById(\'web4-modal\').remove()">×</button>' +
         '</div>' +
       '</div>' +
       '<div class="web4-slide" id="web4-slide-content"></div>' +
-      '<div class="web4-outro" id="web4-outro">Мы создали среду тотального доверия, где каждый из вас может стать архитектором своей экономической деятельности. Система Bitbon — это платформа, которая выходит за пределы узких инвестиционных площадок прямо в реальный бизнес и сервисы.</div>' +
+      '<div class="web4-outro" id="web4-outro">' + i18n('web4_outro') + '</div>' +
       '<div class="web4-slider-nav">' +
-        '<button class="web4-nav-btn" id="web4-prev" onclick="web4Nav(-1)">← Назад</button>' +
+        '<button class="web4-nav-btn" id="web4-prev" onclick="web4Nav(-1)">' + i18n('slider_prev') + '</button>' +
         '<div class="web4-dots" id="web4-dots"></div>' +
-        '<button class="web4-nav-btn" id="web4-next" onclick="web4Nav(1)">Далее →</button>' +
+        '<button class="web4-nav-btn" id="web4-next" onclick="web4Nav(1)">' + i18n('slider_next') + '</button>' +
       '</div>' +
     '</div>';
 
   document.body.appendChild(overlay);
   web4Step = 0;
   web4Render();
+  sliderAddSwipe('web4-modal-box', function(d){ web4Nav(d); });
 }
 
 function web4Nav(dir) {
@@ -4273,7 +4319,7 @@ function web4Go(i) {
 }
 
 function web4Render() {
-  var s = web4Steps[web4Step];
+  var s = getWeb4Steps()[web4Step];
   document.getElementById('web4-cur').textContent = web4Step + 1;
 
   var animClass = web4Dir >= 0 ? 'web4-anim-r' : 'web4-anim-l';
@@ -4282,12 +4328,12 @@ function web4Render() {
 
   el.innerHTML =
     '<div class="web4-slide-icon">' + s.icon + '</div>' +
-    '<div class="web4-slide-num">Шаг ' + (web4Step + 1) + ' из 10</div>' +
+    '<div class="web4-slide-num">' + i18n('slider_step') + ' ' + (web4Step + 1) + ' ' + i18n('slider_of') + ' 10</div>' +
     '<div class="web4-slide-title">' + s.title + '</div>' +
     '<div class="web4-transform">' +
-      '<div class="web4-from"><div class="web4-from-label">Web2 — было</div><div class="web4-from-val">' + s.from + '</div></div>' +
+      '<div class="web4-from"><div class="web4-from-label">' + i18n('web4_from_label') + '</div><div class="web4-from-val">' + s.from + '</div></div>' +
       '<div class="web4-arr">→</div>' +
-      '<div class="web4-to"><div class="web4-to-label">Web4 — стало</div><div class="web4-to-val">' + s.to + '</div></div>' +
+      '<div class="web4-to"><div class="web4-to-label">' + i18n('web4_to_label') + '</div><div class="web4-to-val">' + s.to + '</div></div>' +
     '</div>' +
     '<div class="web4-slide-text">' + s.text + '</div>';
 
@@ -4310,44 +4356,33 @@ function web4Render() {
 // ═══ BITBON ACCESS SLIDER ═══
 var bitbonAccessStep = 0;
 var bitbonAccessDir = 1;
-var bitbonAccessSteps = [
-  {
-    icon: '🔑',
-    title: 'Фундаментальный ресурс доступа',
-    value: 'Bitbon открывает доступ ко всем сервисам, транзакциям и метаконтрактам Системы. Это единый цифровой актив — "чернила и ручка" децентрализованной инфраструктуры.',
-    text: 'Bitbon — не токен и не валюта. Это функциональный актив присутствия: без него невозможно совершить ни одного юридически значимого действия в Системе. Он встроен в каждую точку входа — от сервисного доступа до транзакционного слоя.'
-  },
-  {
-    icon: '✍️',
-    title: 'Цифровые волевые акты',
-    value: 'Каждое значимое действие в Системе — регистрация права, сделка, делегирование полномочий — реализуется через цифровой волевой акт с участием Bitbon.',
-    text: 'Bitbon присутствует в каждом волевом акте как инструмент его реализации. Ваше право и ваше обязательство неоспоримы — потому что они зафиксированы в распределённом реестре с цифровой подписью актива.'
-  },
-  {
-    icon: '🔄',
-    title: 'Полный жизненный цикл права',
-    value: 'Bitbon сопровождает право от возникновения до исполнения: контроль доступа → метадокументы → исполнение метаконтрактов. Каждый этап зафиксирован.',
-    text: 'Цифровой актив участвует во всей цепочке — не как средство оплаты, а как инструмент подтверждения состояний права. История изменений полностью автоматизирована и прозрачна. Ничего не теряется.'
-  },
-  {
-    icon: '🛡️',
-    title: 'Среда достоверных данных',
-    value: 'Bitbon обеспечивает контекст, происхождение и правовой статус каждой записи в Системе. Там, где есть данные — там есть Bitbon как гарант их достоверности.',
-    text: 'Цифровой актив встроен в транзакционный слой: каждая операция несёт доказательство своего происхождения. Фрагментация, дублирование и информационный шум исключены на уровне архитектуры.'
-  },
-  {
-    icon: '⚙️',
-    title: 'Транзакционный сбор и консенсус',
-    value: 'Bitbon — инструмент технологического консенсуса. Каждое подтверждение в сети Системы проходит через транзакционный сбор в цифровом активе.',
-    text: 'От регистрации права до исполнения метаконтракта — Bitbon участвует в каждом акте консенсуса. Транзакционный сбор — это не просто оплата: это подтверждение реальности действия в распределённом реестре Системы.'
-  },
-  {
-    icon: '🚀',
-    title: 'Стратегическое присутствие в инфраструктуре',
-    value: 'Ценность Bitbon растёт вместе с ростом Системы. Он встроен в каждый процесс — от сервисного доступа до транзакционного сбора — и востребован каждым участником.',
-    text: 'Ранний вход — это позиция у основания инфраструктуры токенизированных прав, сделок и отношений. Чем больше участников и операций в Системе, тем выше функциональная востребованность актива. Это не спекуляция — это архитектурная ценность.'
-  }
-];
+var bitbonAccessStepsAll = {
+  ru: [
+    {icon:'🔑',title:'Фундаментальный ресурс доступа',value:'Bitbon открывает доступ ко всем сервисам, транзакциям и метаконтрактам Системы. Это единый цифровой актив — "чернила и ручка" децентрализованной инфраструктуры.',text:'Bitbon — не токен и не валюта. Это функциональный актив присутствия: без него невозможно совершить ни одного юридически значимого действия в Системе. Он встроен в каждую точку входа — от сервисного доступа до транзакционного слоя.'},
+    {icon:'✍️',title:'Цифровые волевые акты',value:'Каждое значимое действие в Системе — регистрация права, сделка, делегирование полномочий — реализуется через цифровой волевой акт с участием Bitbon.',text:'Bitbon присутствует в каждом волевом акте как инструмент его реализации. Ваше право и ваше обязательство неоспоримы — потому что они зафиксированы в распределённом реестре с цифровой подписью актива.'},
+    {icon:'🔄',title:'Полный жизненный цикл права',value:'Bitbon сопровождает право от возникновения до исполнения: контроль доступа → метадокументы → исполнение метаконтрактов. Каждый этап зафиксирован.',text:'Цифровой актив участвует во всей цепочке — не как средство оплаты, а как инструмент подтверждения состояний права. История изменений полностью автоматизирована и прозрачна. Ничего не теряется.'},
+    {icon:'🛡️',title:'Среда достоверных данных',value:'Bitbon обеспечивает контекст, происхождение и правовой статус каждой записи в Системе. Там, где есть данные — там есть Bitbon как гарант их достоверности.',text:'Цифровой актив встроен в транзакционный слой: каждая операция несёт доказательство своего происхождения. Фрагментация, дублирование и информационный шум исключены на уровне архитектуры.'},
+    {icon:'⚙️',title:'Транзакционный сбор и консенсус',value:'Bitbon — инструмент технологического консенсуса. Каждое подтверждение в сети Системы проходит через транзакционный сбор в цифровом активе.',text:'От регистрации права до исполнения метаконтракта — Bitbon участвует в каждом акте консенсуса. Транзакционный сбор — это не просто оплата: это подтверждение реальности действия в распределённом реестре Системы.'},
+    {icon:'🚀',title:'Стратегическое присутствие в инфраструктуре',value:'Ценность Bitbon растёт вместе с ростом Системы. Он встроен в каждый процесс — от сервисного доступа до транзакционного сбора — и востребован каждым участником.',text:'Ранний вход — это позиция у основания инфраструктуры токенизированных прав, сделок и отношений. Чем больше участников и операций в Системе, тем выше функциональная востребованность актива. Это не спекуляция — это архитектурная ценность.'}
+  ],
+  uk: [
+    {icon:'🔑',title:'Фундаментальний ресурс доступу',value:'Bitbon відкриває доступ до всіх сервісів, транзакцій та метаконтрактів Системи. Це єдиний цифровий актив — "чорнила та ручка" децентралізованої інфраструктури.',text:'Bitbon — не токен і не валюта. Це функціональний актив присутності: без нього неможливо здійснити жодної юридично значущої дії в Системі. Він вбудований у кожну точку входу — від сервісного доступу до транзакційного шару.'},
+    {icon:'✍️',title:'Цифрові вольові акти',value:'Кожна значуща дія в Системі — реєстрація права, угода, делегування повноважень — реалізується через цифровий вольовий акт за участю Bitbon.',text:'Bitbon присутній у кожному вольовому акті як інструмент його реалізації. Ваше право і ваше зобов\'язання незаперечні — бо вони зафіксовані в розподіленому реєстрі з цифровим підписом активу.'},
+    {icon:'🔄',title:'Повний життєвий цикл права',value:'Bitbon супроводжує право від виникнення до виконання: контроль доступу → метадокументи → виконання метаконтрактів. Кожен етап зафіксований.',text:'Цифровий актив бере участь у всьому ланцюзі — не як засіб оплати, а як інструмент підтвердження станів права. Історія змін повністю автоматизована і прозора. Нічого не втрачається.'},
+    {icon:'🛡️',title:'Середовище достовірних даних',value:'Bitbon забезпечує контекст, походження і правовий статус кожного запису в Системі. Там, де є дані — там є Bitbon як гарант їх достовірності.',text:'Цифровий актив вбудований у транзакційний шар: кожна операція несе доказ свого походження. Фрагментація, дублювання та інформаційний шум виключені на рівні архітектури.'},
+    {icon:'⚙️',title:'Транзакційний збір та консенсус',value:'Bitbon — інструмент технологічного консенсусу. Кожне підтвердження в мережі Системи проходить через транзакційний збір у цифровому активі.',text:'Від реєстрації права до виконання метаконтракту — Bitbon бере участь у кожному акті консенсусу. Транзакційний збір — це не просто оплата: це підтвердження реальності дії в розподіленому реєстрі Системи.'},
+    {icon:'🚀',title:'Стратегічна присутність в інфраструктурі',value:'Цінність Bitbon зростає разом із зростанням Системи. Він вбудований у кожен процес — від сервісного доступу до транзакційного збору — і затребуваний кожним учасником.',text:'Ранній вхід — це позиція в основі інфраструктури токенізованих прав, угод і відносин. Чим більше учасників і операцій у Системі, тим вища функціональна затребуваність активу. Це не спекуляція — це архітектурна цінність.'}
+  ],
+  en: [
+    {icon:'🔑',title:'Fundamental Access Resource',value:'Bitbon unlocks access to all services, transactions and meta-contracts of the System. It is the single digital asset — the "ink and pen" of the decentralized infrastructure.',text:'Bitbon is not a token or currency. It is a functional asset of presence: without it, no legally significant action can be taken in the System. It is embedded at every entry point — from service access to the transaction layer.'},
+    {icon:'✍️',title:'Digital Acts of Will',value:'Every significant action in the System — right registration, deal, delegation of authority — is realized through a digital act of will involving Bitbon.',text:'Bitbon is present in every act of will as the instrument of its realization. Your right and your obligation are indisputable — because they are recorded in the distributed ledger with the asset\'s digital signature.'},
+    {icon:'🔄',title:'Full Rights Lifecycle',value:'Bitbon accompanies rights from creation to execution: access control → meta-documents → execution of meta-contracts. Every stage is recorded.',text:'The digital asset participates in the full chain — not as a payment method, but as an instrument for confirming rights states. The change history is fully automated and transparent. Nothing is lost.'},
+    {icon:'🛡️',title:'Trusted Data Environment',value:'Bitbon provides context, provenance and legal status for every record in the System. Where there is data — there is Bitbon as its guarantor of authenticity.',text:'The digital asset is embedded in the transaction layer: every operation carries proof of its origin. Fragmentation, duplication and information noise are excluded at the architecture level.'},
+    {icon:'⚙️',title:'Transaction Fee & Consensus',value:'Bitbon is the instrument of technological consensus. Every confirmation in the System network passes through the transaction fee in the digital asset.',text:'From right registration to meta-contract execution — Bitbon participates in every act of consensus. The transaction fee is not just payment: it is proof of the reality of an action in the System\'s distributed ledger.'},
+    {icon:'🚀',title:'Strategic Presence in Infrastructure',value:'Bitbon\'s value grows with the growth of the System. It is embedded in every process — from service access to the transaction fee — and is demanded by every participant.',text:'Early entry is a position at the foundation of the infrastructure of tokenized rights, deals and relations. The more participants and operations in the System, the higher the functional demand for the asset. This is not speculation — it is architectural value.'}
+  ]
+};
+function getBacSteps() { return bitbonAccessStepsAll[currentLang] || bitbonAccessStepsAll.ru; }
 
 function openBitbonAccess() {
   var existing = document.getElementById('bitbon-access-modal');
@@ -4359,26 +4394,27 @@ function openBitbonAccess() {
   overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
 
   overlay.innerHTML =
-    '<div class="web4-modal-box">' +
+    '<div class="web4-modal-box" id="bac-modal-box">' +
       '<div class="web4-slider-header">' +
-        '<span class="web4-slider-title">🔑 Bitbon — Доступ к Системе</span>' +
+        '<span class="web4-slider-title">' + i18n('bac_slider_title') + '</span>' +
         '<div style="display:flex;align-items:center;gap:10px">' +
           '<span class="web4-slider-count"><span id="bac-cur">1</span> / 6</span>' +
           '<button class="web4-modal-close" onclick="document.getElementById(\'bitbon-access-modal\').remove()">×</button>' +
         '</div>' +
       '</div>' +
       '<div class="web4-slide" id="bac-slide-content"></div>' +
-      '<div class="web4-outro" id="bac-outro">Bitbon — это инфраструктура токенизированных прав, сделок и отношений. Войдите в новую цифровую экономику сейчас — и станьте её частью, а не её пользователем.</div>' +
+      '<div class="web4-outro" id="bac-outro">' + i18n('bac_outro') + '</div>' +
       '<div class="web4-slider-nav">' +
-        '<button class="web4-nav-btn" id="bac-prev" onclick="bitbonAccessNav(-1)">← Назад</button>' +
+        '<button class="web4-nav-btn" id="bac-prev" onclick="bitbonAccessNav(-1)">' + i18n('slider_prev') + '</button>' +
         '<div class="web4-dots" id="bac-dots"></div>' +
-        '<button class="web4-nav-btn" id="bac-next" onclick="bitbonAccessNav(1)">Далее →</button>' +
+        '<button class="web4-nav-btn" id="bac-next" onclick="bitbonAccessNav(1)">' + i18n('slider_next') + '</button>' +
       '</div>' +
     '</div>';
 
   document.body.appendChild(overlay);
   bitbonAccessStep = 0;
   bitbonAccessRender();
+  sliderAddSwipe('bac-modal-box', function(d){ bitbonAccessNav(d); });
 }
 
 function bitbonAccessNav(dir) {
@@ -4394,7 +4430,7 @@ function bitbonAccessGo(i) {
 }
 
 function bitbonAccessRender() {
-  var s = bitbonAccessSteps[bitbonAccessStep];
+  var s = getBacSteps()[bitbonAccessStep];
   document.getElementById('bac-cur').textContent = bitbonAccessStep + 1;
 
   var animClass = bitbonAccessDir >= 0 ? 'web4-anim-r' : 'web4-anim-l';
@@ -4403,7 +4439,7 @@ function bitbonAccessRender() {
 
   el.innerHTML =
     '<div class="web4-slide-icon">' + s.icon + '</div>' +
-    '<div class="web4-slide-num">Шаг ' + (bitbonAccessStep + 1) + ' из 6</div>' +
+    '<div class="web4-slide-num">' + i18n('slider_step') + ' ' + (bitbonAccessStep + 1) + ' ' + i18n('slider_of') + ' 6</div>' +
     '<div class="web4-slide-title">' + s.title + '</div>' +
     '<div class="bac-value">' + s.value + '</div>' +
     '<div class="web4-slide-text">' + s.text + '</div>';
