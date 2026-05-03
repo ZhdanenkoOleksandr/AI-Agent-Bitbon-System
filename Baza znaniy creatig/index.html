@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KB Admin — База знаний</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="logo">⬡ KB ADMIN</span>
+    <div class="vsep"></div>
+    <div class="tabs" id="tabs">
+      <button class="tab on"  data-tab="src">Источник</button>
+      <button class="tab"     data-tab="rev">Проверка <span class="badge"  id="rb">0</span></button>
+      <button class="tab"     data-tab="kb">База знаний <span class="badge g" id="kbBadge">0</span></button>
+      <button class="tab"     data-tab="st">Статистика</button>
+    </div>
+    <div class="tr">
+      <div class="status-dot" id="sdot"></div>
+      <span class="status-txt" id="stxt">Готов</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="sidebar">
+      <div class="sl">Навигация</div>
+      <div class="si on" data-tab="src"><span class="dot" style="background:var(--amber)"></span>Источник</div>
+      <div class="si"    data-tab="rev"><span class="dot" style="background:var(--purple)"></span>Проверка <span class="badge srb" style="margin-left:auto;font-size:9px">0</span></div>
+      <div class="si"    data-tab="kb"><span class="dot" style="background:var(--green)"></span>База знаний</div>
+      <div class="sl" style="margin-top:12px">Сегменты</div>
+      <div id="segSidebar"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+
+</div>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- App modules (order matters) -->
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/chunker.js"></script>
+<script src="js/analyzer.js"></script>
+<script src="js/ui-components.js"></script>
+<script src="js/ui-tabs.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
