@@ -81,5 +81,11 @@ document.addEventListener('input', e => {
 });
 
 // ── Boot ─────────────────────────────────────────────────────────────
+State.loadKB();             // відновити базу знань з localStorage
+const seeded = State.loadSeedKB(); // завантажити скелет якщо порожня
 UI.render();
-UI.setStatus('Готов', 'ok');
+UI.updateBadges();
+UI.setStatus(
+  CONFIG.hasApiKey() ? `Готово · скелет: ${State.coreCount}` : 'Встанови API ключ',
+  CONFIG.hasApiKey() ? 'ok' : 'err'
+);

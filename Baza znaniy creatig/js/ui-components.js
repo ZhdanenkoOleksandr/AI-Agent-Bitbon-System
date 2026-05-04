@@ -12,25 +12,29 @@ const Components = {
       </div>`;
     }
 
-    const a   = chunk.analysis;
-    const sc  = CONFIG.SEG_COLORS[a.segment] || '#8b949e';
-    const qc  = a.quality_score > .75 ? 'var(--green)' : a.quality_score > .5 ? 'var(--amber)' : 'var(--red)';
+    const a    = chunk.analysis;
+    const sc   = CONFIG.SEG_COLORS[a.segment] || '#8b949e';
+    const qc   = a.quality_score > .75 ? 'var(--green)' : a.quality_score > .5 ? 'var(--amber)' : 'var(--red)';
     const isEd = chunk.status === 'editing';
+    const isCore = chunk.priority === 'core';
 
     const pillClass = { pending:'p-pend', approved:'p-ok', rejected:'p-no', editing:'p-ed' }[chunk.status];
-    const pillLabel = { pending:'Ожидает', approved:'Одобрено', rejected:'Отклонено', editing:'Редактируется' }[chunk.status];
+    const pillLabel = { pending:'Очікує', approved:'Схвалено', rejected:'Відхилено', editing:'Редагується' }[chunk.status];
     const typeTag   = a.knowledge_type === 'definition' ? 'b' : a.knowledge_type === 'theory' ? 'p' : 'a';
+    const relTag    = a.bitbon_relevance === 'high' ? 'var(--green)' : a.bitbon_relevance === 'medium' ? 'var(--amber)' : 'var(--text3)';
 
-    return `<div class="card" id="c${chunk.id}">
+    return `<div class="card ${isCore ? 'card-core' : ''}" id="c${chunk.id}">
       <div class="ch">
-        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);min-width:24px">#${chunk.id + 1}</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);min-width:24px">#${typeof chunk.id === 'number' ? chunk.id + 1 : chunk.id}</span>
+        ${isCore ? `<span class="priority-badge core" title="Базове знання з ${esc(chunk.source || 'пріоритетного джерела')}">🔴 CORE</span>` : `<span class="priority-badge ext">⚪ ext</span>`}
         <span class="tag" style="background:${hexRgba(sc,.12)};color:${sc};border-color:${hexRgba(sc,.3)}">
           ${a.segment.replace(/_/g,' ')}
         </span>
         <span class="tag ${typeTag}">${a.knowledge_type}</span>
-        ${a.is_likely_outdated ? `<span class="tag r">⚠ устарело</span>` : ''}
-        ${chunk.editedText      ? `<span class="tag b">✎ изменён</span>`   : ''}
-        ${a.error               ? `<span class="tag r">⚠ API ошибка</span>` : ''}
+        ${a.is_likely_outdated ? `<span class="tag r">⚠ застаріло</span>` : ''}
+        ${chunk.editedText      ? `<span class="tag b">✎ змінено</span>`   : ''}
+        ${a.error               ? `<span class="tag r">⚠ API помилка</span>` : ''}
+        ${a.bitbon_relevance    ? `<span style="font-size:9px;color:${relTag};margin-left:2px" title="Bitbon relevance">${a.bitbon_relevance}</span>` : ''}
         <span class="pill ${pillClass}" style="margin-left:auto">${pillLabel}</span>
       </div>
       <div class="cb">
@@ -49,11 +53,11 @@ const Components = {
             <div class="av">${esc(a.summary)}</div>
           </div>
           <div class="ai">
-            <div class="al">Ключевые концепты</div>
+            <div class="al">Ключові концепти</div>
             <div class="av">${a.key_concepts.map(k => `<span class="tag">${esc(k)}</span>`).join('') || '<span style="color:var(--text3)">—</span>'}</div>
           </div>
           <div class="ai">
-            <div class="al">Качество</div>
+            <div class="al">Якість</div>
             <div class="av">
               <div class="sbar">
                 <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:${qc}">${Math.round(a.quality_score * 100)}%</span>
@@ -62,18 +66,39 @@ const Components = {
             </div>
           </div>
         </div>
-        <textarea class="ctext cmnt" id="cm${chunk.id}" placeholder="Заметка администратора (необязательно)...">${esc(chunk.comment || '')}</textarea>
-        ` : ''}
+
+        ${isEd
+          ? `<div class="source-row">
+               <span class="al" style="flex-shrink:0">🔗 Посилання</span>
+               <input type="url" id="el${chunk.id}" value="${esc(chunk.source || '')}"
+                      placeholder="https://www.bitbon.space/ua/..."
+                      style="font-size:11px;flex:1">
+             </div>`
+          : chunk.source
+            ? `<div class="source-link">
+                 <span style="color:var(--text3);font-size:10px">🔗</span>
+                 <a href="${esc(chunk.source)}" target="_blank" rel="noopener" class="src-a">${esc(chunk.source)}</a>
+               </div>`
+            : ''
+        }
+
+        <textarea class="ctext cmnt" id="cm${chunk.id}" placeholder="Нотатка адміністратора (необов'язково)...">${esc(chunk.comment || '')}</textarea>
+        ` : `
+        ${chunk.source ? `<div class="source-link compact">
+          <span style="color:var(--text3);font-size:10px">🔗</span>
+          <a href="${esc(chunk.source)}" target="_blank" rel="noopener" class="src-a">${esc(chunk.source)}</a>
+        </div>` : ''}
+        `}
 
         <div class="acts">
           ${isEd
-            ? `<button class="btn btn-sv" onclick="Actions.saveEdit(${chunk.id})">💾 Сохранить</button>
-               <button class="btn btn-no btn-sm" onclick="Actions.cancelEdit(${chunk.id})">Отмена</button>`
+            ? `<button class="btn btn-sv" onclick="Actions.saveEdit(${chunk.id})">💾 Зберегти</button>
+               <button class="btn btn-no btn-sm" onclick="Actions.cancelEdit(${chunk.id})">Скасувати</button>`
             : chunk.status === 'pending'
-              ? `<button class="btn btn-ok" onclick="Actions.approve(${chunk.id})">✓ Одобрить</button>
-                 <button class="btn btn-ed" onclick="Actions.startEdit(${chunk.id})">✎ Редактировать</button>
-                 <button class="btn btn-no" onclick="Actions.reject(${chunk.id})">✗ Отклонить</button>`
-              : `<button class="btn btn-ed btn-sm" onclick="Actions.undo(${chunk.id})">↩ Вернуть в очередь</button>`
+              ? `<button class="btn btn-ok" onclick="Actions.approve(${chunk.id})">✓ Схвалити</button>
+                 <button class="btn btn-ed" onclick="Actions.startEdit(${chunk.id})">✎ Редагувати</button>
+                 <button class="btn btn-no" onclick="Actions.reject(${chunk.id})">✗ Відхилити</button>`
+              : `<button class="btn btn-ed btn-sm" onclick="Actions.undo(${chunk.id})">↩ Повернути в чергу</button>`
           }
         </div>
       </div>

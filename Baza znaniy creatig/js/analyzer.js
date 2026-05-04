@@ -7,11 +7,19 @@ const Analyzer = {
    * @returns {Promise<object>} analysis
    */
   async analyze(text) {
+    const apiKey = CONFIG.getApiKey();
+    if (!apiKey) throw new Error('API ключ не задан. Введи ключ в секции API Key.');
+
     const prompt = CONFIG.buildAnalysisPrompt(text, CONFIG.SEGMENTS);
 
     const response = await fetch(CONFIG.API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
       body: JSON.stringify({
         model:      CONFIG.MODEL,
         max_tokens: CONFIG.MAX_TOKENS,
