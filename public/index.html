@@ -396,6 +396,12 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 
 .msg-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
 .action-btn{font-family:'Onest',sans-serif;font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px}
+.kb-sources{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.kb-source-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid rgba(59,130,246,0.25);background:rgba(59,130,246,0.07);color:var(--text2);cursor:default;max-width:240px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.kb-source-chip .kbs-icon{font-size:10px;opacity:.7;flex-shrink:0}
+.kb-source-chip .kbs-seg{font-size:10px;color:var(--accent);font-weight:600;flex-shrink:0}
+.kb-source-chip .kbs-txt{overflow:hidden;text-overflow:ellipsis}
+.kb-sources-label{font-size:10px;color:var(--text3);margin-bottom:2px;margin-top:6px;letter-spacing:.03em}
 .action-btn.rephrase:hover{border-color:var(--gold);color:var(--gold2);background:rgba(245,158,11,0.08)}
 .action-btn.simpler:hover{border-color:var(--green);color:var(--green);background:rgba(16,185,129,0.08)}
 
@@ -1810,6 +1816,7 @@ const PLANS = {
 
 let history=[], isLoading=false, userLevel=null, userMode=null, jwtToken=null;
 let explainedConcepts=[], sidebarOpen=true, diagramCounter=0;
+let kbUserChunks=[], lastKBSources=[]; // static KB for user mode
 let currentPlan=null, usedRequests=0, usedMeta=0;
 let wizardMode=false, wizardStep=0, wizardAnswers=[];
 let partnerInfo=null; // {id, firstName, lastName, fullName}
@@ -2643,6 +2650,7 @@ function setLevel(level) {
     userLevel = 'beginner';
     updateSuggestionsBar('user');
     addMessage('bot', i18n('msg_user'), null, false);
+    loadUserKB();
   }
 
   // Роль отображается в футер-навигации; в хедере badge не нужен
@@ -4119,8 +4127,39 @@ function buildKBContext() {
   return ctx;
 }
 
+// ═══ USER KB (static kb_export.json) ═══
+async function loadUserKB() {
+  try {
+    var r = await fetch('kb_export.json');
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    kbUserChunks = d.chunks || [];
+    console.log('[KB] Loaded', kbUserChunks.length, 'chunks for user mode');
+  } catch(e) { console.warn('[KB] User KB not loaded:', e.message); }
+}
+
+function searchUserKB(query) {
+  if (!kbUserChunks.length) return [];
+  if (!query) return kbUserChunks.filter(function(c){ return c.priority==='core'; }).slice(0,3);
+  var words = query.toLowerCase().split(/\s+/).filter(function(w){ return w.length > 2; });
+  if (!words.length) return kbUserChunks.filter(function(c){ return c.priority==='core'; }).slice(0,3);
+  var scored = kbUserChunks.map(function(chunk) {
+    var a = chunk.analysis || {};
+    var hay = [chunk.text||'', a.summary||'', (a.key_concepts||[]).join(' ')].join(' ').toLowerCase();
+    var score = 0;
+    words.forEach(function(w){ if (hay.indexOf(w)!==-1) score+=1; });
+    if (hay.indexOf(query.toLowerCase())!==-1) score+=3;
+    if (chunk.priority==='core') score+=0.5;
+    if (a.quality_score) score+=a.quality_score*0.5;
+    return {chunk:chunk, score:score};
+  });
+  return scored.filter(function(s){ return s.score>0; })
+    .sort(function(a,b){ return b.score-a.score; })
+    .slice(0,4).map(function(s){ return s.chunk; });
+}
+
 // ═══ SYSTEM PROMPT BUILDER ═══
-function buildSystemPrompt() {
+function buildSystemPrompt(query) {
   var p = SYSTEM_PROMPT;
   if (userLevel === 'beginner') p += '\n\nУРОВЕНЬ: НОВИЧОК. Аналогии из быта. Тон тёплый.';
   else if (userLevel === 'intermediate') p += '\n\nУРОВЕНЬ: ИЗУЧАЮЩИЙ. Термины с расшифровкой.';
@@ -4155,6 +4194,27 @@ function buildSystemPrompt() {
 
   if (explainedConcepts.length) p += '\n\nУЖЕ ОБЪЯСНЕНО:\n' + explainedConcepts.map(c => '- ' + c).join('\n');
   p += buildKBContext();
+
+  // Inject static KB context for user mode
+  lastKBSources = [];
+  if (userMode === 'user' && kbUserChunks.length) {
+    var relevant = searchUserKB(query || '');
+    if (relevant.length) {
+      lastKBSources = relevant;
+      p += '\n\n════════════════════════════════════════';
+      p += '\nВЕРИФИЦИРОВАННАЯ БАЗА ЗНАНИЙ BITBON SYSTEM';
+      p += '\n════════════════════════════════════════';
+      p += '\nСледующие факты взяты из официальной базы знаний. Используй их как ОСНОВУ своего ответа:\n';
+      relevant.forEach(function(c) {
+        var a = c.analysis || {};
+        var seg = a.segment ? '[' + a.segment + '] ' : '';
+        p += '\n' + seg + c.text.trim() + '\n';
+      });
+      p += '\n════════════════════════════════════════';
+      p += '\nПРАВИЛО: В режиме Пользователь отвечай СТРОГО на основе базы знаний выше. Не выдумывай цифры или факты о Bitbon. Если вопрос не касается Bitbon — вежливо объясни, что ты специализированный агент Системы Bitbon.';
+    }
+  }
+
   return p;
 }
 
@@ -4774,7 +4834,7 @@ async function sendMessage() {
       body: JSON.stringify({
         question: question,
         messages: history,
-        systemPrompt: buildSystemPrompt(),
+        systemPrompt: buildSystemPrompt(question),
         userLevel: userLevel,
         userMode: userMode,
         language: currentLang
@@ -4789,6 +4849,29 @@ async function sendMessage() {
     var reply = data.reply || 'Не удалось получить ответ.';
     removeTyping();
     addMessage('bot', reply, buildActions(question), true);
+    // Show KB source chips if user mode answer was grounded in KB
+    if (lastKBSources.length) {
+      var chat = document.getElementById('chat');
+      var lastMsg = chat.lastElementChild;
+      if (lastMsg) {
+        var segLabels = {web4_technology:'Web 4.0',bitbon_ecosystem:'Екосистема',tokenization:'Токенізація',metaresources:'Метаресурс',business_models:'Бізнес',personal_philosophy:'Філософія',case_studies:'Кейси',education:'Освіта',general:'Загальне'};
+        var html = '<div class="kb-sources-label">📚 Джерела з бази знань:</div><div class="kb-sources">';
+        lastKBSources.forEach(function(c) {
+          var a = c.analysis || {};
+          var seg = segLabels[a.segment] || a.segment || 'KB';
+          var summary = (a.summary || c.text || '').slice(0, 60).replace(/</g,'&lt;');
+          var host = c.source ? c.source.replace(/^https?:\/\//,'').replace(/\/.*/,'') : 'bitbon.space';
+          html += '<span class="kb-source-chip" title="' + (a.summary||'').replace(/"/g,'&quot;') + '">' +
+            '<span class="kbs-seg">' + seg + '</span>' +
+            '<span class="kbs-txt">' + summary + (summary.length >= 60 ? '…' : '') + '</span>' +
+            '<span class="kbs-icon" style="margin-left:2px;opacity:.5">' + host + '</span>' +
+            '</span>';
+        });
+        html += '</div>';
+        var msgBody = lastMsg.querySelector('.msg-body');
+        if (msgBody) { var d = document.createElement('div'); d.innerHTML = html; msgBody.appendChild(d); }
+      }
+    }
     history.push({role: 'assistant', content: reply});
     updateSidebar(reply);
     usedRequests++;

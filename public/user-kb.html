@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>База Знань — Bitbon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0d12;--surface:#111520;--surface2:#181e2e;--surface3:#1e2640;
+  --border:rgba(99,179,237,0.12);--border2:rgba(99,179,237,0.25);
+  --accent:#3b82f6;--accent2:#60a5fa;--green:#10b981;--gold:#f59e0b;
+  --purple:#8b5cf6;--red:#ef4444;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+}
+body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── HEADER ── */
+.header{
+  background:var(--surface);border-bottom:1px solid var(--border2);
+  padding:14px 24px;display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:100;
+}
+.logo{font-size:17px;font-weight:700;color:var(--accent2);display:flex;align-items:center;gap:8px}
+.logo-hex{font-size:20px}
+.logo-sub{color:var(--text3);font-weight:400;font-size:13px}
+.header-stats{
+  margin-left:auto;font-size:12px;color:var(--text3);
+  display:flex;gap:14px;
+}
+.stat-item span{color:var(--text2);font-weight:600}
+.back-btn{
+  padding:6px 14px;border-radius:8px;border:1px solid var(--border2);
+  background:transparent;color:var(--text2);font-family:'Onest',sans-serif;
+  font-size:12px;cursor:pointer;transition:all 0.15s;text-decoration:none;
+  display:flex;align-items:center;gap:5px;
+}
+.back-btn:hover{border-color:var(--accent);color:var(--text)}
+
+/* ── TOOLBAR ── */
+.toolbar{
+  padding:16px 24px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;flex-direction:column;gap:10px;
+}
+.search-wrap{position:relative}
+.search-input{
+  width:100%;padding:11px 16px 11px 42px;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:10px;color:var(--text);font-family:'Onest',sans-serif;
+  font-size:14px;outline:none;transition:border-color 0.2s;
+}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--text3)}
+.search-icon{
+  position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:15px;pointer-events:none;
+}
+
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filter-label{font-size:11px;color:var(--text3);font-weight:500;white-space:nowrap}
+
+.pill{
+  padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;
+  border:1px solid var(--border2);background:transparent;color:var(--text3);
+  cursor:pointer;transition:all 0.15s;font-family:'Onest',sans-serif;
+}
+.pill:hover{border-color:var(--border2);color:var(--text2)}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.pill.p-core.active{background:var(--green);border-color:var(--green)}
+.pill.p-ext.active{background:var(--purple);border-color:var(--purple)}
+
+.seg-pills{display:flex;gap:5px;flex-wrap:wrap}
+.seg-pill{
+  padding:4px 10px;border-radius:14px;font-size:11px;font-weight:500;
+  border:1px solid var(--border);background:transparent;color:var(--text3);
+  cursor:pointer;transition:all 0.15s;font-family:'Onest',sans-serif;
+}
+.seg-pill:hover{border-color:var(--border2);color:var(--text2)}
+.seg-pill.active{
+  border-color:var(--accent);color:var(--accent2);
+  background:rgba(59,130,246,0.08);
+}
+
+/* ── MAIN ── */
+.main{padding:20px 24px;max-width:1400px;margin:0 auto}
+
+.results-info{
+  font-size:12px;color:var(--text3);margin-bottom:14px;
+  display:flex;align-items:center;gap:6px;
+}
+.results-info span{color:var(--text2);font-weight:600}
+
+/* ── CARDS ── */
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:14px;
+}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:16px;cursor:pointer;
+  transition:all 0.2s;display:flex;flex-direction:column;gap:10px;
+}
+.card:hover{
+  border-color:var(--border2);transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(0,0,0,0.35);
+}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-meta{display:flex;flex-direction:column;gap:3px}
+.card-segment{
+  font-size:10px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.6px;
+}
+.card-ktype{
+  font-size:11px;color:var(--text3);
+  display:flex;align-items:center;gap:4px;
+}
+
+.badge{
+  font-size:9px;font-weight:700;padding:2px 8px;
+  border-radius:10px;white-space:nowrap;flex-shrink:0;letter-spacing:0.3px;
+}
+.b-core{background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3)}
+.b-ext{background:rgba(139,92,246,0.15);color:#8b5cf6;border:1px solid rgba(139,92,246,0.3)}
+
+.card-summary{
+  font-size:13px;line-height:1.6;color:var(--text2);flex:1;
+}
+
+.card-concepts{display:flex;flex-wrap:wrap;gap:4px}
+.concept-tag{
+  font-size:10px;padding:2px 7px;border-radius:7px;
+  background:rgba(59,130,246,0.08);color:var(--accent2);
+  border:1px solid rgba(59,130,246,0.18);
+}
+
+.card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:8px;border-top:1px solid var(--border);
+}
+.card-source{
+  font-size:10px;color:var(--text3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;
+  display:flex;align-items:center;gap:4px;
+}
+.card-score{
+  font-size:10px;color:var(--text3);
+  display:flex;align-items:center;gap:4px;flex-shrink:0;
+}
+.qdot{width:6px;height:6px;border-radius:50%}
+.qh{background:var(--green)}
+.qm{background:var(--gold)}
+
+/* ── EMPTY / ERROR ── */
+.centered-msg{
+  grid-column:1/-1;text-align:center;
+  padding:60px 20px;
+}
+.msg-icon{font-size:36px;margin-bottom:12px}
+.msg-title{font-size:16px;color:var(--text2);margin-bottom:6px;font-weight:600}
+.msg-sub{font-size:13px;color:var(--text3);line-height:1.6}
+
+.error-box{
+  margin:20px 0;background:var(--surface);
+  border:1px solid rgba(239,68,68,0.3);border-radius:14px;padding:28px;
+  text-align:center;
+}
+.error-box h3{color:var(--red);margin-bottom:10px;font-size:16px}
+.error-box p{font-size:13px;color:var(--text3);line-height:1.7}
+.error-box code{
+  display:inline-block;margin-top:10px;padding:6px 14px;
+  background:var(--surface2);border-radius:8px;font-size:13px;
+  color:var(--accent2);font-family:monospace;border:1px solid var(--border2);
+}
+
+/* ── LOADING ── */
+.loading-wrap{grid-column:1/-1;text-align:center;padding:60px;color:var(--text3)}
+.spinner{font-size:28px;animation:spin 0.9s linear infinite;display:inline-block;margin-bottom:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── MODAL ── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:16px;
+}
+.overlay.hidden{display:none}
+.modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:18px;padding:26px;max-width:680px;width:100%;
+  max-height:88vh;overflow-y:auto;position:relative;
+}
+.modal-x{
+  position:absolute;top:14px;right:14px;background:none;border:none;
+  color:var(--text3);font-size:20px;cursor:pointer;padding:4px;line-height:1;
+}
+.modal-x:hover{color:var(--text)}
+
+.modal-badges{display:flex;gap:6px;margin-bottom:10px}
+.modal-segment{
+  font-size:11px;color:var(--text3);text-transform:uppercase;
+  letter-spacing:0.6px;font-weight:600;margin-bottom:14px;
+}
+.modal-summary{
+  font-size:15px;line-height:1.65;color:var(--text);
+  font-weight:500;margin-bottom:16px;
+}
+.modal-text{
+  font-size:13px;line-height:1.75;color:var(--text2);
+  background:var(--surface2);border-radius:10px;padding:14px;
+  border:1px solid var(--border);margin-bottom:16px;
+  white-space:pre-wrap;word-break:break-word;
+}
+.modal-section-title{
+  font-size:10px;color:var(--text3);text-transform:uppercase;
+  letter-spacing:0.6px;font-weight:700;margin-bottom:8px;
+}
+.modal-footer{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  padding-top:14px;border-top:1px solid var(--border);
+  flex-wrap:wrap;gap:8px;
+}
+.modal-src{font-size:12px;color:var(--text3)}
+.modal-src a{color:var(--accent2);text-decoration:none}
+.modal-src a:hover{text-decoration:underline}
+.modal-date{font-size:11px;color:var(--text3)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .header{padding:10px 14px;flex-wrap:wrap;gap:8px}
+  .header-stats{display:none}
+  .toolbar{padding:12px 14px}
+  .main{padding:14px}
+  .cards{grid-template-columns:1fr}
+  .modal{padding:20px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <span class="logo-hex">⬡</span>
+    <span>База Знань</span>
+    <span class="logo-sub">— Bitbon System</span>
+  </div>
+  <div class="header-stats" id="hStats">
+    <div class="stat-item"><span id="sCnt">—</span> записів</div>
+    <div class="stat-item"><span id="sCore">—</span> базових</div>
+    <div class="stat-item"><span id="sSegs">—</span> сегментів</div>
+  </div>
+  <a class="back-btn" href="index.html">← Агент</a>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="searchInput" placeholder="Пошук по базі знань...">
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Пріоритет:</span>
+    <button class="pill active" data-pr="all">Всі</button>
+    <button class="pill p-core" data-pr="core">Базові</button>
+    <button class="pill p-ext" data-pr="extended">Розширені</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Сегмент:</span>
+    <div class="seg-pills" id="segPills"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="results-info" id="rInfo"></div>
+  <div class="cards" id="cards">
+    <div class="loading-wrap">
+      <div class="spinner">⟳</div>
+      <div>Завантаження...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay hidden" id="overlay">
+  <div class="modal" id="modal">
+    <button class="modal-x" id="modalX">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ── CONFIG ── */
+const KB_FILE = 'kb_export.json';
+
+const SEG_LABELS = {
+  web4_technology:   'Web 4.0',
+  bitbon_ecosystem:  'Екосистема',
+  tokenization:      'Токенізація',
+  metaresources:     'Метаресурси',
+  business_models:   'Бізнес-моделі',
+  personal_philosophy:'Філософія',
+  case_studies:      'Кейси',
+  education:         'Навчання',
+  general:           'Загальне'
+};
+
+const TYPE_META = {
+  definition: { icon:'📖', label:'Визначення' },
+  fact:        { icon:'📌', label:'Факт' },
+  theory:      { icon:'💡', label:'Теорія' },
+  case_study:  { icon:'🏗️', label:'Кейс' },
+  opinion:     { icon:'💬', label:'Позиція' }
+};
+
+/* ── STATE ── */
+let chunks = [];
+let activePr   = 'all';
+let activeSeg  = 'all';
+let query      = '';
+
+/* ── INIT ── */
+fetch(KB_FILE)
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(data => {
+    chunks = data.chunks || [];
+    buildFilters();
+    updateStats();
+    render();
+  })
+  .catch(() => {
+    document.getElementById('cards').innerHTML = `
+      <div class="centered-msg">
+        <div class="error-box">
+          <h3>⚠ Файл бази знань не знайдено</h3>
+          <p>Помістіть файл з даними у папку <strong>public/</strong> під назвою:</p>
+          <code>kb_export.json</code>
+          <p style="margin-top:12px;font-size:12px">
+            Перейменуйте ваш експортований файл у <em>kb_export.json</em><br>
+            та оновіть сторінку
+          </p>
+        </div>
+      </div>`;
+  });
+
+/* ── BUILD FILTERS ── */
+function buildFilters() {
+  const segs = [...new Set(chunks.map(c => c.analysis?.segment).filter(Boolean))];
+  const wrap = document.getElementById('segPills');
+  wrap.innerHTML =
+    `<button class="seg-pill active" data-s="all">Всі</button>` +
+    segs.map(s =>
+      `<button class="seg-pill" data-s="${s}">${SEG_LABELS[s]||s}</button>`
+    ).join('');
+
+  wrap.addEventListener('click', e => {
+    const b = e.target.closest('[data-s]');
+    if (!b) return;
+    activeSeg = b.dataset.s;
+    wrap.querySelectorAll('.seg-pill').forEach(p =>
+      p.classList.toggle('active', p.dataset.s === activeSeg));
+    render();
+  });
+
+  document.querySelectorAll('[data-pr]').forEach(b =>
+    b.addEventListener('click', () => {
+      activePr = b.dataset.pr;
+      document.querySelectorAll('[data-pr]').forEach(x =>
+        x.classList.toggle('active', x.dataset.pr === activePr));
+      render();
+    })
+  );
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    query = e.target.value.toLowerCase().trim();
+    render();
+  });
+}
+
+/* ── STATS ── */
+function updateStats() {
+  const segs = new Set(chunks.map(c => c.analysis?.segment).filter(Boolean));
+  document.getElementById('sCnt').textContent  = chunks.length;
+  document.getElementById('sCore').textContent = chunks.filter(c=>c.priority==='core').length;
+  document.getElementById('sSegs').textContent = segs.size;
+}
+
+/* ── FILTER ── */
+function getFiltered() {
+  return chunks.filter(c => {
+    if (activePr !== 'all' && c.priority !== activePr) return false;
+    if (activeSeg !== 'all' && c.analysis?.segment !== activeSeg) return false;
+    if (query) {
+      const hay = [
+        c.text || '',
+        c.analysis?.summary || '',
+        ...(c.analysis?.key_concepts || [])
+      ].join(' ').toLowerCase();
+      if (!hay.includes(query)) return false;
+    }
+    return true;
+  });
+}
+
+/* ── RENDER ── */
+function render() {
+  const list = getFiltered();
+  const container = document.getElementById('cards');
+  const info = document.getElementById('rInfo');
+
+  info.innerHTML = list.length
+    ? `Знайдено <span>${list.length}</span> з <span>${chunks.length}</span> записів`
+    : '';
+
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="centered-msg">
+        <div class="msg-icon">🔍</div>
+        <div class="msg-title">Нічого не знайдено</div>
+        <div class="msg-sub">Спробуйте змінити фільтри або пошуковий запит</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = list.map((c, i) => cardHtml(c, i)).join('');
+  container.querySelectorAll('.card').forEach((el, i) =>
+    el.addEventListener('click', () => openModal(list[i]))
+  );
+}
+
+/* ── CARD HTML ── */
+function cardHtml(c, i) {
+  const a = c.analysis || {};
+  const isCore = c.priority === 'core';
+  const segLabel = SEG_LABELS[a.segment] || a.segment || '—';
+  const tm = TYPE_META[a.knowledge_type] || { icon:'📄', label: a.knowledge_type||'—' };
+  const concepts = (a.key_concepts || []).slice(0, 4);
+  const extra = (a.key_concepts||[]).length - 4;
+
+  // prefer summary over raw text for the card
+  const rawSummary = a.summary || c.text || '';
+  const summary = rawSummary.length > 160
+    ? rawSummary.slice(0, 157) + '...'
+    : rawSummary;
+
+  const qs = a.quality_score || 0;
+  const src = shortHost(c.source || '');
+
+  return `
+<div class="card" data-i="${i}">
+  <div class="card-top">
+    <div class="card-meta">
+      <div class="card-segment">${esc(segLabel)}</div>
+      <div class="card-ktype">${tm.icon} ${tm.label}</div>
+    </div>
+    <span class="badge ${isCore?'b-core':'b-ext'}">${isCore?'БАЗОВЕ':'РОЗШИРЕНЕ'}</span>
+  </div>
+  <div class="card-summary">${esc(summary)}</div>
+  ${concepts.length ? `
+  <div class="card-concepts">
+    ${concepts.map(t=>`<span class="concept-tag">${esc(t)}</span>`).join('')}
+    ${extra>0?`<span class="concept-tag">+${extra}</span>`:''}
+  </div>` : ''}
+  <div class="card-footer">
+    <span class="card-source">🔗 ${esc(src)}</span>
+    <span class="card-score">
+      <span class="qdot ${qs>=0.9?'qh':'qm'}"></span>
+      ${Math.round(qs*100)}%
+    </span>
+  </div>
+</div>`;
+}
+
+/* ── MODAL ── */
+function openModal(c) {
+  const a = c.analysis || {};
+  const isCore = c.priority === 'core';
+  const segLabel = SEG_LABELS[a.segment] || a.segment || '—';
+  const tm = TYPE_META[a.knowledge_type] || { icon:'📄', label: a.knowledge_type||'—' };
+  const concepts = a.key_concepts || [];
+  const date = c.approved_at
+    ? new Date(c.approved_at).toLocaleDateString('uk-UA', {day:'numeric',month:'long',year:'numeric'})
+    : '';
+
+  document.getElementById('modalBody').innerHTML = `
+<div class="modal-badges">
+  <span class="badge ${isCore?'b-core':'b-ext'}">${isCore?'БАЗОВЕ':'РОЗШИРЕНЕ'}</span>
+  <span class="badge" style="background:rgba(99,179,237,0.1);color:var(--accent2);border:1px solid rgba(99,179,237,0.2)">${tm.icon} ${esc(tm.label)}</span>
+</div>
+<div class="modal-segment">${esc(segLabel)}</div>
+${a.summary ? `<div class="modal-summary">${esc(a.summary)}</div>` : ''}
+<div class="modal-text">${esc(c.text||'')}</div>
+${concepts.length ? `
+<div style="margin-bottom:16px">
+  <div class="modal-section-title">Ключові поняття</div>
+  <div class="card-concepts">${concepts.map(t=>`<span class="concept-tag">${esc(t)}</span>`).join('')}</div>
+</div>` : ''}
+<div class="modal-footer">
+  <div class="modal-src">
+    Джерело:
+    ${c.source?.startsWith('http')
+      ? `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.source)}</a>`
+      : `<span>${esc(c.source||'—')}</span>`}
+  </div>
+  ${date ? `<div class="modal-date">Верифіковано: ${date}</div>` : ''}
+</div>`;
+
+  document.getElementById('overlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modalX').addEventListener('click', closeModal);
+document.getElementById('overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal(); });
+
+/* ── UTILS ── */
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function shortHost(s) {
+  try {
+    const url = s.startsWith('http') ? s : 'https://' + s;
+    return new URL(url).hostname;
+  } catch { return s.slice(0,30)||'—'; }
+}
+</script>
+</body>
+</html>
