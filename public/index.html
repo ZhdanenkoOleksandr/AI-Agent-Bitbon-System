@@ -239,8 +239,12 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .mode-pill.mp-active-partner{background:rgba(52,211,153,0.1);color:var(--product-partner);font-weight:700}
 .mode-pill.mp-active-user{background:rgba(59,130,246,0.1);color:var(--accent2);font-weight:700}
 .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.header-info h1{font-size:13px;font-weight:600}
+.header-info h1{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
 .header-info p{font-size:11px;color:var(--text2)}
+.kb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;display:none;position:relative}
+.kb-dot.yellow{display:inline-block;background:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,0.2)}
+.kb-dot.green{display:inline-block;background:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,0.2)}
+.kb-dot[title]:hover::after{content:attr(title);position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:100;pointer-events:none;font-family:'Onest',sans-serif;font-weight:400}
 .header-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
 .level-badge{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(99,179,237,0.1);border:1px solid rgba(99,179,237,0.25);color:#93c5fd}
 .header-btn{height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'Onest',sans-serif;font-size:11px;display:flex;align-items:center;gap:5px;transition:all 0.2s;white-space:nowrap}
@@ -1593,7 +1597,7 @@ textarea::placeholder{color:var(--text3)}
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
         <div class="avatar">⚡</div>
         <div class="header-info">
-          <h1 id="agent-name">AI Viking Agent · Система Bitbon</h1>
+          <h1 id="agent-name">AI Viking Agent · Система Bitbon <span id="kb-dot" class="kb-dot"></span></h1>
           <p id="agent-sub" style="display:none">Партнёр Система Bitbon</p>
         </div>
       </div>
@@ -2653,6 +2657,8 @@ function setLevel(level) {
     loadUserKB();
   }
 
+  updateKBDot();
+
   // Роль отображается в футер-навигации; в хедере badge не нужен
   var badge = document.getElementById('level-badge');
   badge.style.display = 'none';
@@ -2753,6 +2759,8 @@ function switchLevel(level) {
 
   // Load knowledge base
   loadKnowledgeBase();
+  if (level === 'user') loadUserKB();
+  updateKBDot();
 }
 
 function updateSuggestionsBar(mode) {
@@ -3895,6 +3903,19 @@ function updateGiftCounter() {
         '⚠️ Остался **1 подарочный запрос**. После этого потребуется регистрация.',
         [{label:'🤝 Стать партнёром', action:'setLevel(\'partner\')'}], false);
     }
+  }
+}
+
+function updateKBDot() {
+  var dot = document.getElementById('kb-dot');
+  if (!dot) return;
+  dot.className = 'kb-dot';
+  if (userMode === 'user') {
+    dot.classList.add('yellow');
+    dot.title = 'База знань: статична (kb_export.json)';
+  } else if (userMode === 'business' || userMode === 'partner' || userMode === 'admin') {
+    dot.classList.add('green');
+    dot.title = 'База знань: динамічна (метаресурси)';
   }
 }
 
