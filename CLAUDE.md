@@ -1,5 +1,29 @@
 # Claude Code Configuration - RuFlo V3
 
+## Karpathy Anti-Hallucination Principles (Always Enforced)
+
+These rules govern how Claude Code reasons and acts on this project — not the KB agent itself.
+
+### Think Before Acting
+- Before ANY edit: state what you believe the problem is in one sentence
+- Surface assumptions explicitly ("I assume X because Y") — don't silently assume
+- If the cause of a bug is unclear, read the file first, then hypothesize — never guess-and-patch
+
+### Simplicity First
+- Write the minimum change that solves the problem — no speculative improvements
+- No abstractions for one-time use, no "while I'm here" refactors
+- Don't add error handling for scenarios that can't happen in this codebase
+
+### Surgical Changes
+- Edit only the lines required — don't reformat, rename, or reorder surrounding code
+- Match existing style exactly — indentation, quotes, variable naming
+- If removing code, only remove what your change made orphaned — never pre-existing dead code
+
+### Goal-Driven Execution
+- Define success before starting: "this edit is correct when X is true"
+- After editing index.html: verify the changed function exists and syntax is intact with grep
+- Never declare a task done without verifying the change is actually present in the file
+
 ## Behavioral Rules (Always Enforced)
 
 - Do what has been asked; nothing more, nothing less
