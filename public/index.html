@@ -245,6 +245,11 @@ body{font-family:'Onest',sans-serif;background:var(--bg);color:var(--text);heigh
 .kb-dot.yellow{display:inline-block;background:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,0.2)}
 .kb-dot.green{display:inline-block;background:#10b981;box-shadow:0 0 0 2px rgba(16,185,129,0.2)}
 .kb-dot[title]:hover::after{content:attr(title);position:absolute;top:12px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:11px;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:100;pointer-events:none;font-family:'Onest',sans-serif;font-weight:400}
+.kb-switcher{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.kb-switcher-label{font-size:10px;color:var(--text3);letter-spacing:.04em;white-space:nowrap}
+.kb-ver-btn{height:22px;padding:0 10px;border-radius:11px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:'Onest',sans-serif;font-size:10px;font-weight:500;cursor:pointer;transition:all 0.18s;white-space:nowrap}
+.kb-ver-btn:hover{border-color:var(--accent);color:var(--accent2)}
+.kb-ver-btn.kb-ver-active{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.5);color:#f59e0b;font-weight:700}
 .header-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
 .level-badge{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(99,179,237,0.1);border:1px solid rgba(99,179,237,0.25);color:#93c5fd}
 .header-btn{height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;font-family:'Onest',sans-serif;font-size:11px;display:flex;align-items:center;gap:5px;transition:all 0.2s;white-space:nowrap}
@@ -1897,6 +1902,7 @@ const PLANS = {
 let history=[], isLoading=false, userLevel=null, userMode=null, jwtToken=null;
 let explainedConcepts=[], sidebarOpen=true, diagramCounter=0;
 let kbUserChunks=[], lastKBSources=[]; // static KB for user mode
+let activeKBVersion='v1'; // 'v1' = kb_export.json | 'v4' = kb_v4.json
 let currentPlan=null, usedRequests=0, usedMeta=0;
 let wizardMode=false, wizardStep=0, wizardAnswers=[];
 let partnerInfo=null; // {id, firstName, lastName, fullName}
@@ -2863,7 +2869,9 @@ function updateSuggestionsBar(mode) {
       '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_roi') + '\')">' + i18n('sug_biz_roi') + '</button>' +
       '<button class="suggestion-btn sug-secondary" onclick="ask(\'' + i18n('ask_biz_legal') + '\')">' + i18n('sug_biz_legal') + '</button>';
   } else {
+    // user mode — KB switcher row + suggestion buttons
     bar.innerHTML =
+      '<div class="kb-switcher" id="kb-switcher-row"></div>' +
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_what') + '\')">' + i18n('sug_user_what') + '</button>' +
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_aura') + '\')">' + i18n('sug_user_aura') + '</button>' +
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_web40') + '\')">' + i18n('sug_user_web40') + '</button>' +
@@ -2874,6 +2882,8 @@ function updateSuggestionsBar(mode) {
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_token') + '\')">' + i18n('sug_user_token') + '</button>' +
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_start') + '\')">' + i18n('sug_user_start') + '</button>' +
       '<button class="suggestion-btn" onclick="ask(\'' + i18n('ask_user_trust') + '\')">' + i18n('sug_user_trust') + '</button>';
+    var sw = document.getElementById('kb-switcher-row');
+    if (sw) renderKBSwitcherInto(sw);
   }
 }
 
@@ -3988,11 +3998,19 @@ function updateKBDot() {
   dot.className = 'kb-dot';
   if (userMode === 'user') {
     dot.classList.add('yellow');
-    dot.title = 'База знань: статична (kb_export.json)';
+    var vLabel = activeKBVersion === 'v4' ? 'kb_v4.json (v4.0, RU, 30 Q&A)' : 'kb_export.json (v1, UA, 17 chunks)';
+    dot.title = 'База знань: статична · ' + vLabel;
   } else if (userMode === 'business' || userMode === 'partner' || userMode === 'admin') {
     dot.classList.add('green');
     dot.title = 'База знань: динамічна (метаресурси)';
   }
+}
+
+function renderKBSwitcherInto(container) {
+  container.innerHTML =
+    '<span class="kb-switcher-label">База знань:</span>' +
+    '<button class="kb-ver-btn' + (activeKBVersion === 'v1' ? ' kb-ver-active' : '') + '" onclick="switchKBVersion(\'v1\')" title="v1 · Украинский · 17 чанков">v1 · UA</button>' +
+    '<button class="kb-ver-btn' + (activeKBVersion === 'v4' ? ' kb-ver-active' : '') + '" onclick="switchKBVersion(\'v4\')" title="v4.0 · Русский · 30 Q&A">v4.0 · RU</button>';
 }
 
 function renderHeaderNav() {
@@ -4224,15 +4242,27 @@ function buildKBContext() {
   return ctx;
 }
 
-// ═══ USER KB (static kb_export.json) ═══
+// ═══ USER KB (static, version-switchable) ═══
 async function loadUserKB() {
+  var file = activeKBVersion === 'v4' ? 'kb_v4.json' : 'kb_export.json';
   try {
-    var r = await fetch('kb_export.json');
+    var r = await fetch(file);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     var d = await r.json();
     kbUserChunks = d.chunks || [];
-    console.log('[KB] Loaded', kbUserChunks.length, 'chunks for user mode');
+    console.log('[KB] Loaded', kbUserChunks.length, 'chunks from', file);
   } catch(e) { console.warn('[KB] User KB not loaded:', e.message); }
+}
+
+function switchKBVersion(v) {
+  if (activeKBVersion === v) return;
+  activeKBVersion = v;
+  kbUserChunks = [];
+  loadUserKB();
+  updateKBDot();
+  // re-render switcher to update active state
+  var sw = document.getElementById('kb-switcher-row');
+  if (sw) renderKBSwitcherInto(sw);
 }
 
 function searchUserKB(query) {
